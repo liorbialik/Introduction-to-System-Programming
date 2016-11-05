@@ -1,0 +1,13 @@
+1) Solver
+- open the input file
+- parse the input file into a matrix and count the amount of missing  (no of iterations needed)
+
+do the following while not stuck(stuck flag or if no of itterations is the same for two rounds):
+- pass through every elemnt:
+		# if number -> ignore
+		# if dot -> check possible numbers 
+if stuck: exit and write output as error 
+
+
+
+2) Checker

@@ -1,6 +1,7 @@
 main:
-- open the input txt file into buffer
-- parse the input file into a matrix 9X9
+- open the input txt file
+- turn file into a buffer
+- parse the input file into a matrix 9X9 and check validity of the input (structure, correct chars, correct separation, correct size)
 - check working mode and call the right function.
 - receive the solution from the called function
 - write the solution into a text file
@@ -11,7 +12,11 @@ Solver
 do the following while not stuck(stuck flag or if no of itterations is the same for two rounds):
 - pass through every elemnt:
 		# if number -> ignore
-		# if dot -> check possible numbers 
+		# if dot -> check possible numbers: (initiate possibleNumbersArray[9] )
+		# each function
+		                                    - checkColumn(possibleNumbersArray)
+		                                    - checkRow(possibleNumbersArray)
+		                                    - checkSubGrid(possibleNumbersArray)
 if stuck: exit and write output as error 
 
 

@@ -1,8 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
+extern int errno;
 
-//char* getInputFileData(char* inputFilName){}
+FILE* getInputFileData(char* inputFilName) {}
+//{
+//	FILE *file;
+//	file = fopen(inputFilName, "r");
+//	if (file == NULL)
+//	{
+//		fprintf(stderr, "Value of errno: %d\n", errno);
+//		fprintf(stderr, "Error opening the file: %s\n", strerror(errno));
+//	}
+//	return file;
+//}
 
 //int writeDataToOutputFile(char* outputData){}
 //
@@ -24,7 +36,7 @@
 
 int main(int argc, char *argv[]){
 	
-	FILE *infile;
+	FILE *inputfile;
 	char *runMode, *inputFileName;
 	char* data[11][11] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
 
@@ -32,6 +44,7 @@ int main(int argc, char *argv[]){
 	runMode = argv[1]; 
 	inputFileName = argv[2];
 	// open the file from argv[1]
+	inputfile = getInputFileData(inputFileName);
 	// parse file to manegable format (without the seperations?, create structures?)
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	//switch (runMode)

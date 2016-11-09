@@ -35,8 +35,8 @@ char* readFileDataIntoBufferArray(FILE *fileToRead){
 }
 
 
-//int writeDataToOutputFile(char* outputData){}
-//
+void writeDataToOutputFile(char* outputData, outputFileName);
+
 //char* callSolver(char *data)
 //{
 //	char *solution = 0;
@@ -56,33 +56,36 @@ char* readFileDataIntoBufferArray(FILE *fileToRead){
 int main(int argc, char *argv[]){
 	
 	FILE *inputFile;
-	char* runMode, inputFileName, inputBufferArray;
+	char* runMode, inputFileName, outputFileName, inputBufferArray, solution;
 	char *data[11][11] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
 
-    // char instructionInputCmd[??]  and add #include <string.h>
-    // printf("Enter The following:\n <Working Mode> <Input FileName> <Output FileName - Optional>\n");
-    // fgets(instructionInputCmd, 10, stdin);
-
-	// TODO: check if the arguments are givent at run time or needed inside the program
 	runMode = argv[1]; 
 	inputFileName = argv[2];
-	// open the file from argv[1]
+    // open the file from argv[1]
 	inputFile = getInputFileData(inputFileName);
     inputBufferArray = readFileDataIntoBufferArray(inputFile);
 
-    // parse file to manegable format (without the seperations?, create structures?)
+    // parse file to manegable format (9X9 matrix)
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
-	//switch (runMode)
-	//{
-	//case 0:
-	//	callSolver(data);
-	//	break;
-	//case 1:
-	//	callChecker(data);
-	//	break;
-	//}
-	// reparse the data into the solutions style
-	// write the reparsed-date into the output file (argv[2])
+	switch (runMode)
+	{
+	case "0":
+        solution = callSolver(data);
+		break;
+
+    case "1":
+        solution = callChecker(data);
+		break;
+
+    default :
+        print("invalid running mode"); // TODO: call invalid argument error and exit
+    }
+
+    // check if argv[3] (output name) was given:
+    //  - if yes => outputFileName = argv[3]
+    //  - if no => outputFileName = inputFileName - ".txt" + "_sol" + ".txt"
+    // write the reparsed-date into the output file (outputFileName)
+    writeDataToOutputFile(solution, outputFileName);
 	getchar();
     return 0;
 }

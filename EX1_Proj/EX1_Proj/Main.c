@@ -6,60 +6,50 @@
 extern int errorNumber;
 
 
-FILE* getInputFileData(char* inputFilName) {
+FILE getInputFileData(char* inputFilName) {
 	FILE *inputFile;
-    inputFile = fopen(inputFilName, "r");
+	char *openFileErrorStr[26] = "Input File openning failed";
+
+	fopen_s(inputFile, inputFilName, "r");
 	if (inputFile == NULL) {
-        printErrorAndExitProgram(errorNumber);
+        printErrorAndExitProgram(errorNumber, openFileErrorStr);
 	}
-	return inputFile;
+	return *inputFile;
 }
 
 
 char* readFileDataIntoBufferArray(FILE *fileToRead){
     long bufferArraySize;
     char *bufferArray;
-    char *allocationErrorStr[20] = "memory alloc fails";
+	char *allocationErrorStr[20] = {0};
+
+	*allocationErrorStr = "memory alloc fails";
 
     fseek(fileToRead, 0L, SEEK_END); // Seek to the end of the file //
     bufferArraySize = ftell(fileToRead); // set the size of the buffer to allocate. //
-    if (buffer == NULL) {
+    if (bufferArray == NULL) {
         printErrorAndExitProgram(errorNumber, allocationErrorStr);
     }
-
     rewind(fileToRead); // reset to point to the beginning of the file //
-
-
 
     return bufferArray;
 }
 
 
-void writeDataToOutputFile(char* outputData, outputFileName);
+void writeDataToOutputFile(char *outputData, char *outputFileName)
+{
 
-//char* callSolver(char *data)
-//{
-//	char *solution = 0;
-//
-//	return solution;
-//}
-//
-//char* callChecker(char *data)
-//{
-//	char *solution = 0;
-//
-//	return solution;
-//}
-
+}
 
 
 int main(int argc, char *argv[]){
 	
 	FILE *inputFile;
-	char* runMode, inputFileName, outputFileName, inputBufferArray, solution;
+	int runMode = 0;
+	char* inputFileName, outputFileName, inputBufferArray, solution;
 	char *data[11][11] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
 
-	runMode = argv[1]; 
+	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
 	inputFileName = argv[2];
     // open the file from argv[1]
 	inputFile = getInputFileData(inputFileName);
@@ -69,16 +59,16 @@ int main(int argc, char *argv[]){
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	switch (runMode)
 	{
-	case "0":
-        solution = callSolver(data);
+	case 0:
+		solution = 'temp';//callSolver(data);
 		break;
 
-    case "1":
-        solution = callChecker(data);
+    case 1:
+        solution = 'temp';//callChecker(data);
 		break;
 
     default :
-        print("invalid running mode"); // TODO: call invalid argument error and exit
+        printf("invalid running mode"); // TODO: call invalid argument error and exit
     }
 
     // check if argv[3] (output name) was given:

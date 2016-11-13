@@ -6,18 +6,64 @@
 // using 'extern' makes sure the error variable is the not duplicated but rather the same one across the program //
 extern int errorNumber;
 
+// functions decelerations:
+FILE getInputFileData(char* inputFilName);
+char* readFileDataIntoBufferArray(FILE *fileToRead);
+char* parseInputBufferIntoMatrix(char *parsedSudokuMatrix, char *inputBufferArray);
+void writeDataToOutputFile(char *outputData, char *outputFileName);
 
-FILE getInputFileData(char* inputFilName) {
+
+int main(int argc, char *argv[]){
+
 	FILE *inputFile;
-	char *openFileErrorStr[26] = "Input File openning failed!";
+	int runMode = 0;
+    char* inputFileName, outputFileName, inputBufferArray, solution;
+    char *outputFileNameEnding[8] = "_sol.txt", *parsedSudokuMatrix[9][9] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
 
-	fopen_s(inputFile, inputFilName, "r");
-	if (inputFile == NULL) {
-        printErrorAndExitProgram(errorNumber, openFileErrorStr);
-	}
-	return *inputFile;
+	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
+	inputFileName = argv[2];
+    if (argc < 3){ // if no output file name was given, use the input file name and add "_sol" to its end
+        outputFileName = argv[2];
+        outputFileName[strlen(inputFileName) -4] = '\0'; // remove the ".txt" ending from the input string
+        strcat(outputFileName, outputFileNameEnding); // add the correct ending
+    }
+    else
+        outputFileName = argv[3];
+
+	inputFile = getInputFileData(inputFileName);
+    inputBufferArray = readFileDataIntoBufferArray(inputFile);
+
+    parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
+	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
+	switch (runMode)
+	{
+	case 0:
+        parsedSudokuMatrix = 'temp';//callSolver(parsedSudokuMatrix);
+		break;
+
+    case 1:
+        parsedSudokuMatrix = 'temp';//callChecker(parsedSudokuMatrix);
+		break;
+
+    default :
+        printf("invalid running mode"); // TODO: call invalid argument error and exit
+    }
+
+    writeDataToOutputFile(parsedSudokuMatrix, outputFileName);
+	getchar();
+    return 0;
 }
 
+FILE getInputFileData(char* inputFilName) {
+    FILE *inputFile;
+    char *openFileErrorStr[26] = "Input File openning failed!";
+
+    fopen_s(inputFile, inputFilName, "r");
+    if (inputFile == NULL) {
+        printErrorAndExitProgram(errorNumber, openFileErrorStr);
+    }
+    return *inputFile;
+}
 
 char* readFileDataIntoBufferArray(FILE *fileToRead){
     int i = 0 ,bufferArraySize = 81;
@@ -63,54 +109,4 @@ void writeDataToOutputFile(char *outputData, char *outputFileName) {
     }
     fputs(outputData, outputFile);
     fclose(outputFile);
-}
-
-
-int main(int argc, char *argv[]){
-	
-	FILE *inputFile;
-	int runMode = 0;
-	char* inputFileName, outputFileName, inputBufferArray, solution;
-    char *outputFileNameEnding[8] = "_sol.txt", *parsedSudokuMatrix[9][9] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
-
-	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
-	inputFileName = argv[2];
-    if (argc < 3){
-        // allocate the size of outputFileName to be inputFileName.length - "" + "_sol" + 1 (for '\0')
-        // inputFileNameLength = strlen(inputFileName);
-        // outputFileName = inputFileName;
-        // outputFileName[inputFileNameLength -1] = '\0';
-        // strcat(outputFileName, outputFileNameEnding)
-        // create the outputFileName = inputFileName - ".txt" + "_sol.txt"
-    }
-    else
-        outputFileName = argv[3];
-
-	inputFile = getInputFileData(inputFileName);
-    inputBufferArray = readFileDataIntoBufferArray(inputFile);
-
-    // parse file to manegable format (9X9 matrix)
-    parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray);
-	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
-	switch (runMode)
-	{
-	case 0:
-		solution = 'temp';//callSolver(parsedSudokuMatrix);
-		break;
-
-    case 1:
-        solution = 'temp';//callChecker(parsedSudokuMatrix);
-		break;
-
-    default :
-        printf("invalid running mode"); // TODO: call invalid argument error and exit
-    }
-
-    // check if argv[3] (output name) was given:
-    //  - if yes => outputFileName = argv[3]
-    //  - if no => outputFileName = inputFileName - ".txt" + "_sol" + ".txt"
-    // write the reparsed-date into the output file (outputFileName)
-    writeDataToOutputFile(solution, outputFileName);
-	getchar();
-    return 0;
 }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Solver.h"
+#include "Checker.h"
 #include <ctype.h>
 #include <string.h>
 
@@ -57,7 +58,7 @@ int main(int argc, char *argv[]) {
 		}
 	
 	case 1: {
-		printf("runMode is 1");//callChecker(parsedSudokuMatrix);
+		callChecker(parsedSudokuMatrix);
 		break;
 		}
 	

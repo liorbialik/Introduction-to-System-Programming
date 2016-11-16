@@ -10,7 +10,7 @@
 
 // functions decelerations:
 void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]);
-void parseInputBufferIntoMatrix(char parsedSudokuMatrix[9][9], char *inputBufferArray);
+void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray);
 //void writeDataToOutputFile(char *outputData, char *outputFileName);
 
 
@@ -19,9 +19,10 @@ int main(int argc, char *argv[]) {
 	FILE *inputFile = NULL;
 	int runMode = 0;
 	size_t outputFileNameLength = 0;
-	char *inputFileName = NULL, *outputFileName = NULL, *inputBufferArrayPtr = NULL, *outputFileNameEnding = { "_sol.txt" }, *parsedSudokuMatrixPtr; //, *solution;
+	char *inputFileName = NULL, *outputFileName = NULL, *inputBufferArrayPtr = NULL, *outputFileNameEnding = { "_sol.txt" };//, *parsedSudokuMatrixPtr = NULL; //, *solution;
 	char inputBufferArray[81] = { "" }, parsedSudokuMatrix[9][9] = { 0 };
 	inputBufferArrayPtr = inputBufferArray;
+//	parsedSudokuMatrixPtr = parsedSudokuMatrix;
 
 	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
 	inputFileName = argv[2];
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]) {
 
 	readFileDataIntoBufferArray(inputFile, inputBufferArrayPtr);
 	fclose(inputFile);
-	parseInputBufferIntoMatrix(parsedSudokuMatrixPtr, inputBufferArray); // parse file to manegable format (9X9 matrix)
+	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
 
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	//switch (runMode)
@@ -87,14 +88,14 @@ void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
 	}
 }
 
-void parseInputBufferIntoMatrix(char parsedSudokuMatrix[9][9], char *inputBufferArray) {
+void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray) {
 	int i, j, inputBufferArraySize = 81;
 
-	for (int i = 0; i < 9; i++)
+	for (i = 0; i < 9; i++)
 	{
-		for (int j = 0; j < 9; j++)
+		for (j = 0; j < 9; j++)
 		{
-			parsedSudokuMatrix[i][j] = inputBufferArray[i*inputBufferArraySize + j];
+			parsedSudokuMatrix[i][j] = inputBufferArray[i * inputBufferArraySize/9 + j];
 		}
 	}
 }

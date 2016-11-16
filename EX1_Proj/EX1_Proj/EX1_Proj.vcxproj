@@ -20,10 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
-    <ClCompile Include="Solver.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Main.h" />
+    <Text Include="example.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E1EE3D96-E648-4FCE-BD3B-930CC71D7976}</ProjectGuid>

@@ -13,8 +13,11 @@
 void callCheckRow(char soduko[9][9], int array[9], int row)
 {
 	int j;
-	for (j = 0; j < 9; j++)
-		if (soduko[row][j] != '.') array[soduko[row][j] - 1] = 0;
+	for (j = 0; j < 9; j++) {
+		if (soduko[row][j] != '.') {
+			array[(soduko[row][j] - 1) - '0'] = 0;
+		}
+	}
 }
 
 //This function checks feasability of a value for the correspond col
@@ -24,7 +27,8 @@ void callCheckCol(char soduko[9][9], int array[9], int col)
 {
 	int i;
 	for (i = 0; i < 9; i++)
-		if (soduko[i][col] != '.') array[soduko[i][col] - 1] = 0;
+		if (soduko[i][col] != '.') 
+			array[(soduko[i][col] - 1) - '0'] = 0;
 }
 
 //This function checks feasability of a value for the correspond subGrid
@@ -39,7 +43,7 @@ void callCheckSubGrid(char soduko[9][9], int array[9], int row, int col)
 	{
 		for (j = colSubGrid; j < colSubGrid + 3; j++)
 			if (soduko[i][j] != '.')
-				array[soduko[i][j] - 1] = 0;
+				array[(soduko[i][j] - 1) - '0'] = 0;
 	}
 }
 
@@ -54,8 +58,8 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 	int flagArrayForPossibleValues[9] = { 1,1,1,1,1,1,1,1,1 };
 
 	callCheckRow(soduko, flagArrayForPossibleValues, row);
-	callCheckCol(soduko, flagArrayForPossibleValues, col);
-	callCheckSubGrid(soduko, flagArrayForPossibleValues, row, col);
+	//callCheckCol(soduko, flagArrayForPossibleValues, col);
+	//callCheckSubGrid(soduko, flagArrayForPossibleValues, row, col);
 
 	//	count all 'one' values at flagArrayForPossibleValues[9];
 	//	if cnt == 1 => find the value and return its index; ow => return 0;
@@ -63,11 +67,18 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 	{
 		possibleValueCounter += flagArrayForPossibleValues[k];
 		if (flagArrayForPossibleValues[k] == 1)
-			returnValue = k + 1;
+			returnValue = (k + 1) + '0';
 	}
-	if (possibleValueCounter == 1)
-		return returnValue;
-	else return '0';
+	if (possibleValueCounter == 1) {
+		int i;
+		for (i = 0; i < 9; i++) {
+			printf("return value is %c\n", returnValue);
+			getchar();
+			return returnValue;
+		}
+	}
+	else
+		return '0';
 }
 
 //	This funcion checks the status of the soduko martix; 
@@ -91,12 +102,12 @@ int sodukoStatus(char soduko[9][9])
 //	CallSolver recieves a 2D matrix soduko and solves it if possible, ow => will output an appropriate impossible message
 void callSolver(char soduko[9][9])
 {
-	int solved = 1;
+	int solved = 0;
 	char cellValue = '0';
-	//int assigningWasMadeFlag;
+	int assigningWasMadeFlag;
 	int i, j;
 	//char* solutionPtr = NULL;
-/*	do
+	do
 	{
 		//	going over the matrix from top-left side and start filling it with numbers if possible
 		for (i = 0; i < 9; i++)
@@ -108,42 +119,44 @@ void callSolver(char soduko[9][9])
 					continue;
 				}
 
-				else
-				{
+				else {
 					cellValue = checkPossibleNumForCell(soduko, i, j); //TODO: add assignment variable
 					if (cellValue != '0') {
 						//Make an assignment for that cell
 						soduko[i][j] = cellValue;
 						assigningWasMadeFlag = 1;
 					}
-					else continue;
+					else
+						continue;
 				}
 			}
 		}
-		if (solved = assigningWasMadeFlag && sodukoStatus(soduko)) break;
-	} while (assigningWasMadeFlag);
-*/
+		if (solved = assigningWasMadeFlag && sodukoStatus(soduko))
+			break;
 
+	} while (assigningWasMadeFlag);
+
+	getchar();
 	//	one step before returning to caller; here we will deter whether the soduko was solved or not;
-	switch (solved){
-	case 0:{
+	switch (solved) {
+	case 0: {
 		printf("Sudoku puzzle is too hard for me to solve\n");
 
 		//solutionPtr = "Sudoku puzzle is too hard for me to solve\n";
 		break;
-		}
+	}
 
-	case 1:{
-		for (i = 0; i < 9; i++){
-			for (j = 0; j < 9; j++){
+	case 1: {
+		for (i = 0; i < 9; i++) {
+			for (j = 0; j < 9; j++) {
 				printf("%c ", soduko[i][j]);
-				}
-			printf("\n");
 			}
+			printf("\n");
+		}
 		//solutionPtr = soduko[9][9];
 		getchar();
 		break;
-		}
+	}
 	}
 }
 

@@ -18,8 +18,16 @@
     <ClCompile Include="Main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Solver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="example.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Solver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,20 +1,19 @@
+//This is the header file for main.c and includes function declarations of solver.c
+
 //15.11 20:30
 // Solver's part
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "Solver.h"
-#include "Checker.h"
-//#include "Common.h"
-#include <ctype.h>
-
 
 //This function checks feasability of a value for the correspond row
 //by passing on the relevant row values and modify flagArrayForPossibleValues[existValue] = '0';
 //gets an index row and modifies flagArrayForPossibleValues
 void callCheckRow(char soduko[9][9], int array[9], int row)
 {
-	for (int j = 0; j < 9; j++)
+	int j;
+	for (j = 0; j < 9; j++)
 		if (soduko[row][j] != '.') array[soduko[row][j] - 1] = 0;
 }
 
@@ -23,7 +22,8 @@ void callCheckRow(char soduko[9][9], int array[9], int row)
 //gets an index col and modified flagArrayForPossibleValues that deters assignment
 void callCheckCol(char soduko[9][9], int array[9], int col)
 {
-	for (int i = 0; i < 9; i++)
+	int i;
+	for (i = 0; i < 9; i++)
 		if (soduko[i][col] != '.') array[soduko[i][col] - 1] = 0;
 }
 
@@ -49,11 +49,11 @@ void callCheckSubGrid(char soduko[9][9], int array[9], int row, int col)
 char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 {
 	int possibleValueCounter = 0, k;
-	char returnValue = NULL;
+	char returnValue = '0';
 	//	allocate a 9cell array initiated by 'ones':
-	int* flagArrayForPossibleValues[9] = { 1,1,1,1,1,1,1,1,1 };
+	int flagArrayForPossibleValues[9] = { 1,1,1,1,1,1,1,1,1 };
 
-	callCheckRow(soduko[9][9], flagArrayForPossibleValues[9], row);
+	callCheckRow(soduko, flagArrayForPossibleValues, row);
 	callCheckCol(soduko, flagArrayForPossibleValues, col);
 	callCheckSubGrid(soduko, flagArrayForPossibleValues, row, col);
 
@@ -61,11 +61,12 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 	//	if cnt == 1 => find the value and return its index; ow => return 0;
 	for (k = 0; k < 9; k++)
 	{
-		possibleValueCounter += *flagArrayForPossibleValues[k];
+		possibleValueCounter += flagArrayForPossibleValues[k];
 		if (flagArrayForPossibleValues[k] == 1)
-			returnValue = k+1;
+			returnValue = k + 1;
 	}
-	if (possibleValueCounter == 1) return returnValue;
+	if (possibleValueCounter == 1)
+		return returnValue;
 	else return '0';
 }
 
@@ -88,14 +89,14 @@ int sodukoStatus(char soduko[9][9])
 
 // TODO: need to add to solver a parameter for outputFileInstance
 //	CallSolver recieves a 2D matrix soduko and solves it if possible, ow => will output an appropriate impossible message
-void callSolver(char *soduko[9][9])
+void callSolver(char soduko[9][9])
 {
-	int sodukoStatus(char*); int solved = 0;
-	int assigningWasMadeFlag;
+	int solved = 1;
+	char cellValue = '0';
+	//int assigningWasMadeFlag;
 	int i, j;
-	char* solutionPtr = NULL;
-
-	do
+	//char* solutionPtr = NULL;
+/*	do
 	{
 		//	going over the matrix from top-left side and start filling it with numbers if possible
 		for (i = 0; i < 9; i++)
@@ -103,14 +104,16 @@ void callSolver(char *soduko[9][9])
 			for (j = 0; j < 9; j++)
 			{
 				assigningWasMadeFlag = 0;
-				if (soduko[i][j] != '.') continue;
+				if (soduko[i][j] != '.') {
+					continue;
+				}
+
 				else
 				{
-					checkPossibleNumForCell(soduko, i, j); //TODO: add assignment variable 
-					if (checkPossibleNumForCell != '0')
-					{
+					cellValue = checkPossibleNumForCell(soduko, i, j); //TODO: add assignment variable
+					if (cellValue != '0') {
 						//Make an assignment for that cell
-						soduko[i][j] = checkPossibleNumForCell;
+						soduko[i][j] = cellValue;
 						assigningWasMadeFlag = 1;
 					}
 					else continue;
@@ -119,23 +122,28 @@ void callSolver(char *soduko[9][9])
 		}
 		if (solved = assigningWasMadeFlag && sodukoStatus(soduko)) break;
 	} while (assigningWasMadeFlag);
+*/
 
 	//	one step before returning to caller; here we will deter whether the soduko was solved or not;
-	switch (solved)
-	{
-	case 0:
-	{
-		solutionPtr = "Sudoku puzzle is too hard for me to solve\n";
+	switch (solved){
+	case 0:{
+		printf("Sudoku puzzle is too hard for me to solve\n");
+
+		//solutionPtr = "Sudoku puzzle is too hard for me to solve\n";
 		break;
-	}
-	case 1:
-	{
-		solutionPtr = soduko[9][9];
+		}
+
+	case 1:{
+		for (i = 0; i < 9; i++){
+			for (j = 0; j < 9; j++){
+				printf("%c ", soduko[i][j]);
+				}
+			printf("\n");
+			}
+		//solutionPtr = soduko[9][9];
+		getchar();
 		break;
-	}
-	default:
-		return solutionPtr;
+		}
 	}
 }
-
 

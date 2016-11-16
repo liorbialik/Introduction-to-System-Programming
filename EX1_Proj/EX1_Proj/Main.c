@@ -17,12 +17,12 @@ int main(int argc, char *argv[]){
 
 	FILE *inputFile;
 	int runMode = 0;
-    char* inputFileName, outputFileName, inputBufferArray, solution;
+    char* inputFileName, outputFileName, inputBufferArray, solution; // TODO: allocate memmory to outputfilename according to input file name
     char *outputFileNameEnding[8] = "_sol.txt", *parsedSudokuMatrix[9][9] = {0}; // TODO: need to add a #define ROWS/COLS in .h file
 
 	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
 	inputFileName = argv[2];
-    if (argc < 3){ // if no output file name was given, use the input file name and add "_sol" to its end
+    if (argc < 4){ // if no output file name was given, use the input file name and add "_sol" to its end
         outputFileName = argv[2];
         outputFileName[strlen(inputFileName) -4] = '\0'; // remove the ".txt" ending from the input string
         strcat(outputFileName, outputFileNameEnding); // add the correct ending
@@ -67,19 +67,23 @@ FILE getInputFileData(char* inputFilName) {
 
 char* readFileDataIntoBufferArray(FILE *fileToRead){
     int i = 0 ,bufferArraySize = 81;
-    char *bufferArray[bufferArraySize];
+    char *bufferArray[bufferArraySize]={0};
     char *allocationErrorStr[20] = {0};
     char charFromInput;
 
-    allocationErrorStr = "memory alloc fails";
+    //allocationErrorStr = "memory alloc fails";
 
-    fseek(fileToRead, 0L, SEEK_END); // Seek to the end of the file //
-    inputFileLength = ftell(fileToRead); // set the size of the buffer to allocate. //
-    rewind(fileToRead); // reset to point to the beginning of the file //
+//    fseek(fileToRead, 0L, SEEK_END); // Seek to the end of the file //
+//    inputFileLength = ftell(fileToRead); // set the size of the buffer to allocate. //
+//    rewind(fileToRead); // reset to point to the beginning of the file //
+//    if (inputFileLength > 255)
+//      printf("Invalid input size"); exit(1);
 
     while((charFromInput = getc(fileToRead)) != EOF){
-        if ((charFromInput == ".") || (charFromInput > "0" && charFromInput < "10"))
+        if ((charFromInput == ".") || (charFromInput > "0" && charFromInput < "10")) {
             bufferArraySize[i] = charFromInput;
+            i++;
+        }
         else
             continue;
     }
@@ -94,9 +98,11 @@ char* parseInputBufferIntoMatrix(char *parsedSudokuMatrix, char *inputBufferArra
     {
         for (int j = 0; j < 9; j++)
         {
-            parsedSudokuMatrix[i][j] = inputBufferArray[i*inputBufferArraySize + j];
+            parsedSudokuMatrix[i][j] = inputBufferArray[i*(inputBufferArraySize/9) + j];
         }
     }
+
+    return parsedSudokuMatrix;
 }
 
 void writeDataToOutputFile(char *outputData, char *outputFileName) {
@@ -110,3 +116,4 @@ void writeDataToOutputFile(char *outputData, char *outputFileName) {
     fputs(outputData, outputFile);
     fclose(outputFile);
 }
+// TODO: need to make an external module for error printing: printErrorToFile(char *errorPtr, FILE *outputFile)

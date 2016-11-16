@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
 	runMode = argv[1][0] - '0'; //convert the input running mode into an integer.
 	inputFileName = argv[2];
-	if (argc < 3) { // if no output file name was given, use the input file name and add "_sol" to its end
+	if (argc < 4) { // if no output file name was given, use the input file name and add "_sol" to its end
 		outputFileName = argv[2];
 		outputFileName[strlen(inputFileName) - 4] = '\0'; // remove the ".txt" ending from the input string
 		strcat(outputFileName, outputFileNameEnding); // add the correct ending
@@ -73,9 +73,12 @@ char* readFileDataIntoBufferArray(FILE *fileToRead) {
 
 	allocationErrorStr = "memory alloc fails";
 
-	fseek(fileToRead, 0L, SEEK_END); // Seek to the end of the file //
-	inputFileLength = ftell(fileToRead); // set the size of the buffer to allocate. //
-	rewind(fileToRead); // reset to point to the beginning of the file //
+	//fseek(fileToRead, 0L, SEEK_END); // Seek to the end of the file //
+	//inputFileLength = ftell(fileToRead); // set the size of the buffer to allocate. //
+	//rewind(fileToRead); // reset to point to the beginning of the file //
+	// if (inputFileLength > 255)
+	//     printf("Invalid input size"); exit(1);
+
 
 	while ((charFromInput = getc(fileToRead)) != EOF) {
 		if ((charFromInput == ".") || (charFromInput > "0" && charFromInput < "10"))
@@ -110,4 +113,4 @@ void writeDataToOutputFile(char *outputData, char *outputFileName) {
 	fputs(outputData, outputFile);
 	fclose(outputFile);
 }
-
+// TODO: need to make an external module for error pronting: printErrorToFile(char *errorPtr, FILE *outputFile)

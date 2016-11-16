@@ -5,9 +5,6 @@
 #include <ctype.h>
 #include <string.h>
 
-// using 'extern' makes sure the error variable is the not duplicated but rather the same one across the program //
-//extern int errorNumber;
-
 // functions decelerations:
 void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]);
 void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray);
@@ -50,24 +47,25 @@ int main(int argc, char *argv[]) {
 	readFileDataIntoBufferArray(inputFile, inputBufferArrayPtr);
 	fclose(inputFile);
 	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
-
+	
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
-	//switch (runMode)
-	//{
-	//case 0:
-	//	parsedSudokuMatrix = 'temp';//callSolver(parsedSudokuMatrix);
-	//	break;
-
-	//case 1:
-	//	parsedSudokuMatrix = 'temp';//callChecker(parsedSudokuMatrix);
-	//	break;
-
-	//default:
-	//	printf("invalid running mode"); // TODO: call invalid argument error and exit
-	//}
+	switch (runMode)
+	{
+	case 0: {
+		printf("runMode is 0");//callSolver(parsedSudokuMatrix);
+		break;
+		}
+	
+	case 1: {
+		printf("runMode is 1");//callChecker(parsedSudokuMatrix);
+		break;
+		}
+	
+	default:
+		printf("invalid running mode"); // TODO: call invalid argument error and exit
+	}
 
 	//writeDataToOutputFile(parsedSudokuMatrix, outputFileName);
-	getchar();
 	free(outputFileName);
 	return(0);
 }

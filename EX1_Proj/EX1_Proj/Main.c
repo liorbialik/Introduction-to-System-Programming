@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #include <stdio.h>
 #include <stdlib.h>
-#include "errorHandling.h"
+#include "Solver.h"
 #include <ctype.h>
 #include <string.h>
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 	switch (runMode)
 	{
 	case 0: {
-		printf("runMode is 0");//callSolver(parsedSudokuMatrix);
+		callSolver(parsedSudokuMatrix);
 		break;
 		}
 	

@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.c" />
     <ClCompile Include="Solver.c" />
   </ItemGroup>
   <ItemGroup>

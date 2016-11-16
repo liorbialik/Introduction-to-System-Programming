@@ -1,6 +1,4 @@
-//This is the header file for main.c and includes function declarations of solver.c
-
-//15.11 20:30
+//17.11 01:30
 // Solver's part
 
 #include <stdio.h>
@@ -58,8 +56,8 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 	int flagArrayForPossibleValues[9] = { 1,1,1,1,1,1,1,1,1 };
 
 	callCheckRow(soduko, flagArrayForPossibleValues, row);
-	//callCheckCol(soduko, flagArrayForPossibleValues, col);
-	//callCheckSubGrid(soduko, flagArrayForPossibleValues, row, col);
+	callCheckCol(soduko, flagArrayForPossibleValues, col);
+	callCheckSubGrid(soduko, flagArrayForPossibleValues, row, col);
 
 	//	count all 'one' values at flagArrayForPossibleValues[9];
 	//	if cnt == 1 => find the value and return its index; ow => return 0;
@@ -70,12 +68,7 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 			returnValue = (k + 1) + '0';
 	}
 	if (possibleValueCounter == 1) {
-		int i;
-		for (i = 0; i < 9; i++) {
-			printf("return value is %c\n", returnValue);
-			getchar();
 			return returnValue;
-		}
 	}
 	else
 		return '0';
@@ -85,36 +78,41 @@ char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 //	if soduko[9][9] is still not full => will return 0, ow => will return 1;
 int sodukoStatus(char soduko[9][9])
 {
-	int i, j;
+	int i, j, dotCounter = 0;
 	for (i = 0; i < 9; i++)
 	{
 		for (j = 0; j < 9; j++)
 		{
-			if (soduko[i][j] == '.') return 0;
-			else continue;
+			if (soduko[i][j] == '.') {
+				dotCounter++;
+			}
 		}
 	}
-	// if you got here, it means that soduko matrix is full with numbers, i.e solved
-	return 1;
+	if (dotCounter == 0) { //it means that soduko matrix is full with numbers, i.e solved
+		return 1;
+	}
+	else
+		return 0;
 }
+
 
 // TODO: need to add to solver a parameter for outputFileInstance
 //	CallSolver recieves a 2D matrix soduko and solves it if possible, ow => will output an appropriate impossible message
 void callSolver(char soduko[9][9])
 {
-	int solved = 0;
+	int solved = 0, sodukoStatusFlag = 0;
 	char cellValue = '0';
-	int assigningWasMadeFlag;
 	int i, j;
+	int assigningWasMadeFlag;
 	//char* solutionPtr = NULL;
 	do
 	{
+		assigningWasMadeFlag = 0;
 		//	going over the matrix from top-left side and start filling it with numbers if possible
 		for (i = 0; i < 9; i++)
 		{
 			for (j = 0; j < 9; j++)
 			{
-				assigningWasMadeFlag = 0;
 				if (soduko[i][j] != '.') {
 					continue;
 				}
@@ -131,16 +129,17 @@ void callSolver(char soduko[9][9])
 				}
 			}
 		}
-		if (solved = assigningWasMadeFlag && sodukoStatus(soduko))
+		sodukoStatusFlag = sodukoStatus(soduko);
+		if (solved = assigningWasMadeFlag && sodukoStatusFlag)
 			break;
 
 	} while (assigningWasMadeFlag);
 
-	getchar();
 	//	one step before returning to caller; here we will deter whether the soduko was solved or not;
 	switch (solved) {
 	case 0: {
 		printf("Sudoku puzzle is too hard for me to solve\n");
+		getchar();
 
 		//solutionPtr = "Sudoku puzzle is too hard for me to solve\n";
 		break;

@@ -106,7 +106,7 @@ void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferA
 
 
 //TODO: need to validate
-void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]):{
+void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]){
 	int i, j;
 
 	for ( i = 0 ; i < 9 ; i++){

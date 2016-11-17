@@ -35,7 +35,7 @@ int main()
 		{'3','1','4','5','2','9', '8', '6', '7'},
 		{'4' ,'2', '7' ,'8' ,'5', '6' , '3' ,'1', '9'},
 		{'5' ,'3', '8', '4', '9' ,'1' , '7', '1' ,'6'},
-		{'6' ,'9', '1' , '3', '7', '2 ', '4', '8' ,'5' },
+		{'6' ,'9', '1' , '3', '7', '2', '4', '8' ,'5' },
 
 	};
 
@@ -50,7 +50,6 @@ int main()
 void callChecker(char soduko[9][9])
 {
 	int i=0, j=0, k;
-	int subRow = 3 * i, subCol = 3 * j;
 	int solutionRowErrorCounter = 0;
 	int solutionColErrorCounter = 0;
 	int solutionSubGridErrorCounter = 0;	//indicated the number of error duplications in a particular template
@@ -70,26 +69,28 @@ void callChecker(char soduko[9][9])
 			for (j = 0; j < 9; j++) {
 				int flagArrayForPossibleErrors[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 				callCheckCol(soduko, flagArrayForPossibleErrors, j);
-				for (k = 0; k < 9; k++)
+				for (k = 0; k < 9; k++) {
 					solutionColErrorCounter += flagArrayForPossibleErrors[k];
+				}
 				if (solutionColErrorCounter != 0)
 					printColDuplications(soduko, solutionColErrorCounter, j);
 			}
 
 
 			//	going over the subGrids and check for errors
-			for (i = 0; subRow < 9; i++) {
-				for (j = 0; subCol < 9; j++) {
+			for (i = 0; i < 3; i++) {
+				for (j = 0; j < 3; j++) {
+					int subRow = 3 * i, subCol = 3 * j;
 					int flagArrayForPossibleErrors[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 					callCheckSubGrid(soduko, flagArrayForPossibleErrors, subRow, subCol);
 					for (k = 0; k < 9; k++) {
 						solutionSubGridErrorCounter += flagArrayForPossibleErrors[k];
+					}
 						if (solutionSubGridErrorCounter != 0)
 							printSubGridDuplications(soduko, solutionSubGridErrorCounter, subRow, subCol);
-					}
 				}
 			}
-		}
+}
 
 void callCheckRow(char soduko[9][9], int flagArrayForPossibleErrors[9], int row)
 {/*
@@ -130,11 +131,10 @@ void callCheckSubGrid(char soduko[9][9], int flagArrayForPossibleErrors[9], int 
  */
 	int rowSubgrid = (row / 3) * 3;
 	int colSubGrid = (col / 3) * 3;
-	int i=0, j=0;
-	for (i = rowSubgrid; i < rowSubgrid + 3; i++) {
-		for (j = colSubGrid; j < colSubGrid + 3; j++) {
-			if (soduko[i][j] != '.') {
-				flagArrayForPossibleErrors[(soduko[i][j] - 1) - '0'] = 0;
+	for (row = rowSubgrid; row < rowSubgrid + 3; row++) {
+		for (col = colSubGrid; col < colSubGrid + 3; col++) {
+			if (soduko[row][col] != '.') {
+				flagArrayForPossibleErrors[(soduko[row][col] - 1) - '0'] = 0;
 			}
 		}
 	}
@@ -166,7 +166,7 @@ void printColDuplications(char soduko[9][9], int numOfDuplications, int col) {
 		for (i = 0; i < 9; i++) {
 			for (j = i + 1; j < 9; j++) {
 				if (soduko[i][col] == soduko[j][col]) {
-					printf("Column error : digit %c appears at(%d, %d) and (%d, %d)\n", soduko[i][col], i + 1, col + 1, j + 1, col + 1);
+					printf("Column error : digit %c appears at(%d,%d) and (%d,%d)\n", soduko[i][col], i + 1, col + 1, j + 1, col + 1);
 					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
 				}
 			}
@@ -192,8 +192,10 @@ void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row,
 
 		for (i = 0; i < 9; i++) {
 			for (j = i + 1; j < 9; j++) {
-				if (subGridArray[i] == subGridArray[j])
-					printf("SubGrid error : digit %c appears at(%d, %d) and (%d, %d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
+				if (subGridArray[i] == subGridArray[j]) {
+					printf("SubGrid error : digit %c appears at(%d,%d) and (%d,%d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
+					getchar();
+				}
 				//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
 			}
 

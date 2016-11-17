@@ -3,7 +3,6 @@ Main.c:
 - The program recieves a soduko in a text file as an input
 - if runMode = 0: It will try to solve it and return the solution. else it will give an error
 - if runMode = 1: It will verify the given solution.
-
 Tomer Shahar 301359410, Lior Bialik 301535316
 */
 
@@ -47,8 +46,8 @@ int main(int argc, char *argv[]) {
 	else {
 		outputFileName = argv[3];
 	}
-	
-	inputFile = fopen( inputFileName, "r" );
+
+	inputFile = fopen(inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Input File openning failed!");
 		exit(1);
@@ -63,24 +62,24 @@ int main(int argc, char *argv[]) {
 	readFileDataIntoBufferArray(inputFile, inputBufferArrayPtr);
 	fclose(inputFile);
 	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
-	
-	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
+
+																	  // check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	switch (runMode) {
 	case 0: {
 		callSolver(outputFile, parsedSudokuMatrix);
 		break;
-		}
-	
+	}
+
 	case 1: {
 		//callChecker(outputFile, parsedSudokuMatrix);
 		break;
-		}
-	
+	}
+
 	default:
 		printf("invalid running mode"); // TODO: call invalid argument error and exit
 	}
 
-	
+
 	if (parsedSudokuMatrix[0][0] != '0') // if the first cell is '0', no solution could be found and there is no need to print the matrix
 		parseMatrixIntoOutputFile(outputFile, parsedSudokuMatrix);
 	fclose(outputFile);
@@ -96,12 +95,12 @@ void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
 	@ Param bufferArray: the buffer to which the data is written into.
 	@ Return: None
 	*/
-	
+
 	int i = 0;
 	char charFromInput;
 
-	while (( charFromInput = fgetc(fileToRead)) != EOF ) {
-		if ( ( charFromInput == '.' ) || isdigit(charFromInput) ){
+	while ((charFromInput = fgetc(fileToRead)) != EOF) {
+		if ((charFromInput == '.') || isdigit(charFromInput)) {
 			bufferArray[i] = charFromInput;
 			i++;
 		}
@@ -125,13 +124,13 @@ void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferA
 	{
 		for (j = 0; j < 9; j++)
 		{
-			parsedSudokuMatrix[i][j] = inputBufferArray[i * inputBufferArraySize/9 + j];
+			parsedSudokuMatrix[i][j] = inputBufferArray[i * inputBufferArraySize / 9 + j];
 		}
 	}
 }
 
 
-void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]){
+void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]) {
 	/*
 	@ Description: The function recieves a buffer array and converts it into a 2D matrix of chars.
 	@ Param parsedSudokuMatrix: the matrix to which the the characters are taken from.
@@ -140,19 +139,19 @@ void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][
 	*/
 	int i, j;
 
-	for ( i = 0 ; i < 9 ; i++){
-		for ( j = 0 ; j < 9 ; j++){
-			fputs(" ",fileToWriteInto);
-			fputc(parsedSudokuMatrix[i][j] ,fileToWriteInto);
-			if( (j == 2) || (j == 5) ){
-				fputs(" |" ,fileToWriteInto);
+	for (i = 0; i < 9; i++) {
+		for (j = 0; j < 9; j++) {
+			fputs(" ", fileToWriteInto);
+			fputc(parsedSudokuMatrix[i][j], fileToWriteInto);
+			if ((j == 2) || (j == 5)) {
+				fputs(" |", fileToWriteInto);
 			}
 		}
-		if( (i == 2) || (i == 5) ){
-			fputs("\n-------+-------+-------\n" ,fileToWriteInto);
+		if ((i == 2) || (i == 5)) {
+			fputs("\n-------+-------+-------\n", fileToWriteInto);
 		}
-		else{
-			fputs("\n" ,fileToWriteInto);
+		else {
+			fputs("\n", fileToWriteInto);
 		}
 	}
 }

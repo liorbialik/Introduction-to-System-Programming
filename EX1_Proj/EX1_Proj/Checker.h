@@ -1,4 +1,7 @@
-//This is the header file for main.c and includes function declarations of checker.c
+/*This is the header file for checker.c
+Tomer Shahar 301359410, Lior Bialik 301535316
+*/
+
 #ifndef __CHECKER_H
 #define __CHECKER_H
 

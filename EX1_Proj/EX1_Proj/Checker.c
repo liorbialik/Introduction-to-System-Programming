@@ -13,91 +13,42 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <stdio.h>
 #include <stdlib.h>
 #include "Checker.h"
-#include "Solver.h"
+
+// functions decelerations:
+void callCheckRow(char soduko[9][9], int flagArrayForPossibleErrors[9], int row);
+void callCheckCol(char soduko[9][9], int flagArrayForPossibleErrors[9], int col);
+void callCheckSubGrid(char soduko[9][9], int flagArrayForPossibleErrors[9], int row, int col);
+void printRowDuplications(char soduko[9][9], int numOfDuplications, int row);
+void printColDuplications(char soduko[9][9], int numOfDuplications, int col);
+void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col);
+void callChecker(char soduko[9][9]);
 
 
-void printRowDuplications(char soduko[9][9], int numOfDuplications, int row) 
-{/*
-	This function ellaborates row errors that were indicated at the given Soduko;
-	It gets as a parameter the soduko matrix and rowDuplicationArray which points on the revealed errors;
-	and prints the error messages
- */
-	int i, j, counter = 0;
-	char *errorMessage = NULL;
+int main()
+{
+	char soduko[9][9] = {
+		{ '2','7','3','9','1','5','6','4','8' },
+		{'9','4','6','2','8','3','5','7','1' },
+		{'1', '8', '5', '6', '4', '7', '9', '3', '2'},
+		{	'7', '6', '9', '1', '3', '8', '2', '5', '4'},
+		{'8','5','2','7','6','4','1','9','3'},
+		{'3','1','4','5','2','9', '8', '6', '7'},
+		{'4' ,'2', '7' ,'8' ,'5', '6' , '3' ,'1', '9'},
+		{'5' ,'3', '8', '4', '9' ,'1' , '7', '1' ,'6'},
+		{'6' ,'9', '1' , '3', '7', '2 ', '4', '8' ,'5' },
 
-	do {
-		for (i = 0; i < 9; i++) {
-			for (j = i + 1; j < 9; j++) {
-				if (soduko[row][i] == soduko[row][j]) {
-					printf("Line error : digit %c appears at(%d, %d) and (%d, %d)\n", soduko[row][i], row + 1, i + 1, row + 1, j + 1);
-					getchar();
-					counter++;
-					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
-				}
-			}
-		}
-	} while (counter < numOfDuplications);
-}
+	};
 
+	callChecker(soduko);
 
-//This function ellaborates col errors that were indicated at the given Soduko;
-//It gets as a parameter the soduko matrix and colDuplicationArray which points on the revealed errors;
-// and prints the error messages
-void printColDuplications(char soduko[9][9], int numOfDuplications, int col) {
-	int i, j, counter = 0;
-	char *errorMessage = NULL;
-
-	do {
-		for (i = 0; i < 9; i++) {
-			for (j = i + 1; j < 9; j++) {
-				if (soduko[i][col] == soduko[j][col]) {
-					printf("Column error : digit %c appears at(%d, %d) and (%d, %d)\n", soduko[i][col], i + 1, col, j + 1, col);
-					counter++;
-					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
-				}
-			}
-		}
-	} while (counter < numOfDuplications);
-}
-
-
-//This function ellaborates subGrid errors that were indicated at the given Soduko;
-//It gets as a parameter the soduko matrix and subGridDuplicationMatrix which points on the revealed errors;
-// and prints the error messages
-void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col) {
-	int i, j, k = 0, counter = 0;
-	char *errorMessage = NULL;
-	char subGridArray[9] = { '0' };
-	int rowIndexArray[9] = { row,row,row,row + 1,row + 1,row + 1,row + 2,row + 2,row + 2 };
-	int colIndexArray[9] = { col,col+1,col+2,col,col + 1,col + 2,col,col + 1,col + 2 };
-
-	do {
-		//Convert subGrid to subGridArray
-		for (i = row; i < row + 3; i++) {
-			for (j = col; j < col + 3; j++) {
-				subGridArray[k] = soduko[i][j];
-				k++;
-			}
-		}
-
-		for (i = 0; i < 9; i++) {
-			for (j = i + 1; j < 9; j++) {
-				if (subGridArray[i] == subGridArray[j])
-					printf("SubGrid error : digit %c appears at(%d, %d) and (%d, %d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
-				//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
-			}
-		
-		}
-	} while (counter < numOfDuplications);
+	return 0;
 }
 
 
 //Checker
 
-void callChecker(FILE *fileToWriteInto, char soduko[9][9])
+void callChecker(char soduko[9][9])
 {
-	printf("tt");
-	getchar();
 	int i=0, j=0, k;
 	int subRow = 3 * i, subCol = 3 * j;
 	int solutionRowErrorCounter = 0;
@@ -108,8 +59,9 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 			for (i = 0; i < 9; i++) {
 				int flagArrayForPossibleErrors[9] = {1, 1, 1, 1, 1, 1, 1, 1, 1};
 				callCheckRow(soduko, flagArrayForPossibleErrors, i);
-				for (k = 0; k < 9; k++)
+				for (k = 0; k < 9; k++) {
 					solutionRowErrorCounter += flagArrayForPossibleErrors[k];
+				}
 				if (solutionRowErrorCounter != 0)
 					printRowDuplications(soduko, solutionRowErrorCounter, i);
 			}
@@ -139,3 +91,111 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 			}
 		}
 
+void callCheckRow(char soduko[9][9], int flagArrayForPossibleErrors[9], int row)
+{/*
+ @ Description: This function checks feasability of a value for the correspond row by passing on the relevant row values and modify a flag array accordingly
+ @ Param soduko: The matrix containing the numbers and missing cells.
+ @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
+ @ Return: None
+ */
+	int j;
+	for (j = 0; j < 9; j++) {
+		if (soduko[row][j] != '.') {
+			flagArrayForPossibleErrors[(soduko[row][j] - 1) - '0'] = 0;
+		}
+	}
+}
+
+void callCheckCol(char soduko[9][9], int flagArrayForPossibleErrors[9], int col)
+{/*
+ @ Description: This function checks feasability of a value for the correspond column by passing on the relevant row values and modify a flag array accordingly
+ @ Param soduko: The matrix containing the numbers and missing cells.
+ @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
+ @ Return: None
+ */
+	int i;
+	for (i = 0; i < 9; i++) {
+		if (soduko[i][col] != '.') {
+			flagArrayForPossibleErrors[(soduko[i][col] - 1) - '0'] = 0;
+		}
+	}
+}
+
+void callCheckSubGrid(char soduko[9][9], int flagArrayForPossibleErrors[9], int row, int col)
+{/*
+ @ Description: This function checks feasability of a value for the correspond sub-grid by passing on the relevant row values and modify a flag array accordingly
+ @ Param soduko: The matrix containing the numbers and missing cells.
+ @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
+ @ Return: None
+ */
+	int rowSubgrid = (row / 3) * 3;
+	int colSubGrid = (col / 3) * 3;
+	int i=0, j=0;
+	for (i = rowSubgrid; i < rowSubgrid + 3; i++) {
+		for (j = colSubGrid; j < colSubGrid + 3; j++) {
+			if (soduko[i][j] != '.') {
+				flagArrayForPossibleErrors[(soduko[i][j] - 1) - '0'] = 0;
+			}
+		}
+	}
+}
+
+void printRowDuplications(char soduko[9][9], int numOfDuplications, int row)
+{/*
+ This function ellaborates row errors that were indicated at the given Soduko;
+ It gets as a parameter the soduko matrix and rowDuplicationArray which points on the revealed errors;
+ and prints the error messages
+ */
+	int i, j;
+		for (i = 0; i < 9; i++) {
+			for (j = i + 1; j < 9; j++) {
+				if (soduko[row][i] == soduko[row][j]) {
+					printf("Line error : digit %c appears at(%d,%d) and (%d,%d)\n", soduko[row][i], row + 1, i + 1, row + 1, j + 1);
+					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
+				}
+			}
+		}
+}
+
+
+//This function ellaborates col errors that were indicated at the given Soduko;
+//It gets as a parameter the soduko matrix and colDuplicationArray which points on the revealed errors;
+// and prints the error messages
+void printColDuplications(char soduko[9][9], int numOfDuplications, int col) {
+	int i, j;
+		for (i = 0; i < 9; i++) {
+			for (j = i + 1; j < 9; j++) {
+				if (soduko[i][col] == soduko[j][col]) {
+					printf("Column error : digit %c appears at(%d, %d) and (%d, %d)\n", soduko[i][col], i + 1, col + 1, j + 1, col + 1);
+					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
+				}
+			}
+		}
+}
+
+
+//This function ellaborates subGrid errors that were indicated at the given Soduko;
+//It gets as a parameter the soduko matrix and subGridDuplicationMatrix which points on the revealed errors;
+// and prints the error messages
+void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col) {
+	int i, j, k;
+	char subGridArray[9] = { '0' };
+	int rowIndexArray[9] = { row,row,row,row + 1,row + 1,row + 1,row + 2,row + 2,row + 2 };
+	int colIndexArray[9] = { col,col + 1,col + 2,col,col + 1,col + 2,col,col + 1,col + 2 };
+
+		//Convert subGrid to subGridArray
+		for (i = row, k=0; i < row + 3; i++, k++) {
+			for (j = col; j < col + 3; j++) {
+				subGridArray[k] = soduko[i][j];
+			}
+		}
+
+		for (i = 0; i < 9; i++) {
+			for (j = i + 1; j < 9; j++) {
+				if (subGridArray[i] == subGridArray[j])
+					printf("SubGrid error : digit %c appears at(%d, %d) and (%d, %d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
+				//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
+			}
+
+		}
+}

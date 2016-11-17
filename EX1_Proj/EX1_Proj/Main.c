@@ -1,3 +1,12 @@
+/*
+Main.c:
+- The program recieves a soduko in a text file as an input
+- if runMode = 0: It will try to solve it and return the solution. else it will give an error
+- if runMode = 1: It will verify the given solution.
+
+Tomer Shahar 301359410, Lior Bialik 301535316
+*/
+
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,6 +87,13 @@ int main(int argc, char *argv[]) {
 }
 
 void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
+	/*
+	@ Description: The function recieves a file to read data from and converts it's data into a buffer array of chars.
+	@ Param fileToRead: the file from which the data will be extracted.
+	@ Param bufferArray: the buffer to which the data is written into.
+	@ Return: None
+	*/
+	
 	int i = 0;
 	char charFromInput;
 
@@ -93,6 +109,12 @@ void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
 }
 
 void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray) {
+	/*
+	@ Description: The function recieves a buffer array and converts it into a 2D matrix of chars.
+	@ Param parsedSudokuMatrix: the matrix to which the the characters are written into.
+	@ Param inputBufferArray: the buffer from which the data is extracted from.
+	@ Return: None
+	*/
 	int i, j, inputBufferArraySize = 81;
 
 	for (i = 0; i < 9; i++)
@@ -107,18 +129,24 @@ void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferA
 
 //TODO: need to validate
 void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]){
+	/*
+	@ Description: The function recieves a buffer array and converts it into a 2D matrix of chars.
+	@ Param parsedSudokuMatrix: the matrix to which the the characters are taken from.
+	@ Param fileToWriteInto: the file to which the data will be written into.
+	@ Return: None
+	*/
 	int i, j;
 
 	for ( i = 0 ; i < 9 ; i++){
 		for ( j = 0 ; j < 9 ; j++){
-			fputc(" " ,fileToWriteInto);
+			fputc(" ",fileToWriteInto);
 			fputc(parsedSudokuMatrix[i][j] ,fileToWriteInto);
 			if( (j == 3) || (j == 6) ){
 				fputc(" |" ,fileToWriteInto);
 			}
 		}
 		if( (i+1)%3 == 0){
-			fputc("-------+-------+-------\n" ,fileToWriteInto);
+			fputs("-------+-------+-------\n" ,fileToWriteInto);
 		}
 		else{
 			fputc("\n" ,fileToWriteInto);

@@ -54,6 +54,12 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	outputFile = fopen(outputFileName, "w");
+	if (outputFile == NULL) {
+		printf("Input File openning failed!");
+		exit(1);
+	}
+
 	readFileDataIntoBufferArray(inputFile, inputBufferArrayPtr);
 	fclose(inputFile);
 	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
@@ -61,12 +67,12 @@ int main(int argc, char *argv[]) {
 	// check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	switch (runMode) {
 	case 0: {
-		callSolver(parsedSudokuMatrix);
+		callSolver(outputFile, parsedSudokuMatrix);
 		break;
 		}
 	
 	case 1: {
-		//callChecker(parsedSudokuMatrix);
+		//callChecker(outputFile, parsedSudokuMatrix);
 		break;
 		}
 	
@@ -74,14 +80,10 @@ int main(int argc, char *argv[]) {
 		printf("invalid running mode"); // TODO: call invalid argument error and exit
 	}
 
-	outputFile = fopen( outputFileName, "w" );
-	if (outputFile == NULL) {
-		printf("Input File openning failed!");
-		exit(1);
-	}
-	parseMatrixIntoOutputFile(outputFile,parsedSudokuMatrix);
+	
+	if (parsedSudokuMatrix[0][0] != '0') // if the first cell is '0', no solution could be found and there is no need to print the matrix
+		parseMatrixIntoOutputFile(outputFile, parsedSudokuMatrix);
 	fclose(outputFile);
-	//writeDataToOutputFile(parsedSudokuMatrix, outputFileName);
 	free(outputFileName);
 	return(0);
 }
@@ -129,7 +131,6 @@ void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferA
 }
 
 
-//TODO: need to validate
 void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]){
 	/*
 	@ Description: The function recieves a buffer array and converts it into a 2D matrix of chars.

@@ -86,7 +86,7 @@ void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row,
 //Checker
 // for every cel
 
-char* callChecker(char soduko){
+char* callChecker(FILE *fileToWriteInto, char soduko){
 	int i, j; 
 	int subRow = 3 * i, subCol = 3 * j;
 		int solutionErrorFlag = 0; //indicated the number of error duplications in a particular template

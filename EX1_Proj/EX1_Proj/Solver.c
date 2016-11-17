@@ -22,7 +22,7 @@ int sodukoStatus(char soduko[9][9]);
 
 
 // TODO: need to add to solver a parameter for outputFileInstance
-void callSolver(char soduko[9][9])
+void callSolver(FILE *fileToWriteInto, char soduko[9][9])
 {/*
 	@ Description: recieves a 2D matrix soduko and solves it if possible. if possible return the solved matrix, otherwise it will output an appropriate impossible message.
 	@ Param soduko: The matrix containing the numbers and missing cells.
@@ -66,24 +66,14 @@ void callSolver(char soduko[9][9])
 	//	one step before returning to caller; here we will deter whether the soduko was solved or not;
 	switch (solved) {
 	case 0: {
-		printf("Sudoku puzzle is too hard for me to solve\n");
-		getchar();
-
-		//solutionPtr = "Sudoku puzzle is too hard for me to solve\n";
-		break;
-	}
+		fputs("Sudoku puzzle is too hard for me to solve\n", fileToWriteInto);
+		soduko[0][0] = '0'; // this will be used in the main module for checking
+		return;
+		}
 
 	case 1: {
-		for (i = 0; i < 9; i++) {
-			for (j = 0; j < 9; j++) {
-				printf("%c ", soduko[i][j]);
-			}
-			printf("\n");
+		return;
 		}
-		//solutionPtr = soduko[9][9];
-		getchar();
-		break;
-	}
 	}
 }
 

@@ -2,6 +2,6 @@
 #ifndef __CHECKER_H
 #define __CHECKER_H
 
-void callChecker(char soduko[9][9]);
+void callChecker(FILE *fileToWriteInto, char soduko[9][9]);
 
 #endif

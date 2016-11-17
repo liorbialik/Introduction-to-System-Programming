@@ -5,7 +5,7 @@ Solver.c:
 - If a cell has a single possible number that fits, this number becomes the cell's new value. 
 - During a run on the whole matrix, if one cell chenged its value, te matrix will be reviewed again in search for another cell to solve.
 - If no cell has been changed during a run, the solution could not be reached by the algorithm and the appropriate message is written.
-
+- if all cells are solved, it will return the solution.
 Tomer Shahar 301359410, Lior Bialik 301535316
 */
 

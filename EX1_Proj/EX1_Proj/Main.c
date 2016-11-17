@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 		}
 	
 	case 1: {
-		callChecker(parsedSudokuMatrix);
+		//callChecker(parsedSudokuMatrix);
 		break;
 		}
 	
@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 	free(outputFileName);
 	return(0);
 }
+
 
 void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
 	/*
@@ -107,6 +108,7 @@ void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]) {
 		}
 	}
 }
+
 
 void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray) {
 	/*
@@ -139,20 +141,21 @@ void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][
 
 	for ( i = 0 ; i < 9 ; i++){
 		for ( j = 0 ; j < 9 ; j++){
-			fputc(" ",fileToWriteInto);
+			fputs(" ",fileToWriteInto);
 			fputc(parsedSudokuMatrix[i][j] ,fileToWriteInto);
-			if( (j == 3) || (j == 6) ){
-				fputc(" |" ,fileToWriteInto);
+			if( (j == 2) || (j == 5) ){
+				fputs(" |" ,fileToWriteInto);
 			}
 		}
-		if( (i+1)%3 == 0){
-			fputs("-------+-------+-------\n" ,fileToWriteInto);
+		if( (i == 2) || (i == 5) ){
+			fputs("\n-------+-------+-------\n" ,fileToWriteInto);
 		}
 		else{
-			fputc("\n" ,fileToWriteInto);
+			fputs("\n" ,fileToWriteInto);
 		}
 	}
 }
+
 
 //void writeDataToOutputFile(char *outputData, char *outputFileName) {
 //	FILE *outputFile;

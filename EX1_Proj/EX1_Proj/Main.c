@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	case 1: {
-		//callChecker(outputFile, parsedSudokuMatrix);
+		callChecker(outputFile, parsedSudokuMatrix);
 		break;
 	}
 

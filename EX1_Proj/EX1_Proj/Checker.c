@@ -11,18 +11,15 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <stdio.h>
 #include <stdlib.h>
 #include "Checker.h"
+#include "Common.h"
 
 // functions declerations:
-void callCheckRow(char soduko[9][9], int flagArrayForPossibleErrors[9], int row);
-void callCheckCol(char soduko[9][9], int flagArrayForPossibleErrors[9], int col);
-void callCheckSubGrid(char soduko[9][9], int flagArrayForPossibleErrors[9], int row, int col);
 void printRowDuplications(char soduko[9][9], int numOfDuplications, int row);
 void printColDuplications(char soduko[9][9], int numOfDuplications, int col);
 void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col);
-void callChecker(char soduko[9][9]);
 
 
-int main()
+/*int main()
 {
 	char soduko[9][9] = {
 		{'3','7','5','9','6','1','8','2','4'},
@@ -41,8 +38,9 @@ int main()
 
 	return 0;
 }
+*/
 
-void callChecker(char soduko[9][9])
+void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 {/*
 	@ Description: recieves a 2D matrix soduko and validate its correctness. if valid output "No error message", ow will ellaborate the errors.
 	@ Param soduko: The matrix containing the numbers.
@@ -112,61 +110,13 @@ void callChecker(char soduko[9][9])
 	}
 
 	if (!errorMessageWasPrintedFlag) {		//if errorMessageWasPrintedFlag equals zero, it means no errors were detected by now
-		printf("No errors found in given Sudoku puzzle.");
-		/*fputs("No errors found in given Sudoku puzzle.", fileToWriteInto);
+		//printf("No errors found in given Sudoku puzzle.");
+		fputs("No errors found in given Sudoku puzzle.", fileToWriteInto);
 		soduko[0][0] = '0'; // this will be used in the main module for checking
-		return;*/
-	}
-	getchar();
-}
-
-void callCheckRow(char soduko[9][9], int flagArrayForPossibleErrors[9], int row)
-{/*
- @ Description: This function checks feasability of a value for the correspond row by passing on the relevant row values and modify a flag array accordingly
- @ Param soduko: The matrix containing the numbers.
- @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
- @ Return: None
- */
-	int j;
-	for (j = 0; j < 9; j++) {
-		if (soduko[row][j] != '.') {
-			flagArrayForPossibleErrors[(soduko[row][j] - 1) - '0'] = 0;
-		}
+		return;
 	}
 }
 
-void callCheckCol(char soduko[9][9], int flagArrayForPossibleErrors[9], int col)
-{/*
- @ Description: This function checks feasability of a value for the correspond column by passing on the relevant row values and modify a flag array accordingly
- @ Param soduko: The matrix containing the numbers.
- @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
- @ Return: None
- */
-	int i;
-	for (i = 0; i < 9; i++) {
-		if (soduko[i][col] != '.') {
-			flagArrayForPossibleErrors[(soduko[i][col] - 1) - '0'] = 0;
-		}
-	}
-}
-
-void callCheckSubGrid(char soduko[9][9], int flagArrayForPossibleErrors[9], int row, int col)
-{/*
- @ Description: This function checks feasability of a value for the correspond sub-grid by passing on the relevant row values and modify a flag array accordingly
- @ Param soduko: The matrix containing the numbers.
- @ Param flagArrayForPossibleValues: array that each index corresponds to a possible value for the given cell
- @ Return: None
- */
-	int rowSubgrid = (row / 3) * 3;
-	int colSubGrid = (col / 3) * 3;
-	for (row = rowSubgrid; row < rowSubgrid + 3; row++) {
-		for (col = colSubGrid; col < colSubGrid + 3; col++) {
-			if (soduko[row][col] != '.') {
-				flagArrayForPossibleErrors[(soduko[row][col] - 1) - '0'] = 0;
-			}
-		}
-	}
-}
 
 void printRowDuplications(char soduko[9][9], int numOfDuplications, int row)
 {/*

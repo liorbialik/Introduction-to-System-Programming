@@ -79,8 +79,7 @@ int main(int argc, char *argv[]) {
 		printf("invalid running mode"); // TODO: call invalid argument error and exit
 	}
 
-
-	if (parsedSudokuMatrix[0][0] != '0' && !runMode) // if the first cell is '0', no solution could be found and there is no need to print the matrix
+	if (parsedSudokuMatrix[0][0] != '0') // if the first cell is '0', no solution could be found or we're in 'Checker-Mode' so there is no need to print the matrix
 		parseMatrixIntoOutputFile(outputFile, parsedSudokuMatrix);
 	fclose(outputFile);
 	free(outputFileName);

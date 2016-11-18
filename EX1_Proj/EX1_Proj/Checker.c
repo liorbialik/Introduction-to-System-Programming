@@ -1,7 +1,7 @@
 /*
 Checker.c:
 - The program recieves a solved soduko char matrix as an input
-- For each group in the matrix (rows, columns and subGrids), the algorithm checks whether there is only one assignment value.
+- For each group in the matrix (rows, columns and subGrids), the algorithm checks whether the solution is valid.
 - If the whole soduko is valid, the program will return "No errors found" message.
 - Otherwise, the program will detect row, col and subGrid errors respectively, and will output an appropriate message ellaborating the duplicated value and its duplicated locations.
 - In both cases, the output will be written to the solution file txt.
@@ -81,8 +81,10 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 
 	if (!errorMessageWasPrintedFlag) {		//if errorMessageWasPrintedFlag equals zero, it means no errors were detected by now
 		fputs("No errors found in given Sudoku puzzle.", fileToWriteInto);
-		soduko[0][0] = '0'; // this will be used in the main module for checking
 	}
+
+	soduko[0][0] = '0'; // this will be used in the main module for disabling the printing of the matrix
+	return;
 }
 
 

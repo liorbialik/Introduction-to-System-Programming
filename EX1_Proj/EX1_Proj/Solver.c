@@ -2,7 +2,7 @@
 Solver.c:
 - The program recieves a soduko char matrix as an input
 - For each cell in the matrix, the possible numbers are checked by row, column and sub-grid.
-- If a cell has a single possible number that fits, this number becomes the cell's new value. 
+- If a cell has a single possible number that fits, this number becomes the cell's new value.
 - During a run on the whole matrix, if there was a value assignment, the matrix will be reviewed again in search for another cell to solve.
 - If no cell has been changed during a run, the solution could not be reached by the algorithm and the appropriate message is written.
 - if all cells are solved, it will return the solution.
@@ -21,16 +21,16 @@ int sodukoStatus(char soduko[9][9]);
 
 void callSolver(FILE *fileToWriteInto, char soduko[9][9])
 {/*
-	@ Description: recieves a 2D matrix soduko and solves it if possible. if possible return the solved matrix, otherwise it will output an appropriate impossible message.
-	@ Param soduko: The matrix containing the numbers and missing cells.
-	@ Return: None
-	*/
+ @ Description: recieves a 2D matrix soduko and solves it if possible. if possible return the solved matrix, otherwise it will output an appropriate impossible message.
+ @ Param soduko: The matrix containing the numbers and missing cells.
+ @ Return: None
+ */
 	int solved = 0, sodukoStatusFlag = 0;
 	char cellValue = '0';
 	int i, j;
 	int assigningWasMadeFlag;
 	//char* solutionPtr = NULL;
-	do{
+	do {
 		assigningWasMadeFlag = 0;
 		//	going over the matrix from top-left side and start filling it with numbers if possible
 		for (i = 0; i < 9; i++) {
@@ -59,17 +59,18 @@ void callSolver(FILE *fileToWriteInto, char soduko[9][9])
 
 	//	one step before returning to caller; here we will deter whether the soduko was solved or not;
 	switch (solved) {
-		case 0: {
-			fputs("Sudoku puzzle is too hard for me to solve\n", fileToWriteInto);
-			soduko[0][0] = '0'; // this will be used in the main module for checking
-			return;
-		}
+	case 0: {
+		fputs("Sudoku puzzle is too hard for me to solve\n", fileToWriteInto);
+		soduko[0][0] = '0'; // this will be used in the main module for checking
+		return;
+	}
 
-		case 1: {
-			return;
-		}
+	case 1: {
+		return;
+	}
 	}
 }
+
 
 char checkPossibleNumForCell(char soduko[9][9], int row, int col)
 {/*

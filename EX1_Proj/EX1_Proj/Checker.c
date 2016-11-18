@@ -14,31 +14,10 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include "Common.h"
 
 // functions declerations:
-void printRowDuplications(char soduko[9][9], int numOfDuplications, int row);
-void printColDuplications(char soduko[9][9], int numOfDuplications, int col);
-void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col);
+void printRowDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int row);
+void printColDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int col);
+void printSubGridDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int row, int col);
 
-
-/*int main()
-{
-	char soduko[9][9] = {
-		{'3','7','5','9','6','1','8','2','4'},
-		{'4','6','2','5','3','8','1','9','7'},
-		{'8','9','1','7','2','4','3','6','5'},
-		{'1','3','6','2','1','9','7','4','8'},
-		{'2','8','9','3','4','7','5','1','6'},
-		{'7','5','4','8','1','6','2','3','9'},
-		{'6','4','7','1','8','3','9','5','2'},
-		{'9','2','3','4','7','5','6','8','1'},
-		{'5','1','8','6','9','2','4','7','3'},
-
-	};
-
-	callChecker(soduko);
-
-	return 0;
-}
-*/
 
 void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 {/*
@@ -60,13 +39,10 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 		}
 		if (solutionRowErrorCounter != 0) {
 			if (!errorMessageWasPrintedFlag) {
-				printf("Found errors in given Sudoku puzzle.\nThe errors are:\n");
-				/*fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
-				soduko[0][0] = '0'; // this will be used in the main module for checking
-				return;*/
+				fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
 				errorMessageWasPrintedFlag = 1;
 			}
-			printRowDuplications(soduko, solutionRowErrorCounter, i);	
+			printRowDuplications(soduko, fileToWriteInto, solutionRowErrorCounter, i);
 		}
 	}
 
@@ -78,13 +54,10 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 		}
 		if (solutionColErrorCounter != 0) {
 			if (!errorMessageWasPrintedFlag) {
-				printf("Found errors in given Sudoku puzzle.\nThe errors are:");
-				/*fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
-				soduko[0][0] = '0'; // this will be used in the main module for checking
-				return;*/
+				fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
 				errorMessageWasPrintedFlag = 1;
 			}
-			printColDuplications(soduko, solutionColErrorCounter, j);
+			printColDuplications(soduko, fileToWriteInto, solutionColErrorCounter, j);
 		}
 	}
 
@@ -98,27 +71,22 @@ void callChecker(FILE *fileToWriteInto, char soduko[9][9])
 			}
 			if (solutionSubGridErrorCounter != 0) {
 				if (!errorMessageWasPrintedFlag) {
-					printf("Found errors in given Sudoku puzzle.\nThe errors are:");
-					/*fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
-					soduko[0][0] = '0'; // this will be used in the main module for checking
-					return;*/
+					fputs("Found errors in given Sudoku puzzle.\nThe errors are:\n", fileToWriteInto);
 					errorMessageWasPrintedFlag = 1;
 				}
-			printSubGridDuplications(soduko, solutionSubGridErrorCounter, subRow, subCol);
+			printSubGridDuplications(soduko, fileToWriteInto, solutionSubGridErrorCounter, subRow, subCol);
 			}
 		}
 	}
 
 	if (!errorMessageWasPrintedFlag) {		//if errorMessageWasPrintedFlag equals zero, it means no errors were detected by now
-		//printf("No errors found in given Sudoku puzzle.");
 		fputs("No errors found in given Sudoku puzzle.", fileToWriteInto);
 		soduko[0][0] = '0'; // this will be used in the main module for checking
-		return;
 	}
 }
 
 
-void printRowDuplications(char soduko[9][9], int numOfDuplications, int row)
+void printRowDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int row)
 {/*
  @ Description: This function ellaborates row errors that were indicated at the given Soduko;
  @ Param soduko: The matrix and number of duplication that were indicated
@@ -128,14 +96,14 @@ void printRowDuplications(char soduko[9][9], int numOfDuplications, int row)
 		for (i = 0; i < 9; i++) {
 			for (j = i + 1; j < 9; j++) {
 				if (soduko[row][i] == soduko[row][j]) {
-					printf("Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row + 1, i + 1, row + 1, j + 1);
-					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
+					fprintf(fileToWriteInto, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row + 1, i + 1, row + 1, j + 1);
 				}
 			}
 		}
 }
 
-void printColDuplications(char soduko[9][9], int numOfDuplications, int col) 
+
+void printColDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int col)
 {/*
  @ Description: This function ellaborates col errors that were indicated at the given Soduko;
  @ Param soduko: The matrix and number of duplication that were indicated
@@ -145,14 +113,14 @@ void printColDuplications(char soduko[9][9], int numOfDuplications, int col)
 		for (i = 0; i < 9; i++) {
 			for (j = i + 1; j < 9; j++) {
 				if (soduko[i][col] == soduko[j][col]) {
-					printf("Column error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[i][col], i + 1, col + 1, j + 1, col + 1);
-					//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
+					fprintf(fileToWriteInto, "Column error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[i][col], i + 1, col + 1, j + 1, col + 1);
 				}
 			}
 		}
 }
 
-void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row, int col) 
+
+void printSubGridDuplications(char soduko[9][9], FILE *fileToWriteInto, int numOfDuplications, int row, int col)
 {/*
  @ Description: This function ellaborates subGrid errors that were indicated at the given Soduko;
  @ Param soduko: The matrix, number of duplication that were indicated and the particular subGrid containing the errors
@@ -174,9 +142,8 @@ void printSubGridDuplications(char soduko[9][9], int numOfDuplications, int row,
 		for (i = 0; i < 9; i++) {
 			for (j = i + 1; j < 9; j++) {
 				if (subGridArray[i] == subGridArray[j]) {
-					printf("SubGrid error: digit %c appears at (%d,%d) and (%d,%d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
+					fprintf(fileToWriteInto, "SubGrid error: digit %c appears at (%d,%d) and (%d,%d)\n", subGridArray[i], rowIndexArray[i] + 1, colIndexArray[i] + 1, rowIndexArray[j] + 1, colIndexArray[j] + 1);
 				}
-				//asprintf(&errorMessage, "Line error: digit %c appears at (%d,%d) and (%d,%d)\n", soduko[row][i], row+1, i+1, row+1, j+1);
 			}
 
 		}

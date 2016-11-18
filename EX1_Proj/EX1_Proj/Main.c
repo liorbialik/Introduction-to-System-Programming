@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
 	readFileDataIntoBufferArray(inputFile, inputBufferArrayPtr);
 	fclose(inputFile);
-	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to manegable format (9X9 matrix)
+	parseInputBufferIntoMatrix(parsedSudokuMatrix, inputBufferArray); // parse file to managable format (9X9 matrix)
 
 																	  // check running mode (argv[0]) and call the relevant function (0=>solver, 1=>checker)
 	switch (runMode) {
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 	}
 
 
-	if (parsedSudokuMatrix[0][0] != '0') // if the first cell is '0', no solution could be found and there is no need to print the matrix
+	if (parsedSudokuMatrix[0][0] != '0' && !runMode) // if the first cell is '0', no solution could be found and there is no need to print the matrix
 		parseMatrixIntoOutputFile(outputFile, parsedSudokuMatrix);
 	fclose(outputFile);
 	free(outputFileName);

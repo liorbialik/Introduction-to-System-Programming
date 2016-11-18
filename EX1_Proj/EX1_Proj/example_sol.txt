@@ -1,0 +1,8 @@
+Found errors in given Sudoku puzzle.
+The errors are:
+Line error: digit 7 appears at (6,7) and (6,9)
+Line error: digit 1 appears at (8,6) and (8,8)
+Column error: digit 7 appears at (6,7) and (8,7)
+Column error: digit 1 appears at (7,8) and (8,8)
+SubGrid error: digit 7 appears at (6,7) and (6,9)
+SubGrid error: digit 1 appears at (7,8) and (8,8)

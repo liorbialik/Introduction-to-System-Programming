@@ -13,7 +13,7 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <stdlib.h>
 #include "Solver.h"
 
-// functions decelerations:
+// functions declerations:
 char checkPossibleNumForCell(char soduko[9][9], int row, int col);
 void callCheckRow(char soduko[9][9], int flagArrayForPossibleValues[9], int row);
 void callCheckCol(char soduko[9][9], int flagArrayForPossibleValues[9], int col);

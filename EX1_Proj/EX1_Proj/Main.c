@@ -18,7 +18,6 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 void readFileDataIntoBufferArray(FILE *fileToRead, char bufferArray[]);
 void parseInputBufferIntoMatrix(char parsedSudokuMatrix[][9], char *inputBufferArray);
 void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][9]);
-//void writeDataToOutputFile(char *outputData, char *outputFileName);
 
 
 int main(int argc, char *argv[]) {
@@ -82,7 +81,8 @@ int main(int argc, char *argv[]) {
 	if (parsedSudokuMatrix[0][0] != '0') // if the first cell is '0', no solution could be found or we're in 'Checker-Mode' so there is no need to print the matrix
 		parseMatrixIntoOutputFile(outputFile, parsedSudokuMatrix);
 	fclose(outputFile);
-	free(outputFileName);
+	if (argc < 4)
+		free(outputFileName);
 	return(0);
 }
 
@@ -156,17 +156,3 @@ void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][
 		}
 	}
 }
-
-
-//void writeDataToOutputFile(char *outputData, char *outputFileName) {
-//	FILE *outputFile;
-//	char *openFileErrorStr[27] = "Output File creation failed!";
-//
-//	outputFile = fopen_s(outputFileName, "w+");
-//	if (outputFile == NULL) {
-//		printErrorAndExitProgram(errorNumber, openFileErrorStr);
-//	}
-//	fputs(outputData, outputFile);
-//	fclose(outputFile);
-//}
-// TODO: need to make an external module for error pronting: printErrorToFile(char *errorPtr, FILE *outputFile)

@@ -1,6 +1,6 @@
 /*
 Common.c:
-- Holds the logic behind the communal function to solver and checker
+- Functions that are used by both solver and checker are here
 Tomer Shahar 301359410, Lior Bialik 301535316
 */
 

@@ -15,11 +15,26 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Solver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Checker.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Solver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Checker.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -151,7 +151,9 @@ void parseMatrixIntoOutputFile(FILE *fileToWriteInto, char parsedSudokuMatrix[][
 			fputs("\n-------+-------+-------\n", fileToWriteInto);
 		}
 		else {
-			fputs("\n", fileToWriteInto);
+			if (i < 8){
+				fputs("\n", fileToWriteInto);
+			}
 		}
 	}
 }

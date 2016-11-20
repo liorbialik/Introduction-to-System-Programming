@@ -1,0 +1,12 @@
+- each function will begin like the following:
+
+<FUNCTION NAME>(<VARIABLES>){
+/*
+	@ Description: <general function description>
+	@ Param <PARAMETER1>: <parameter description>
+	@ Param <PARAMETER2>: <parameter description>
+	@ Return: <what is the return value>
+	*/
+ <IMPLEMENTATION>
+ }
+ 

@@ -19,13 +19,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Checker.c" />
+    <ClCompile Include="Common.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="Solver.c" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="example.txt" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="Checker.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="Solver.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

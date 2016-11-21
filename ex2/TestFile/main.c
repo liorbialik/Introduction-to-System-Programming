@@ -13,7 +13,7 @@ char *getFileName(char *path);
 char *getFileExtention(char *filename);
 char *getOutputFileName(char *fileName, char *outputFileNameEnding);
 BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
-void writeTestResultsToFile(char *outputLogFileName, char *fileName, char *fileExtention, DWORD fileSize, 
+void writeTestResultsToFile(FILE *outputFile, char *fileName, char *fileExtention, DWORD fileSize,
 							TCHAR *creationTimeStringPtr, TCHAR *fileLastModifiedTimeString, char *firstFiveCharsPtr);
 
 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 	char *filePath = NULL, *outputLogFilePath = NULL, *outputLogFileName = NULL, *fileName = NULL, *fileExtention = NULL,
 		*outputFileNameEnding = { "_log.txt" }, *firstFiveCharsPtr = NULL;
 	char firstFiveCharsFromFile[6];
-	FILE *inputFile = NULL;
+	FILE *inputFile = NULL, *outputFile = NULL;
 	HANDLE fileHandler;
 	DWORD fileSize = 0; 
 	LPTSTR *creationTimeString = NULL, *lastAccessedTimeString = NULL;
@@ -32,14 +32,25 @@ int main(int argc, char *argv[]) {
 	filePath = argv[1]; 
 	outputLogFilePath = argv[2];
 	fileName = getFileName(filePath);
-	fileExtention = getFileExtention(fileName);
 	outputLogFileName = getOutputFileName(fileName, outputFileNameEnding);
-
+	
+	// read input file
 	inputFile = fopen(fileName, "r");
-	if ( inputFile == NULL ) {
-		printf("Could not open file, error %ul\n", GetLastError());
-		exit( 1 );
+	if (inputFile == NULL) {
+		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
+		exit(1);
 	}
+
+	// creat log output file
+	outputFile = fopen(outputLogFileName, "w");
+	if (outputFile == NULL) {
+		printf("Input File openning failed!");
+		exit(1);
+	}
+
+	// getting the file extention
+	fileExtention = getFileExtention(fileName);
+	
 
 	// getting first five chars from file
 	fgets(firstFiveCharsFromFile, 6, inputFile);
@@ -70,25 +81,18 @@ int main(int argc, char *argv[]) {
 		lastModifiedTimeStringPtr = fileLastModifiedTimeString;
 	}
 
-	writeTestResultsToFile(outputLogFileName, fileName, fileExtention, fileSize, creationTimeStringPtr, fileLastModifiedTimeString, firstFiveCharsPtr);
+	writeTestResultsToFile(outputFile, fileName, fileExtention, fileSize, creationTimeStringPtr, fileLastModifiedTimeString, firstFiveCharsPtr);
 
 	free( outputLogFileName );
-	fclose(inputFile);
+	fclose(inputFile); // this closes both the FILE and the HANDLE of the input file
 	return 0;
 }
 
 
-void writeTestResultsToFile(char *outputLogFileName, char *fileName, char *fileExtention, DWORD fileSize, 
+void writeTestResultsToFile(FILE *outputFile, char *fileName, char *fileExtention, DWORD fileSize,
 							TCHAR *creationTimeStringPtr, TCHAR *fileLastModifiedTimeString, char *firstFiveCharsPtr) {
 	
-	FILE *outputFile = NULL;
-
-	outputFile = fopen(outputLogFileName, "w");
-	if (outputFile == NULL) {
-		printf("Input File openning failed!");
-		exit(1);
-	}
-
+	
 	fprintf(outputFile, "%s\n", fileName);
 	fprintf(outputFile, "The file extension of the test file is \".%s\"\n", fileExtention);
 	fprintf(outputFile, "The test file size is %d bytes\n", fileSize);
@@ -176,8 +180,16 @@ char *getFileExtention(char *filename) {
 
 	char *dotLocationInFileName = strrchr(filename, '.');
 	if (!dotLocationInFileName || dotLocationInFileName == filename)
-		return "No";
+		return "Error";
 	return dotLocationInFileName + 1;
 }
 
 
+// errorHandling(){
+//    free all allocations
+//    free all threads
+//    close all files
+//    print the error on the screen -> use GetLastError()
+//    write the error into the outputFile
+//    in case of an error in one of the threads, should have a dictionary that prints an error into the outputfile for the relevant thread
+// }

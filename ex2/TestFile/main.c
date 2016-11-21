@@ -6,19 +6,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
+#include <Strsafe.h>
+#include <tchar.h>
 
 char *getFileName(char *path);
 char *getFileExtention(char *filename);
 char *getOutputFileName(char *fileName, char *outputFileNameEnding);
+BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
 
 int main(int argc, char *argv[]) {
-	char *filePath = NULL, *outputLogFilePath = NULL, *outputLogFileName = NULL, *fileName = NULL, *fileExtention = NULL, *outputFileNameEnding = { "_log.txt" };
+	char *filePath = NULL, *outputLogFilePath = NULL, *outputLogFileName = NULL, *fileName = NULL, *fileExtention = NULL,
+		*outputFileNameEnding = { "_log.txt" }, firstFiveCharsFromFile[6];
 	FILE *inputFile = NULL;
 	HANDLE fileHandler;
-	DWORD fileSize = 0;
-//	FILETIME fileCreationTime;
-//	SYSTEMTIME stUTC, stLocal;
-//	
+	DWORD fileSize = 0; 
+	LPTSTR *creationTimeString = NULL, *lastAccessedTimeString = NULL;
+	FILETIME fileCreationTime, fileLastModifiedTime;
+	TCHAR fileCreationTimeString[21], fileLastModifiedTimeString[21];
+
 	filePath = argv[1]; 
 	outputLogFilePath = argv[2];
 	fileName = getFileName(filePath);
@@ -26,32 +31,76 @@ int main(int argc, char *argv[]) {
 	outputLogFileName = getOutputFileName(fileName, outputFileNameEnding);
 
 	inputFile = fopen(fileName, "r");
-	if (inputFile == NULL) {
-		printf("Input File openning failed!");
-		exit(1);
+	if ( inputFile == NULL ) {
+		printf("Could not open file, error %ul\n", GetLastError());
+		exit( 1 );
 	}
 
+
 	fileHandler = (HANDLE)_get_osfhandle(_fileno(inputFile));
-	fileSize = GetFileSize(fileHandler, NULL);
+	if ( fileHandler == INVALID_HANDLE_VALUE ) {
+		printf("Could not open file, error %ul\n", GetLastError());
+		exit( 1 );
+	}
 
-	printf("%s size is %d bytes and file type is %d\n", fileName, fileSize);
+	// getting file's size:
+	fileSize = GetFileSize( fileHandler, NULL );
 
-//	fileHandler = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-//	if (fileHandler == INVALID_HANDLE_VALUE)
-//	{
-//		printf("Could not open file, error %ul\n", GetLastError());
-//		return -1;
-//	}
+	printf("%s size is %d bytes\n", fileName, fileSize); // REMOVE - just for testing
+	
+	//getting file's creating time and last accessed time
+	GetFileTime( fileHandler, &fileCreationTime, NULL, &fileLastModifiedTime );
+	
+	if( GetFileTimeString(fileCreationTime, fileCreationTimeString) );
+		_tprintf(TEXT("file creation time is: %s\n"), fileCreationTimeString); // REMOVE - just for testing
+
+	if( GetFileTimeString(fileLastModifiedTime, fileLastModifiedTimeString) );
+		_tprintf(TEXT("file last accessed time is: %s\n"), fileLastModifiedTimeString); // REMOVE - just for testing
+
+	// getting first five chars from file
+	fgets(firstFiveCharsFromFile, 5, inputFile);
+	printf("firstFiveCharsFromFile: %s\n", firstFiveCharsFromFile);
+
 	getchar();
-	free(outputLogFileName);
+	free( outputLogFileName );
 	return 0;
 }
 
 
-char *getFileName(char *path)
-{
-	char *filename = strrchr(path, '\\');
-	if (filename == NULL)
+
+
+BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
+	/* 
+	inspired by https://msdn.microsoft.com/en-us/library/windows/desktop/ms724926(v=vs.85).aspx 
+	*/
+
+	DWORD timeInStringFormatSize = 21;
+	SYSTEMTIME utcTime, localTime;
+	DWORD timeToStringFormatResult;
+
+	// Convert the last-write time to local time.
+	FileTimeToSystemTime( &fileCreationTime, &utcTime );
+	SystemTimeToTzSpecificLocalTime( NULL, &utcTime, &localTime );
+
+	// Build a string showing the date and time.
+	timeToStringFormatResult = StringCchPrintf( bufferForString, timeInStringFormatSize,
+		TEXT("%02d/%02d/%04d  %02d:%02d:%02d"),
+		localTime.wMonth, localTime.wDay, localTime.wYear,
+		localTime.wHour, localTime.wMinute, localTime.wSecond );
+
+	if (timeToStringFormatResult == S_OK )
+		return TRUE;
+	else return FALSE;
+}
+
+
+char *getFileName(char *path){
+	/*
+	inspired by http://stackoverflow.com/questions/5901624/extract-file-name-from-full-path-in-c-using-msvs2005
+	*/
+
+	char *filename = strrchr( path, '\\' );
+	if ( filename == NULL )
 		filename = path;
 	else
 		filename++;
@@ -60,6 +109,10 @@ char *getFileName(char *path)
 
 
 char *getOutputFileName(char *fileName, char *outputFileNameEnding) {
+	/*
+	inspired by our program from EX1
+	*/
+	
 	size_t outputFileNameLength = 0;
 	char *outputFileName = NULL;
 
@@ -75,8 +128,12 @@ char *getOutputFileName(char *fileName, char *outputFileNameEnding) {
 	return outputFileName;
 }
 
-// Test 1:
+
 char *getFileExtention(char *filename) {
+	/*
+	inspired by http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
+	*/
+	
 	Sleep(10);
 	char *dotLocationInFileName = strrchr(filename, '.');
 	if (!dotLocationInFileName || dotLocationInFileName == filename)
@@ -84,12 +141,6 @@ char *getFileExtention(char *filename) {
 	return dotLocationInFileName + 1;
 }
 
-// Test 2:
-// char* checkFileSize(){
-// Sleep(10)
-// ...............
-// return fileSize
-// }
 
 
 // Test 3:

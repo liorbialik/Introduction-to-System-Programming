@@ -1,8 +1,5 @@
 Found errors in given Sudoku puzzle.
 The errors are:
-Line error: digit 2 appears at (1,1) and (1,2)
-Line error: digit 2 appears at (6,5) and (6,6)
-Column error: digit 2 appears at (1,2) and (7,2)
-Column error: digit 2 appears at (6,6) and (9,6)
-SubGrid error: digit 2 appears at (1,1) and (1,2)
-SubGrid error: digit 2 appears at (6,5) and (6,6)
+Line error: digit 1 appears at (8,6) and (8,8)
+Column error: digit 1 appears at (7,8) and (8,8)
+SubGrid error: digit 1 appears at (7,8) and (8,8)

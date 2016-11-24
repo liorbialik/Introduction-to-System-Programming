@@ -29,7 +29,6 @@ void callSolver(FILE *fileToWriteInto, char soduko[9][9])
 	char cellValue = '0';
 	int i, j;
 	int assigningWasMadeFlag;
-	//char* solutionPtr = NULL;
 	do {
 		assigningWasMadeFlag = 0;
 		//	going over the matrix from top-left side and start filling it with numbers if possible

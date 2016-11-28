@@ -1,6 +1,0 @@
-example.txt
-The file extension of the test file is ".txt"
-The test file size is 18 bytes
-The file was created on 11/21/2016  15:16:04
-The file was last modified on 11/21/2016  20:38:56
-The files first 5 bytes are: shubi

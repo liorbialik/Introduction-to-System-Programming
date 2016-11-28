@@ -1,1 +1,4 @@
 example.txt
+hw1.txt
+hw2.txt
+read.txt

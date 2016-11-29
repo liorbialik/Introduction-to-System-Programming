@@ -22,6 +22,7 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #define MAXCOUNT 100 // TODO: Need to check if even necessary a supremum
 
 //char *getFileName(char *path); 
+char *outputLogFileArgumentCreation(char*, char*);
 
 int main(int argc, char *argv[]) {
 /*	FILE *fileInput = NULL, *runTime_logFileOutput = NULL;
@@ -30,14 +31,15 @@ int main(int argc, char *argv[]) {
 	char *fileToTestPnt = NULL; char *fileToTest = NULL;
 */
 	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL;
-	char *fileName = NULL;
+	char *fileName = NULL; char *outputFileName = NULL;
 	char *dirName = NULL; char *dirNameEnding = NULL; char* dirNameBeginning = NULL;
-	char *runTime_logFileNameBegging = "c:\\Users\\tomershahar11\\Source\\Repos\\TAU-ITSP20162\\ex2\\TestManager\\OutputFilesDirectory" ; char *runTime_logFileNameEnding = "\\runtime_logfile.txt" ; char *runTime_logFileName = NULL;
+	char *dirPath = "c:\\Users\\tomershahar11\\Source\\Repos\\TAU-ITSP20162\\ex2\\TestManager\\OutputFilesDirectory" ; char *runTime_logFileNameEnding = "\\runtime_logfile.txt" ; char *runTime_logFileName = NULL;
 	fileName = argv[1];
+	dirName = argv[2];
 
 
 	// open the InputFile by getting the file path as an argument
-	fileInput = fopen(fileName, "r"); 
+	fileInput = fopen(fileName, "r");
 	if (fileInput == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
 		exit(1);
@@ -58,8 +60,12 @@ int main(int argc, char *argv[]) {
 
 	
 	// create runTime_log File inside 'OutputFilesDirectory' directory
-	runTime_logFileName = (char *)malloc(1 + strlen(runTime_logFileNameBegging) + strlen(runTime_logFileNameEnding));
-	strcpy(runTime_logFileName, runTime_logFileNameBegging);
+	runTime_logFileName = (char *)malloc(1 + strlen(dirPath) + strlen(runTime_logFileNameEnding));
+	if (runTime_logFileName == NULL) {
+		printf("runTime_logFileName allocation failed/n");
+		exit(1);
+	}
+	strcpy(runTime_logFileName, dirPath);
 	strcat(runTime_logFileName, runTime_logFileNameEnding);
 	runTime_logFileOutput = fopen(runTime_logFileName, "w");
 	if (runTime_logFileOutput == NULL) {
@@ -70,20 +76,14 @@ int main(int argc, char *argv[]) {
 
 
 	// open FilesToTest and for each file call TestFiles program
-	char *linePtr[100];
+	char *linePtr = NULL;
 	if (fileInput) {
-		while (fscanf(fileInput, "%s", linePtr) != EOF) {
-			printf("%s\n", linePtr);
-		}
+		fscanf(fileInput, "%s", linePtr);
+		printf("%s\n", outputLogFileArgumentCreation(dirName, linePtr));
 		getchar();
-		fclose(fileInput);
 	}
+		fclose(fileInput);
 	
-	// prepare arguments for calling 'TestFiles' program
-
-
-
-
 
 		// TestManager algorithm flow:
 		// 1. gets a 'fileToTest' file name and opens it.
@@ -120,10 +120,30 @@ int main(int argc, char *argv[]) {
 		//		return -1;
 		//	}
 		// getchar();
+	fclose(fileInput);
 
-		return 0;
+	return 0;
 }
 
+char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
+	// prepare arguments for calling 'TestFiles' program
+	char *outputLogFileNameEnding = { "_log.txt" }; char *outputLogFileName = NULL; size_t outputLogFileNameLength = 0;
+	
+	outputLogFileNameLength = strlen(dirName) + strlen(fileToTestName) + strlen(outputLogFileNameEnding) - 4 + 2 + 1;
+	// '-4' due to deduction of '.txt' ending since it appearse twice, '-2' due to addition of '\\', '+1' due to '\0' ending
+	outputLogFileName = malloc(sizeof(char) * outputLogFileNameLength); 
+	if (outputLogFileName == NULL) {
+		printf("outputLogFileName allocation failed/n");
+		exit(1);
+	}
+	strcpy(outputLogFileName, dirName);
+	strcat(outputLogFileName, "\\");
+	strcat(outputLogFileName, fileToTestName);
+	outputLogFileName[strlen(outputLogFileName) - 4] = '\0'; // mark the end of the precious string before the '.txt' ending
+	strcat(outputLogFileName, outputLogFileNameEnding); // add the correct ending
+
+	return outputLogFileName;
+}
 
 //char *getFileName(char *path) {
 //	/*
@@ -141,11 +161,3 @@ int main(int argc, char *argv[]) {
 //}
 
 
-
-/*void CreateDir(const char * path) {
-	if (!CreateDirectory(path, NULL))
-	{
-		return;
-	}
-}
-*/

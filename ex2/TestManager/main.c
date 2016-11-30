@@ -18,8 +18,8 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <conio.h>
 #include <process.h>
 #include <sys/stat.h>
+#include "TestFile.h"
 
-#define MAXCOUNT 100 // TODO: Need to check if even necessary a supremum
 
 //char *getFileName(char *path); 
 char *outputLogFileArgumentCreation(char*, char*);
@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	char *fileName = NULL; char *outputFileName = NULL;
 	char *dirName = NULL; char *dirNameEnding = NULL; char* dirNameBeginning = NULL;
 	char *dirPath = "c:\\Users\\tomershahar11\\Source\\Repos\\TAU-ITSP20162\\ex2\\TestManager\\OutputFilesDirectory" ; char *runTime_logFileNameEnding = "\\runtime_logfile.txt" ; char *runTime_logFileName = NULL;
+	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
 	dirName = argv[2];
 
@@ -75,35 +76,53 @@ int main(int argc, char *argv[]) {
 	fclose(runTime_logFileOutput);
 
 
-	// open FilesToTest and for each file call TestFiles program
-	char *linePtr = NULL;
+	// open FilesToTest and for each file create a process
+
+	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
+	// go over 'FilesToTest' file and count all files to be tested
+	// TODO: Need to check if every file must assign '\n' in end of every line
+	char ch = NULL; int TotalNumberOfFiles = 0;
+	while (!feof(fileInput)) {
+		ch = fgetc(fileInput);
+		if (ch == '\n') {
+			TotalNumberOfFiles++;
+		}
+	}
+	// Resetting pointer to the start of file
+	rewind(fileInput);	
+
+	// Assign FilesToTestArray in size of TotalNumberOfFiles
+	int *FilesToTestLengthArray = NULL; int i;
+	FilesToTestLengthArray = (int *)malloc(TotalNumberOfFiles * sizeof(int));
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		FilesToTestLengthArray[i] = 0;	// initialize FilesToTestArray
+	}
+
+
+	// go over FilesToTest and save each file's length
+	i = 0; ch = NULL;
+	while (i<TotalNumberOfFiles) {
+		while (fgetc(fileInput) != '\n') {
+			FilesToTestLengthArray[i]++;
+		}
+		i++;
+	}		
+	// Resetting pointer to the start of file
+	rewind(fileInput);
+
+	
+
+
 	if (fileInput) {
-		fscanf(fileInput, "%s", linePtr);
-		printf("%s\n", outputLogFileArgumentCreation(dirName, linePtr));
-		getchar();
+		while (fscanf(fileInput, "%s", FileToTestName) != EOF) {
+			outputLogFile = outputLogFileArgumentCreation(dirName, FileToTestName);
+			//call TestFiles.exe
+			//TestFile(*outputLogFile, *FileToTestName);
+		}
+			getchar();
 	}
 		fclose(fileInput);
 	
-
-		// TestManager algorithm flow:
-		// 1. gets a 'fileToTest' file name and opens it.
-		// 2. for every fileTest in the content file:
-		//		a. going over the line, reads it and allocates a pointer for the specific line (Dynamic allocation). The program will hold array of pointers that its size will be defined dynamically.
-		//		b. call for TestFile.exe for every line (process). The program should send two arguments: <FileTestName>.txt, <OutputFilesDirectory>\\<FileTestName>_log.txt.
-		//		c. End condition will be the char EOF. by then we will count all '\n' values and that will deter the array size.
-	
-		// 3. As an assumption that each ProcessCall creates a logFile with the specific test results for every thread, 
-		//    stores this file inside 'Output Files Directory'.
-		// 4. Create a 'runTime_logFile.txt as well inside 'Output Files Directory'. The file will include the following:
-		//		a. Process ID
-		//		b. Process Status: succeed / failed / still running.
-		//		c. Finally, when all processes have finished running successfully, plot an appropriate message followed by exit code.
-
-		// 5. The TestManager samples every x milisecond each process, and update its progress.
-		// 6. TODO: Dealing with error handles
-		// 7. 
-
-
 
 		//	char *filePath = NULL, *outputLogFilePath = NULL;
 		//	HANDLE fileHandler;
@@ -121,6 +140,10 @@ int main(int argc, char *argv[]) {
 		//	}
 		// getchar();
 	fclose(fileInput);
+
+	// free all allocated memories
+	free(FilesToTestLengthArray);
+	free(runTime_logFileName);
 
 	return 0;
 }
@@ -161,3 +184,21 @@ char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 //}
 
 
+// TestManager algorithm flow:
+// 1. gets a 'fileToTest' file name and opens it.
+// 2. for every fileTest in the content file:
+//		a. going over the line, reads it and allocates a pointer for the specific line (Dynamic allocation). The program will hold array of pointers that its size will be defined dynamically.
+//		b. check who is opening s process? testfile.exe or testmanager.exe when getting a fileToTestName
+//		c. call for TestFile.exe for every line (process). The program should send two arguments: <FileTestName>.txt, <OutputFilesDirectory>\\<FileTestName>_log.txt.
+//		d. End condition will be the char EOF. by then we will count all '\n' values and that will deter the array size.
+
+// 3. As an assumption that each ProcessCall creates a logFile with the specific test results for every thread, 
+//    stores this file inside 'Output Files Directory'.
+// 4. Create a 'runTime_logFile.txt as well inside 'Output Files Directory'. The file will include the following:
+//		a. Process ID
+//		b. Process Status: succeed / failed / still running.
+//		c. Finally, when all processes have finished running successfully, plot an appropriate message followed by exit code.
+
+// 5. The TestManager samples every x milisecond each process, and update its progress.
+// 6. TODO: Dealing with error handles
+// 7. 

@@ -73,14 +73,12 @@ int main(int argc, char *argv[]) {
 		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
 		exit(1);
 	}
-	fclose(runTime_logFileOutput);
-
 
 	// open FilesToTest and for each file create a process
 
-	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
 	// go over 'FilesToTest' file and count all files to be tested
 	// TODO: Need to check if every file must assign '\n' in end of every line
+	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
 	char ch = NULL; int TotalNumberOfFiles = 0;
 	while (!feof(fileInput)) {
 		ch = fgetc(fileInput);
@@ -91,26 +89,53 @@ int main(int argc, char *argv[]) {
 	// Resetting pointer to the start of file
 	rewind(fileInput);	
 
-	// Assign FilesToTestArray in size of TotalNumberOfFiles
+	// Assign *FilesToTestArray in size of TotalNumberOfFiles
 	int *FilesToTestLengthArray = NULL; int i;
 	FilesToTestLengthArray = (int *)malloc(TotalNumberOfFiles * sizeof(int));
+	if (FilesToTestLengthArray == NULL) {
+		printf("allocation was failed, error %ul\n", GetLastError());
+	}
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		FilesToTestLengthArray[i] = 0;	// initialize FilesToTestArray
 	}
 
-
 	// go over FilesToTest and save each file's length
-	i = 0; ch = NULL;
-	while (i<TotalNumberOfFiles) {
+	for (i = 0; i<TotalNumberOfFiles; i++) {
 		while (fgetc(fileInput) != '\n') {
 			FilesToTestLengthArray[i]++;
 		}
-		i++;
-	}		
+	}
 	// Resetting pointer to the start of file
 	rewind(fileInput);
 
-	
+	// Assign *FilesToTestArray[] in size of TotalNumberOfFiles, an array of pointers to TestFiles
+	char *FilesToTestPtrArray[] = { NULL };
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		FilesToTestPtrArray[i] = (char **)malloc(FilesToTestLengthArray[i] * sizeof(char));
+		if (FilesToTestLengthArray[i] == NULL) {
+			printf("allocation was failed, error %ul\n", GetLastError());
+		}
+		fgets(FilesToTestPtrArray[i], 1+FilesToTestLengthArray[i], fileInput);
+		fgetc(fileInput);
+	}
+
+	// concatenated all parameters to a single string
+
+
+/*
+	//TEST
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		printf("%s\n", FilesToTestPtrArray[i]);
+	}
+	getchar();
+*/
+
+	//going over the fileInput in a loop:
+	// 1. read the lines as a single string
+	// 2. build arguments for the file string
+	// 3. concatenated all parameters to a single string as well, "TestFiles.exe <hw.txt> <OutputFilesDirectory>\<hw.txt>"
+	// 4. create process for that string
+	// 5. call TestFiles.exe 
 
 
 	if (fileInput) {
@@ -121,7 +146,6 @@ int main(int argc, char *argv[]) {
 		}
 			getchar();
 	}
-		fclose(fileInput);
 	
 
 		//	char *filePath = NULL, *outputLogFilePath = NULL;
@@ -139,12 +163,18 @@ int main(int argc, char *argv[]) {
 		//		return -1;
 		//	}
 		// getchar();
+
+
+	//closing files that have been opened during the program
 	fclose(fileInput);
+	fclose(runTime_logFileOutput);
 
 	// free all allocated memories
 	free(FilesToTestLengthArray);
 	free(runTime_logFileName);
-
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		free(FilesToTestPtrArray[i]);
+	}
 	return 0;
 }
 

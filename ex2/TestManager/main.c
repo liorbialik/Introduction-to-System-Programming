@@ -37,7 +37,12 @@ int main(int argc, char *argv[]) {
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
 	dirName = argv[2];
-
+	
+	// Verify the number of command line argument is correct
+	if (argc != 4) {
+		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
+		getchar();
+	}
 
 	// open the InputFile by getting the file path as an argument
 	fileInput = fopen(fileName, "r");
@@ -77,7 +82,6 @@ int main(int argc, char *argv[]) {
 	// open FilesToTest and for each file create a process
 
 	// go over 'FilesToTest' file and count all files to be tested
-	// TODO: Need to check if every file must assign '\n' in end of every line
 	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
 	char ch = NULL; int TotalNumberOfFiles = 0;
 	while (!feof(fileInput)) {
@@ -98,8 +102,7 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		FilesToTestLengthArray[i] = 0;	// initialize FilesToTestArray
 	}
-
-	// go over FilesToTest and save each file's length
+	// go over FilesToTestArray and save each file's length
 	for (i = 0; i<TotalNumberOfFiles; i++) {
 		while (fgetc(fileInput) != '\n') {
 			FilesToTestLengthArray[i]++;
@@ -108,27 +111,38 @@ int main(int argc, char *argv[]) {
 	// Resetting pointer to the start of file
 	rewind(fileInput);
 
-	// Assign *FilesToTestArray[] in size of TotalNumberOfFiles, an array of pointers to TestFiles
-	char *FilesToTestPtrArray[] = { NULL };
+	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
+	// concatenated all parameters to a single string
+	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "FileTest.exe " }; char *TestFileArgumentString = NULL; char *fileToTest = NULL;
+	
 	for (i = 0; i < TotalNumberOfFiles; i++) {
-		FilesToTestPtrArray[i] = (char **)malloc(FilesToTestLengthArray[i] * sizeof(char));
+		fileToTest = (char *)malloc(FilesToTestLengthArray[i] * sizeof(char));
+		if (fileToTest == NULL) {
+			printf("allocation was failed, error %ul\n", GetLastError());
+		}
+		if (fgets(fileToTest, 1 + FilesToTestLengthArray[i], fileInput) == NULL) {
+			printf("reading a string from fileInput was failed, error %ul\n", GetLastError());
+		} 
+		fgetc(fileInput);
+		outputLogFile = outputLogFileArgumentCreation(dirName, fileToTest);
+		CommandLineArguentStringArray[i] = (char *)malloc(((FilesToTestLengthArray[i]) +  14 + strlen(outputLogFile)) * sizeof(char)); //
 		if (FilesToTestLengthArray[i] == NULL) {
 			printf("allocation was failed, error %ul\n", GetLastError());
 		}
-		fgets(FilesToTestPtrArray[i], 1+FilesToTestLengthArray[i], fileInput);
-		fgetc(fileInput);
+		strcpy(CommandLineArguentStringArray[i], TestFileProgramName);
+		strcat(CommandLineArguentStringArray[i], fileToTest);
+		strcat(CommandLineArguentStringArray[i], " ");
+		strcat(CommandLineArguentStringArray[i], outputLogFile);
+		
 	}
 
-	// concatenated all parameters to a single string
 
-
-/*
 	//TEST
 	for (i = 0; i < TotalNumberOfFiles; i++) {
-		printf("%s\n", FilesToTestPtrArray[i]);
+		printf("%s\n", CommandLineArguentStringArray[i]);
 	}
 	getchar();
-*/
+
 
 	//going over the fileInput in a loop:
 	// 1. read the lines as a single string
@@ -137,16 +151,6 @@ int main(int argc, char *argv[]) {
 	// 4. create process for that string
 	// 5. call TestFiles.exe 
 
-
-	if (fileInput) {
-		while (fscanf(fileInput, "%s", FileToTestName) != EOF) {
-			outputLogFile = outputLogFileArgumentCreation(dirName, FileToTestName);
-			//call TestFiles.exe
-			//TestFile(*outputLogFile, *FileToTestName);
-		}
-			getchar();
-	}
-	
 
 		//	char *filePath = NULL, *outputLogFilePath = NULL;
 		//	HANDLE fileHandler;
@@ -173,7 +177,7 @@ int main(int argc, char *argv[]) {
 	free(FilesToTestLengthArray);
 	free(runTime_logFileName);
 	for (i = 0; i < TotalNumberOfFiles; i++) {
-		free(FilesToTestPtrArray[i]);
+		free(CommandLineArguentStringArray[i]);
 	}
 	return 0;
 }

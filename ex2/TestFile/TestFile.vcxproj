@@ -18,6 +18,13 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="example.txt" />
+    <Text Include="example_log.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D787AC23-E8B8-4578-8BA4-A60797F15EEB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

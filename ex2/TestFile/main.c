@@ -1,3 +1,15 @@
+/*
+TestFile - Main.c:
+- the program recieves the following arguments from testManager.exe:
+		@param filePath: the path of the file which tests will be executed on
+		@param OutputLogFile: the path of the log file to which the results will be written to
+
+- the program will create a thread for each test needed to run
+- each test will save the result to a designated structure
+- when all the threads are done, the results will be written into the output log file
+- after finishing the logging, all thread handlers are closed and their exit code noted
+*/
+
 
 /* Libraries: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
@@ -11,13 +23,17 @@
 
 
 /* Constants: */
-#define NUM_OF_THREADS 6
+#define NUM_OF_THREADS 5
 
 /* Types: */
 typedef struct testResults
 {
 	char *inputFileName;
-	char *outputFilePath;
+	char *fileExtention;
+	DWORD fileSize;
+	TCHAR fileCreationTimeString[21];
+	TCHAR fileLastModifiedTimeString[21];
+	char firstFiveChars[6];
 } testResults;
 
 
@@ -25,74 +41,59 @@ typedef struct testResults
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress,
 	LPVOID ParameterPtr,
 	LPDWORD ThreadIdPtr);
-int logFileName(testResults *newtestResults);
-int logFileExtention(testResults *newtestResults);
-int logFirstFiveCharsInFile(testResults *newtestResults);
-int logFileSize(testResults *newtestResults);
-int logFileCreationTime(testResults *newtestResults);
-int logFileLastModifiedTime(testResults *newtestResults);
-BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
-
-void writeTestResultsToFile(FILE *outputFile, char *fileName, char *fileExtention, DWORD fileSize,
-							TCHAR *creationTimeStringPtr, TCHAR *fileLastModifiedTimeString, char *firstFiveCharsPtr);
-
+int getFileExtention(testResults *newtestResults);
+int getFirstFiveCharsInFile(testResults *newtestResults);
+int getFileSize(testResults *newtestResults);
+int getFileCreationTime(testResults *newtestResults);
+int getFileLastModifiedTime(testResults *newtestResults);
+BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
+void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults);
 
 
 int main(int argc, char *argv[]) {
-	FILE *outputFile = NULL;
-
+	char *outputFilePath = NULL;
 	int i;
 	HANDLE threadHandles[NUM_OF_THREADS] = { 0 }; /* An array of thread handles */
 	DWORD threadIDs[NUM_OF_THREADS] = { 0 }; /* An array of threadIDs */
 	DWORD exitCode;
 	testResults newTestResults;
 	
-
+	// Initiating newTestResults pointers:
+	newTestResults.inputFileName = NULL;
+	newTestResults.fileExtention = NULL;
+	
+	// Getting the arguments given by testManager
 	newTestResults.inputFileName = argv[1];
-	newTestResults.outputFilePath = argv[2];
+	outputFilePath = argv[2];
 
-
-	// creating the output file, and in case it exists, it will discarded and the file is treated as a new empty file.
-	outputFile = fopen(newTestResults.outputFilePath, "w+");
-	if (outputFile == NULL) {
-		printf("Output log File creation failed!");
-		exit(1);
-	}
-	fclose(outputFile);
-
-	// running each test on the input file in a different thread: 
+	// running each test on the input file in a different thread, using 'CreateThreadSimple' function from the recitation: 
 
 	threadHandles[0] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFileName,                   /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
+		(LPTHREAD_START_ROUTINE)getFileExtention,              /*  thread function */
+		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[0]);                                        /*  returns the thread identifier */
 
 	threadHandles[1] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFileExtention,              /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
+		(LPTHREAD_START_ROUTINE)getFileSize,                   /*  thread function */
+		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[1]);                                        /*  returns the thread identifier */
 
 	threadHandles[2] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFirstFiveCharsInFile,       /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
+		(LPTHREAD_START_ROUTINE)getFirstFiveCharsInFile,       /*  thread function */
+		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[2]);										   /*  returns the thread identifier */
 
 	threadHandles[3] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFileSize,                   /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
+		(LPTHREAD_START_ROUTINE)getFileCreationTime,           /*  thread function */
+		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[3]);                                        /*  returns the thread identifier */
 
 	threadHandles[4] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFileCreationTime,           /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
+		(LPTHREAD_START_ROUTINE)getFileLastModifiedTime,       /*  thread function */
+		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[4]);                                        /*  returns the thread identifier */
 
-	threadHandles[5] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)logFileLastModifiedTime,           /*  thread function */
-		&newTestResults,                                         /*  argument to thread function */
-		&threadIDs[5]);                                        /*  returns the thread identifier */
-
-	// Wait for thread to finish
+	//Wait for thread to finish
 	WaitForMultipleObjects(
 		NUM_OF_THREADS,
 		threadHandles,
@@ -100,6 +101,9 @@ int main(int argc, char *argv[]) {
 		INFINITE);
 
 	Sleep(10);
+
+	// Writing the results into the output file
+	writeTestResultsToFile(outputFilePath ,&newTestResults); // TODO: 
 
 	// Safely close all threads and print their exit code:
 	for (i = 0; i < NUM_OF_THREADS; i++)
@@ -109,50 +113,47 @@ int main(int argc, char *argv[]) {
 		CloseHandle(threadHandles[i]);
 	}
 
-	getchar();
-
-	////getting file's creating time and last accessed time
-	//GetFileTime( fileHandler, &fileCreationTime, NULL, &fileLastModifiedTime );
-	//
-	//if (GetFileTimeString(fileCreationTime, fileCreationTimeString)) {
-	//	_tprintf(TEXT("file creation time is: %s\n"), fileCreationTimeString); // REMOVE - just for testing
-	//	creationTimeStringPtr = fileCreationTimeString;
-	//}
-
-	//if (GetFileTimeString(fileLastModifiedTime, fileLastModifiedTimeString)) {
-	//	_tprintf(TEXT("file last accessed time is: %s\n"), fileLastModifiedTimeString); // REMOVE - just for testing
-	//	lastModifiedTimeStringPtr = fileLastModifiedTimeString;
-	//}
-
-	//writeTestResultsToFile(outputFile, fileName, fileExtention, fileSize, creationTimeStringPtr, fileLastModifiedTimeString, firstFiveCharsPtr);
-
-	//free( outputLogFileName );
-	//fclose(inputFile); // this closes both the FILE and the HANDLE of the input file
 	return 0;
 }
 
 
-void writeTestResultsToFile(FILE *outputFile, char *fileName, char *fileExtention, DWORD fileSize,
-							TCHAR *creationTimeStringPtr, TCHAR *fileLastModifiedTimeString, char *firstFiveCharsPtr) {
-	
-	
-	//fprintf(outputFile, "%s\n", fileName);
-	//fprintf(outputFile, "The file extension of the test file is \".%s\"\n", fileExtention);
-	//fprintf(outputFile, "The test file size is %d bytes\n", fileSize);
-	//fprintf(outputFile, "The file was created on %ws\n", creationTimeStringPtr);
-	//fprintf(outputFile, "The file was last modified on %ws\n", fileLastModifiedTimeString);
-	//fprintf(outputFile, "The files first 5 bytes are: %s\n", firstFiveCharsPtr);
+void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
+	/*
+	@ Description: The function will write all the results recieved by the threads into the output file.
+	@ Param outputFilePath: the file to which the data will be written into.
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: None
+	*/
+	FILE *outputFile = NULL;
+
+	// creating the output file
+	outputFile = fopen(outputFilePath, "w+");
+	if (outputFile == NULL) {
+		printf("Output log File creation failed!");
+		exit(1);
+	}
+
+	// Writing the results:
+	fprintf(outputFile, "%s\n", newTestResults->inputFileName);
+	fprintf(outputFile, "The file extension of the test file is \".%s\"\n", newTestResults->fileExtention);
+	fprintf(outputFile, "The test file size is %ld bytes\n", newTestResults->fileSize);
+	fprintf(outputFile, "The file was created on %ws\n", newTestResults->fileCreationTimeString);
+	fprintf(outputFile, "The file was last modified on %ws\n", newTestResults->fileLastModifiedTimeString);
+	fprintf(outputFile, "The files first 5 bytes are: %s\n", newTestResults->firstFiveChars);
 
 	fclose(outputFile);
 	return;
 }
 
 
-BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
-	/* 
-	inspired by https://msdn.microsoft.com/en-us/library/windows/desktop/ms724926(v=vs.85).aspx 
+BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
+	/*
+	@ Description: The function recieve a FILETIME instance and convert it into a readable string in the desired format.
+		           inspired by https://msdn.microsoft.com/en-us/library/windows/desktop/ms724926(v=vs.85).aspx 
+	@ Param fileCreationTime: the FILETIME instance which will be converted.
+	@ Param bufferForString: the buffer to which the out string is saved.
+	@ Return: TRUE -> Success, FALSE -> Failure
 	*/
-
 	DWORD timeInStringFormatSize = 21;
 	SYSTEMTIME utcTime, localTime;
 	DWORD timeToStringFormatResult;
@@ -173,13 +174,17 @@ BOOL GetFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
 }
 
 
-int logFileExtention(testResults *newTestResults) {
+int getFileExtention(testResults *newTestResults) {
 	/*
-	inspired by http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
+	@ Description: The function will retrive the input file's extention type.
+				   it will save it into the relevant result structure variable.
+				   inspired by http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: 0 -> Success, 1 -> Failure
 	*/
 	Sleep(10);
 
-	FILE *inputFile = NULL, *outputFile = NULL;
+	FILE *inputFile = NULL;
 	char *fileExtention = NULL;
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
@@ -188,91 +193,58 @@ int logFileExtention(testResults *newTestResults) {
 		return 1;
 	}
 
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
-		return 1;
-	}
-
 	char *dotLocationInFileName = strrchr(newTestResults->inputFileName, '.');
 	if (!dotLocationInFileName || dotLocationInFileName == newTestResults->inputFileName)
 		return 1;
-	fileExtention = dotLocationInFileName + 1;
+	newTestResults->fileExtention = dotLocationInFileName + 1;
 
-	// writing the result into the output log file:
-	fprintf(outputFile, "The file extension of the test file is \".%s\"\n", fileExtention);
-	
-	fclose(inputFile);
-	fclose(outputFile);
+ 	fclose(inputFile);
 	return 0;
 }
 
 
-int logFileName(testResults *newTestResults){
+int getFirstFiveCharsInFile(testResults *newTestResults) {
+	/*
+	@ Description: The function will retrive the input file's first five characters. 
+	               it will save it into the relevant result structure variable.
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: 0 -> Success, 1 -> Failure
+	*/
 	Sleep(10);
 
-	FILE *outputFile = NULL;
-
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
-		return 1;
-	}
-
-	// writing the result into the output log file:
-	fprintf(outputFile, "%s\n", newTestResults->inputFileName);
-	
-	fclose(outputFile);
-	return 0;
-}
-
-
-int logFirstFiveCharsInFile(testResults *newTestResults) {
-	Sleep(10);
-
-	FILE *inputFile = NULL, *outputFile = NULL;
-	char firstFiveCharsFromFile[6];
+	FILE *inputFile = NULL;
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
 		return 1;
 	}
-
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
-		return 1;
-	}
-
 	
-	fgets(firstFiveCharsFromFile, 6, inputFile);
+	// retrieving the first five chars from the input file: 
+	fgets(newTestResults->firstFiveChars, 6, inputFile);
+	
+	fclose(inputFile); // Closing both file and handler
 
-	// writing the result into the output log file:
-	fprintf(outputFile, "The files first 5 bytes are: %s\n", firstFiveCharsFromFile);
-
-	fclose(inputFile);
-	fclose(outputFile);
 	return 0;
 }
 
 
-int logFileSize(testResults *newTestResults) {
+int getFileSize(testResults *newTestResults) {
+	/*
+	@ Description: The function will create a file handler and use the GetFileSize() function to 
+			       retrive the input file's size. it will save it into the relevant result structure variable.
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: 0 -> Success, 1 -> Failure
+	*/
 	Sleep(10);
 
-	FILE *inputFile = NULL, *outputFile = NULL;
+	FILE *inputFile = NULL;
 	HANDLE fileHandler;
-	DWORD fileSize = 0;
+	DWORD fileSize;
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
-		return 1;
-	}
-
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
 		return 1;
 	}
 
@@ -284,34 +256,32 @@ int logFileSize(testResults *newTestResults) {
 	}
 
 	// getting the file's size:
-	fileSize = GetFileSize( fileHandler, NULL );
+	fileSize = GetFileSize(fileHandler, NULL);
+	newTestResults->fileSize = fileSize;
 
-	// writing the result into the output log file:
-	fprintf(outputFile, "The test file size is %d bytes\n", fileSize);
+	fclose(inputFile); // Closing both file and handler
 
-	fclose(inputFile);
-	fclose(outputFile);
 	return 0;
 }
 
 
-int logFileCreationTime(testResults *newTestResults) {
+int getFileCreationTime(testResults *newTestResults) {
+	/*
+	@ Description: The function will create a file handler and use the GetFileTime() function 
+				   to retrive the input file's creation time. it will save it into the 
+				   relevant result structure variable.
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: 0 -> Success, 1 -> Failure
+	*/
 	Sleep(10);
 
-	FILE *inputFile = NULL, *outputFile = NULL;
+	FILE *inputFile = NULL;
 	HANDLE fileHandler;
-	FILETIME fileCreationTime; //, fileLastModifiedTime;
-	TCHAR fileCreationTimeString[21];
+	FILETIME fileCreationTime;
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
-		return 1;
-	}
-
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
 		return 1;
 	}
 
@@ -325,37 +295,34 @@ int logFileCreationTime(testResults *newTestResults) {
 	//getting file's creation time and last modified time:
 	GetFileTime(fileHandler, &fileCreationTime, NULL, NULL);
 
-	if (GetFileTimeString(fileCreationTime, fileCreationTimeString) == FALSE) {
+	if (getFileTimeString(fileCreationTime, newTestResults->fileCreationTimeString) == FALSE) {
 		printf("Failed converting the creation time to string, error %ul\n", GetLastError());
 		return 1;
 	}
 
-	// writing the result into the output log file:
-	fprintf(outputFile, "The file was created on %ws\n", fileCreationTimeString);
-
-	fclose(inputFile);
-	fclose(outputFile);
+	fclose(inputFile); // Closing both file and handler
+	
 	return 0;
 }
 
 
-int logFileLastModifiedTime(testResults *newTestResults) {
+int getFileLastModifiedTime(testResults *newTestResults) {
+	/*
+	@ Description: The function will create a file handler and use the GetFileTime() function to 
+			       retrive the input file's time when it was last modified. it will save it into 
+				   the relevant result structure variable.
+	@ Param newTestResults: the struct containing all the results.
+	@ Return: 0 -> Success, 1 -> Failure
+	*/
 	Sleep(10);
 
-	FILE *inputFile = NULL, *outputFile = NULL;
+	FILE *inputFile = NULL;
 	HANDLE fileHandler;
 	FILETIME fileLastModifiedTime;
-	TCHAR fileLastModifiedTimeString[21];
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
-		return 1;
-	}
-
-	outputFile = fopen(newTestResults->outputFilePath, "a");
-	if (outputFile == NULL) {
-		printf("Output log File openning failed!");
 		return 1;
 	}
 
@@ -369,39 +336,34 @@ int logFileLastModifiedTime(testResults *newTestResults) {
 	//getting file's creation time and last modified time:
 	GetFileTime(fileHandler, NULL, NULL, &fileLastModifiedTime);
 
-	if (GetFileTimeString(fileLastModifiedTime, fileLastModifiedTimeString) == FALSE) {
+	if (getFileTimeString(fileLastModifiedTime, newTestResults->fileLastModifiedTimeString) == FALSE) {
 		printf("Failed converting the creation time to string, error %ul\n", GetLastError());
 		return 1;
 	}
 
-	// writing the result into the output log file:
-	fprintf(outputFile, "The file was last modified on %ws\n", fileLastModifiedTimeString);
-
-	fclose(inputFile);
-	fclose(outputFile);
+	fclose(inputFile); // Closing both file and handler
 	return 0;
 }
 
 
-HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress,
-	LPVOID ParameterPtr,
-	LPDWORD ThreadIdPtr)
+HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterPtr, LPDWORD ThreadIdPtr)
 {
+	/*
+	@ Description: This function creates a thread by calling Win32 Api's CreateThread() 
+	               function, and setting some of the parameters to default value.
+	@ Param StartAddress: a pointer to the function that will be run by the thread
+	@ Param ParameterPtr: a pointer to the parameter that will be supplied to the
+                          function run by the thread
+	@ Param ThreadIdPtr: return argument: a pointer to a DWORD variable into which
+	                     the function will write the created thread's ID.
+	@ Return: The thread handler
+	*/
 	return CreateThread(
 		NULL,            /*  default security attributes */
-		0,                /*  use default stack size */
+		0,               /*  use default stack size */
 		StartAddress,    /*  thread function */
 		ParameterPtr,    /*  argument to thread function */
-		0,                /*  use default creation flags */
+		0,               /*  use default creation flags */
 		ThreadIdPtr);    /*  returns the thread identifier */
 }
 
-
-// errorHandling(){
-//    free all allocations
-//    free all threads
-//    close all files
-//    print the error on the screen -> use GetLastError()
-//    write the error into the outputFile
-//    in case of an error in one of the threads, should have a dictionary that prints an error into the outputfile for the relevant thread
-// }

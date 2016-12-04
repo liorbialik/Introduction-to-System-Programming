@@ -8,6 +8,9 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 */
 
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+#define TIMEOUT_IN_MILLISECONDS 5000
+#define BRUTAL_TERMINATION_CODE 0x55
+
 #include <stdio.h>
 #include <Windows.h>
 #include <stdlib.h>
@@ -19,63 +22,48 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <process.h>
 #include <sys/stat.h>
 #include "TestFile.h"
+#include "TestManager.h"
+#include <sys/types.h>
+#include <direct.h>
 
 
 //char *getFileName(char *path); 
 char *outputLogFileArgumentCreation(char*, char*);
+BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
+char *openRunTimeLogFile(char*, char*);
+
 
 int main(int argc, char *argv[]) {
-/*	FILE *fileInput = NULL, *runTime_logFileOutput = NULL;
-	char *filePath = NULL; char *outputFilesDirectoryPath = NULL; char *fileName = NULL; char *runTime_logFileNameEnding = { "\\runtime_logfile.txt" }; char *runTime_logFileName = NULL;
-	char *dirName = NULL; char *dirPath = NULL; char *outputDir = NULL;
-	char *fileToTestPnt = NULL; char *fileToTest = NULL;
-*/
-	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL;
+	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL; 
+	const char *dir;
 	char *fileName = NULL; char *outputFileName = NULL;
-	char *dirName = NULL; char *dirNameEnding = NULL; char* dirNameBeginning = NULL;
-	char *dirPath = "c:\\Users\\tomershahar11\\Source\\Repos\\TAU-ITSP20162\\ex2\\TestManager\\OutputFilesDirectory" ; char *runTime_logFileNameEnding = "\\runtime_logfile.txt" ; char *runTime_logFileName = NULL;
+	const char *dirName = NULL; 
+	char *runTime_logFileName = NULL;
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
 	dirName = argv[2];
+
 	
-	// Verify the number of command line argument is correct
+	// Verify that the number of command line argument is correct
 	if (argc != 4) {
 		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
-		getchar();
+		exit(1);
 	}
 
-	// open the InputFile by getting the file path as an argument
+	// open the FileInput by getting the file Name as an argument
 	fileInput = fopen(fileName, "r");
 	if (fileInput == NULL) {
-		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
+		printf("Could not open file, error %ul\n", GetLastError()); 
 		exit(1);
 	}
 
-	//TODO: Need to concatenate beggining of path to end of path as an argument argv[2]
-	LPCWSTR dirfullName = L"c:\\Users\\tomershahar11\\Source\\Repos\\TAU-ITSP20162\\ex2\\TestManager\\OutputFilesDirectory";
-	HANDLE hFile;
-/*	dirNameEnding = argv[2];
-	dirName = (char *)malloc(1 + strlen(dirNameBeginning) + strlen(dirNameEnding));
-	strcpy(dirName, dirNameBeginning);
-	strcat(dirName, dirNameEnding);
-*/
-	// Check if output directory exist. if not create one
-	if (!CreateDirectory(dirfullName, NULL)) {
-		//printf("Couldn't create %S directory\nerror %ul\n", dirfullName, GetLastError());
-	}
-
-	
-	// create runTime_log File inside 'OutputFilesDirectory' directory
-	runTime_logFileName = (char *)malloc(1 + strlen(dirPath) + strlen(runTime_logFileNameEnding));
-	if (runTime_logFileName == NULL) {
-		printf("runTime_logFileName allocation failed/n");
+	// Create directory if not exist
+	if (mkdir(dirName) != NULL) {
+		printf("failed to open output Directory/n");
 		exit(1);
 	}
-	strcpy(runTime_logFileName, dirPath);
-	strcat(runTime_logFileName, runTime_logFileNameEnding);
-	runTime_logFileOutput = fopen(runTime_logFileName, "w");
-	if (runTime_logFileOutput == NULL) {
-		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
+	if (openRunTimeLogFile(dirName, NULL) == NULL) {
+		printf("failed to open runTime_logFile/n");
 		exit(1);
 	}
 
@@ -102,7 +90,7 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		FilesToTestLengthArray[i] = 0;	// initialize FilesToTestArray
 	}
-	// go over FilesToTestArray and save each file's length
+	// go over FilesToTestArray and save each test's length
 	for (i = 0; i<TotalNumberOfFiles; i++) {
 		while (fgetc(fileInput) != '\n') {
 			FilesToTestLengthArray[i]++;
@@ -125,49 +113,95 @@ int main(int argc, char *argv[]) {
 		} 
 		fgetc(fileInput);
 		outputLogFile = outputLogFileArgumentCreation(dirName, fileToTest);
-		CommandLineArguentStringArray[i] = (char *)malloc(((FilesToTestLengthArray[i]) +  14 + strlen(outputLogFile)) * sizeof(char)); //
-		if (FilesToTestLengthArray[i] == NULL) {
+		CommandLineArguentStringArray[i] = (char *)malloc(((FilesToTestLengthArray[i]) +  14 + strlen(outputLogFile)) * sizeof(char));
+		// 14 for the const "FileTest.exe" and for two spaces
+		if (CommandLineArguentStringArray[i] == NULL) {
 			printf("allocation was failed, error %ul\n", GetLastError());
 		}
 		strcpy(CommandLineArguentStringArray[i], TestFileProgramName);
 		strcat(CommandLineArguentStringArray[i], fileToTest);
 		strcat(CommandLineArguentStringArray[i], " ");
 		strcat(CommandLineArguentStringArray[i], outputLogFile);
-		
+
 	}
-
-
 	//TEST
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		printf("%s\n", CommandLineArguentStringArray[i]);
 	}
 	getchar();
 
+	//// Demonstrates win32 process creation and termination of a process
 
-	//going over the fileInput in a loop:
-	// 1. read the lines as a single string
-	// 2. build arguments for the file string
-	// 3. concatenated all parameters to a single string as well, "TestFiles.exe <hw.txt> <OutputFilesDirectory>\<hw.txt>"
-	// 4. create process for that string
-	// 5. call TestFiles.exe 
+	//// Converting char* to type TCHAR
+	//char *ch = { "calc.exe" };
+	//// You'd need this line if using earlier versions of ATL/Visual Studio
+	//// USES_CONVERSION;
+	//TCHAR szName[512];
+	//_tcscpy(szName, A2T(ch));
+	//MessageBox(NULL, szName, szName, MB_OK);
+	//
+
+	//PROCESS_INFORMATION procinfo;
+	//DWORD				waitcode;
+	//DWORD				exitcode;
+	//BOOL				retVal;
+	//TCHAR				szName;
+	////TCHAR				command[] = _T("calc.exe");
+	///* <ISP> TCHAR is a win32  */
+	///* generic char which may be either a simple (ANSI) char or a unicode char, */
+	///* depending on behind-the-scenes operating system definitions. Type LPTSTR */
+	///* is a string of TCHARs. Type LPCTSTR is a const string of TCHARs. */
+	//retVal = CreateProcessSimple(szName, &procinfo);
+
+	//if (retVal == 0)
+	//{
+	//	printf("Process Creation Failed!\n");
+	//	return;
+	//}
+	//getchar();
+
+	//waitcode = WaitForSingleObject(
+	//	procinfo.hProcess,
+	//	TIMEOUT_IN_MILLISECONDS); /* Waiting 5 secs for the process to end */
+
+	//printf("WaitForSingleObject output: ");
+	//switch (waitcode)
+	//{
+	//case WAIT_TIMEOUT:
+	//	printf("WAIT_TIMEOUT\n"); break;
+	//case WAIT_OBJECT_0:
+	//	printf("WAIT_OBJECT_0\n"); break;
+	//default:
+	//	printf("0x%x\n", waitcode);
+	//}
+
+	//if (waitcode == WAIT_TIMEOUT) /* Process is still alive */
+	//{
+	//	printf("Process was not terminated before timeout!\n"
+	//		"Terminating brutally!\n");
+	//	TerminateProcess(
+	//		procinfo.hProcess,
+	//		BRUTAL_TERMINATION_CODE); /* Terminating process with an exit code of 55h */
+	//	Sleep(10); /* Waiting a few milliseconds for the process to terminate */
+	//}
+
+	//GetExitCodeProcess(procinfo.hProcess, &exitcode);
+
+	//printf("The exit code for the process is 0x%x\n", exitcode);
+
+	//CloseHandle(procinfo.hProcess); /* Closing the handle to the process */
+	//CloseHandle(procinfo.hThread); /* Closing the handle to the main thread of the process */
 
 
-		//	char *filePath = NULL, *outputLogFilePath = NULL;
-		//	HANDLE fileHandler;
-		//	FILETIME fileCreationTime;
-		//	SYSTEMTIME stUTC, stLocal;
-		//	
-		//	filePath = argv[1];
-		//	outputLogFilePath = argv[2];
-		//
-		//	fileHandler = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		//	if (fileHandler == INVALID_HANDLE_VALUE)
-		//	{
-		//		printf("Could not open file, error %ul\n", GetLastError());
-		//		return -1;
-		//	}
-		// getchar();
 
+
+/*
+	//TEST
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		printf("%s\n", CommandLineArguentStringArray[i]);
+	}
+	getchar();
+*/
 
 	//closing files that have been opened during the program
 	fclose(fileInput);
@@ -180,6 +214,25 @@ int main(int argc, char *argv[]) {
 		free(CommandLineArguentStringArray[i]);
 	}
 	return 0;
+}
+
+char *openRunTimeLogFile(char *dirName, char *runTime_logFileName) {
+
+	// create runTime_log File inside <OutputFilesDirectory> directory
+	char *runTime_logFileNameEnding = "\\runtime_logfile.txt"; char *runTime_logFileOutput = NULL;
+	runTime_logFileName = (char *)malloc(1 + strlen(dirName) + strlen(runTime_logFileNameEnding));
+	if (runTime_logFileName == NULL) {
+		printf("runTime_logFileName allocation failed/n");
+		exit(1);
+	}
+	strcpy(runTime_logFileName, dirName);
+	strcat(runTime_logFileName, runTime_logFileNameEnding);
+	runTime_logFileOutput = fopen(runTime_logFileName, "w");
+	if (runTime_logFileOutput == NULL) {
+		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
+		exit(1);
+	}
+	return runTime_logFileOutput;
 }
 
 char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
@@ -201,6 +254,28 @@ char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 
 	return outputLogFileName;
 }
+
+BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr)
+{
+	STARTUPINFO	startinfo = { sizeof(STARTUPINFO), NULL, 0 }; /* <ISP> here we */
+															  /* initialize a "Neutral" STARTUPINFO variable. Supplying this to */
+															  /* CreateProcess() means we have no special interest in this parameter. */
+															  /* This is equivalent to what we are doing by supplying NULL to most other */
+															  /* parameters of CreateProcess(). */
+
+	return CreateProcess(NULL, /*  No module name (use command line). */
+		CommandLine,			/*  Command line. */
+		NULL,					/*  Process handle not inheritable. */
+		NULL,					/*  Thread handle not inheritable. */
+		FALSE,					/*  Set handle inheritance to FALSE. */
+		NORMAL_PRIORITY_CLASS,	/*  creation/priority flags. */
+		NULL,					/*  Use parent's environment block. */
+		NULL,					/*  Use parent's starting directory. */
+		&startinfo,				/*  Pointer to STARTUPINFO structure. */
+		ProcessInfoPtr			/*  Pointer to PROCESS_INFORMATION structure. */
+	);
+}
+
 
 //char *getFileName(char *path) {
 //	/*
@@ -236,3 +311,27 @@ char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 // 5. The TestManager samples every x milisecond each process, and update its progress.
 // 6. TODO: Dealing with error handles
 // 7. 
+
+//going over the fileInput in a loop:
+// 1. read the lines as a single string
+// 2. build arguments for the file string
+// 3. concatenated all parameters to a single string as well, "TestFiles.exe <hw.txt> <OutputFilesDirectory>\<hw.txt>"
+// 4. create process for that string
+// 5. call TestFiles.exe 
+
+
+//	char *filePath = NULL, *outputLogFilePath = NULL;
+//	HANDLE fileHandler;
+//	FILETIME fileCreationTime;
+//	SYSTEMTIME stUTC, stLocal;
+//	
+//	filePath = argv[1];
+//	outputLogFilePath = argv[2];
+//
+//	fileHandler = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+//	if (fileHandler == INVALID_HANDLE_VALUE)
+//	{
+//		printf("Could not open file, error %ul\n", GetLastError());
+//		return -1;
+//	}
+// getchar();

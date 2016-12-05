@@ -16,8 +16,8 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
-#include <Strsafe.h>
 #include <tchar.h>
+#include <Strsafe.h>
 #include <conio.h>
 #include <process.h>
 #include <sys/stat.h>
@@ -26,18 +26,17 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <sys/types.h>
 #include <direct.h>
 
-
-//char *getFileName(char *path); 
 char *outputLogFileArgumentCreation(char*, char*);
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
 char *openRunTimeLogFile(char*, char*);
+LPTSTR ConvertCharStringToLPTSTR(const char *Source);
+TCHAR *charArray_To_TcharArray(char *source, char *dest);
 
 
 int main(int argc, char *argv[]) {
 	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL; 
-	const char *dir;
 	char *fileName = NULL; char *outputFileName = NULL;
-	const char *dirName = NULL; 
+	const char *dirName = NULL; LPTSTR dirNameLPTSTR = NULL;
 	char *runTime_logFileName = NULL;
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
@@ -58,10 +57,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Create directory if not exist
-	if (mkdir(dirName) != NULL) {
-		printf("failed to open output Directory/n");
-		exit(1);
-	}
+	// TODO: Need to create a case whether to open a dir if not exist
+	mkdir(dirName);
+
 	if (openRunTimeLogFile(dirName, NULL) == NULL) {
 		printf("failed to open runTime_logFile/n");
 		exit(1);
@@ -124,41 +122,23 @@ int main(int argc, char *argv[]) {
 		strcat(CommandLineArguentStringArray[i], outputLogFile);
 
 	}
-	//TEST
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		printf("%s\n", CommandLineArguentStringArray[i]);
-	}
-	getchar();
 
 	//// Demonstrates win32 process creation and termination of a process
+	PROCESS_INFORMATION *procinfo;
+	DWORD				waitcode;
+	DWORD				exitcode;
+	BOOL				retVal;
+	LPTSTR				command;
 
-	//// Converting char* to type TCHAR
-	//char *ch = { "calc.exe" };
-	//// You'd need this line if using earlier versions of ATL/Visual Studio
-	//// USES_CONVERSION;
-	//TCHAR szName[512];
-	//_tcscpy(szName, A2T(ch));
-	//MessageBox(NULL, szName, szName, MB_OK);
-	//
-
-	//PROCESS_INFORMATION procinfo;
-	//DWORD				waitcode;
-	//DWORD				exitcode;
-	//BOOL				retVal;
-	//TCHAR				szName;
-	////TCHAR				command[] = _T("calc.exe");
-	///* <ISP> TCHAR is a win32  */
-	///* generic char which may be either a simple (ANSI) char or a unicode char, */
-	///* depending on behind-the-scenes operating system definitions. Type LPTSTR */
-	///* is a string of TCHARs. Type LPCTSTR is a const string of TCHARs. */
-	//retVal = CreateProcessSimple(szName, &procinfo);
-
-	//if (retVal == 0)
-	//{
-	//	printf("Process Creation Failed!\n");
-	//	return;
-	//}
-	//getchar();
+	procinfo = (PROCESS_INFORMATION*)malloc(sizeof(PROCESS_INFORMATION));
+	char *ex = { "calc.exe" };
+	command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[0]);
+	retVal = CreateProcessSimple(command, procinfo);
+	if (retVal == 0) {
+		printf("Process Creation Failed!\n");
+		return;
+	}
+	getchar();
 
 	//waitcode = WaitForSingleObject(
 	//	procinfo.hProcess,
@@ -205,7 +185,6 @@ int main(int argc, char *argv[]) {
 
 	//closing files that have been opened during the program
 	fclose(fileInput);
-	fclose(runTime_logFileOutput);
 
 	// free all allocated memories
 	free(FilesToTestLengthArray);
@@ -232,6 +211,7 @@ char *openRunTimeLogFile(char *dirName, char *runTime_logFileName) {
 		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
 		exit(1);
 	}
+	fclose(runTime_logFileOutput);
 	return runTime_logFileOutput;
 }
 
@@ -255,6 +235,75 @@ char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 	return outputLogFileName;
 }
 
+LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
+	/* the win32 API LPTSTR string type is defined in one of two ways, */
+	/* as a simple char string or as a wide-character (unicode) string.*/
+	/* If the second case is true, the macro UNICODE should be defined. */
+
+#ifdef UNICODE     
+#define STR_COPY_FUNCTION mbstowcs /* converts a simple char string */
+	/* to a wide char string */
+	typedef size_t CopyFunctionOutput_t;
+#else
+#define STR_COPY_FUNCTION strncpy 
+	typedef char *CopyFunctionOutput_t;
+#endif
+
+	TCHAR *Dest = NULL;
+	CopyFunctionOutput_t CopyFunctionOutput;
+	BOOL CopyFunctionSucceeded;
+	size_t NumOfLettersInSource;
+	size_t LengthOfSourceIncludingTerminatingZero;
+
+	if (Source == NULL)
+		return NULL;
+
+	NumOfLettersInSource = strlen(Source);
+	LengthOfSourceIncludingTerminatingZero = NumOfLettersInSource + 1;
+
+	Dest = (TCHAR*)malloc(sizeof(TCHAR) * LengthOfSourceIncludingTerminatingZero);
+
+	CopyFunctionOutput = STR_COPY_FUNCTION(
+		Dest,
+		Source,
+		LengthOfSourceIncludingTerminatingZero);
+
+	/* Add terminating zero: */
+	Dest[LengthOfSourceIncludingTerminatingZero - 1] = _T('\0');
+
+#ifdef UNICODE     
+	CopyFunctionSucceeded = (CopyFunctionOutput == NumOfLettersInSource);
+#else        
+	CopyFunctionSucceeded = STRINGS_ARE_IDENTICAL(Dest, Source);
+#endif
+
+	if (!CopyFunctionSucceeded)
+	{
+		free(Dest);
+		return NULL;
+	}
+
+	return (LPTSTR)Dest;
+
+#undef STR_COPY_FUNCTION 
+}
+
+//TCHAR *charArray_To_TcharArray(char *source, char *dest) {
+//	
+//	int i;
+//	dest = (TCHAR*)malloc((strlen(source) + 10) * sizeof(TCHAR));
+//	if (dest == NULL) {
+//		printf("runTime_logFileName allocation failed/n");
+//		exit(1);
+//	}
+//	for (i = 0; i < strlen(source); i++) {
+//		dest[i] = (TCHAR)source[i];
+//	}
+//	dest[i] = 0;
+//
+//	return dest;
+//}
+
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr)
 {
 	STARTUPINFO	startinfo = { sizeof(STARTUPINFO), NULL, 0 }; /* <ISP> here we */
@@ -275,23 +324,6 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 		ProcessInfoPtr			/*  Pointer to PROCESS_INFORMATION structure. */
 	);
 }
-
-
-//char *getFileName(char *path) {
-//	/*
-//	inspired by http://stackoverflow.com/questions/5901624/extract-file-name-from-full-path-in-c-using-msvs2005
-//	*/
-//
-//	Sleep(10);
-//
-//	char *filename = strrchr(path, '\\');
-//	if (filename == NULL)
-//		filename = path;
-//	else
-//		filename++;
-//	return filename;
-//}
-
 
 // TestManager algorithm flow:
 // 1. gets a 'fileToTest' file name and opens it.

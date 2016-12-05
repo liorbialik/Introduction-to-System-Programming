@@ -142,7 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
+    <ClCompile Include="TestManager.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TestFile.h" />

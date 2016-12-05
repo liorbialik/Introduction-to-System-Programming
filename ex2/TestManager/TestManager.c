@@ -7,10 +7,14 @@ Main.c: TestManager.exe
 Tomer Shahar 301359410, Lior Bialik 301535316
 */
 
-#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+
+/* Constants: */
 #define TIMEOUT_IN_MILLISECONDS 5000
 #define BRUTAL_TERMINATION_CODE 0x55
 
+
+/* Libraries: */
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #include <stdio.h>
 #include <Windows.h>
 #include <stdlib.h>
@@ -26,11 +30,12 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <sys/types.h>
 #include <direct.h>
 
+
+/* Function Declarations: */
 char *outputLogFileArgumentCreation(char*, char*);
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
 char *openRunTimeLogFile(char*, char*);
 LPTSTR ConvertCharStringToLPTSTR(const char *Source);
-TCHAR *charArray_To_TcharArray(char *source, char *dest);
 
 
 int main(int argc, char *argv[]) {
@@ -65,7 +70,6 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	// open FilesToTest and for each file create a process
 
 	// go over 'FilesToTest' file and count all files to be tested
 	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
@@ -99,7 +103,8 @@ int main(int argc, char *argv[]) {
 
 	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
 	// concatenated all parameters to a single string
-	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "FileTest.exe " }; char *TestFileArgumentString = NULL; char *fileToTest = NULL;
+	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "FileTest.exe " }; 
+	char *TestFileArgumentString = NULL; char *fileToTest = NULL;
 	
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		fileToTest = (char *)malloc(FilesToTestLengthArray[i] * sizeof(char));
@@ -132,7 +137,7 @@ int main(int argc, char *argv[]) {
 
 	procinfo = (PROCESS_INFORMATION*)malloc(sizeof(PROCESS_INFORMATION));
 	char *ex = { "calc.exe" };
-	command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[0]);
+	command = ConvertCharStringToLPTSTR(ex);
 	retVal = CreateProcessSimple(command, procinfo);
 	if (retVal == 0) {
 		printf("Process Creation Failed!\n");
@@ -169,22 +174,10 @@ int main(int argc, char *argv[]) {
 
 	//printf("The exit code for the process is 0x%x\n", exitcode);
 
-	//CloseHandle(procinfo.hProcess); /* Closing the handle to the process */
-	//CloseHandle(procinfo.hThread); /* Closing the handle to the main thread of the process */
-
-
-
-
-/*
-	//TEST
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		printf("%s\n", CommandLineArguentStringArray[i]);
-	}
-	getchar();
-*/
-
 	//closing files that have been opened during the program
 	fclose(fileInput);
+	//CloseHandle(procinfo.hProcess); /* Closing the handle to the process */
+	//CloseHandle(procinfo.hThread); /* Closing the handle to the main thread of the process */
 
 	// free all allocated memories
 	free(FilesToTestLengthArray);
@@ -288,22 +281,6 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 #undef STR_COPY_FUNCTION 
 }
 
-//TCHAR *charArray_To_TcharArray(char *source, char *dest) {
-//	
-//	int i;
-//	dest = (TCHAR*)malloc((strlen(source) + 10) * sizeof(TCHAR));
-//	if (dest == NULL) {
-//		printf("runTime_logFileName allocation failed/n");
-//		exit(1);
-//	}
-//	for (i = 0; i < strlen(source); i++) {
-//		dest[i] = (TCHAR)source[i];
-//	}
-//	dest[i] = 0;
-//
-//	return dest;
-//}
-
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr)
 {
 	STARTUPINFO	startinfo = { sizeof(STARTUPINFO), NULL, 0 }; /* <ISP> here we */
@@ -325,6 +302,22 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 	);
 }
 
+//TCHAR *charArray_To_TcharArray(char *source, char *dest) {
+//	
+//	int i;
+//	dest = (TCHAR*)malloc((strlen(source) + 10) * sizeof(TCHAR));
+//	if (dest == NULL) {
+//		printf("runTime_logFileName allocation failed/n");
+//		exit(1);
+//	}
+//	for (i = 0; i < strlen(source); i++) {
+//		dest[i] = (TCHAR)source[i];
+//	}
+//	dest[i] = 0;
+//
+//	return dest;
+//}
+
 // TestManager algorithm flow:
 // 1. gets a 'fileToTest' file name and opens it.
 // 2. for every fileTest in the content file:
@@ -332,18 +325,15 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 //		b. check who is opening s process? testfile.exe or testmanager.exe when getting a fileToTestName
 //		c. call for TestFile.exe for every line (process). The program should send two arguments: <FileTestName>.txt, <OutputFilesDirectory>\\<FileTestName>_log.txt.
 //		d. End condition will be the char EOF. by then we will count all '\n' values and that will deter the array size.
-
 // 3. As an assumption that each ProcessCall creates a logFile with the specific test results for every thread, 
 //    stores this file inside 'Output Files Directory'.
 // 4. Create a 'runTime_logFile.txt as well inside 'Output Files Directory'. The file will include the following:
 //		a. Process ID
 //		b. Process Status: succeed / failed / still running.
 //		c. Finally, when all processes have finished running successfully, plot an appropriate message followed by exit code.
-
 // 5. The TestManager samples every x milisecond each process, and update its progress.
 // 6. TODO: Dealing with error handles
 // 7. 
-
 //going over the fileInput in a loop:
 // 1. read the lines as a single string
 // 2. build arguments for the file string
@@ -351,19 +341,10 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 // 4. create process for that string
 // 5. call TestFiles.exe 
 
-
-//	char *filePath = NULL, *outputLogFilePath = NULL;
-//	HANDLE fileHandler;
-//	FILETIME fileCreationTime;
-//	SYSTEMTIME stUTC, stLocal;
-//	
-//	filePath = argv[1];
-//	outputLogFilePath = argv[2];
-//
-//	fileHandler = CreateFile(filePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-//	if (fileHandler == INVALID_HANDLE_VALUE)
-//	{
-//		printf("Could not open file, error %ul\n", GetLastError());
-//		return -1;
-//	}
-// getchar();
+/*
+//TEST
+for (i = 0; i < TotalNumberOfFiles; i++) {
+printf("%s\n", CommandLineArguentStringArray[i]);
+}
+getchar();
+*/

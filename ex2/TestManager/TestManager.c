@@ -34,8 +34,9 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 /* Function Declarations: */
 char *outputLogFileArgumentCreation(char*, char*);
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
-char *openRunTimeLogFile(char*, char*);
+char *createRunTimeLogFileInsideOutputDirectory(char*, char*);
 LPTSTR ConvertCharStringToLPTSTR(const char *Source);
+
 
 
 int main(int argc, char *argv[]) {
@@ -46,6 +47,14 @@ int main(int argc, char *argv[]) {
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
 	dirName = argv[2];
+	PROCESS_INFORMATION *procinfo;
+	DWORD				waitcode;
+	DWORD				exitcode;
+	BOOL				retVal;
+	LPTSTR				command;
+	DWORD				retValueFromMultipleObjects;
+	DWORD				ProcessStatusCheckFrequency = argv[3];
+	HANDLE				*hProcessArray;
 
 	
 	// Verify that the number of command line argument is correct
@@ -65,11 +74,11 @@ int main(int argc, char *argv[]) {
 	// TODO: Need to create a case whether to open a dir if not exist
 	mkdir(dirName);
 
-	if (openRunTimeLogFile(dirName, NULL) == NULL) {
-		printf("failed to open runTime_logFile/n");
+	runTime_logFileOutput = fopen(createRunTimeLogFileInsideOutputDirectory(dirName, NULL), "w");
+	if (runTime_logFileOutput == NULL) {
+		printf("failed to open runTime_logFile, error %ul\n", GetLastError()); //TODO: need to add an error handling function
 		exit(1);
 	}
-
 
 	// go over 'FilesToTest' file and count all files to be tested
 	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
@@ -103,8 +112,12 @@ int main(int argc, char *argv[]) {
 
 	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
 	// concatenated all parameters to a single string
-	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "FileTest.exe " }; 
+	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "main.exe " }; 
 	char *TestFileArgumentString = NULL; char *fileToTest = NULL;
+	procinfo = (PROCESS_INFORMATION*)malloc(TotalNumberOfFiles * sizeof(PROCESS_INFORMATION));
+	hProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE));
+
+	char *ex = { "calc.exe" }; 
 	
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		fileToTest = (char *)malloc(FilesToTestLengthArray[i] * sizeof(char));
@@ -126,28 +139,26 @@ int main(int argc, char *argv[]) {
 		strcat(CommandLineArguentStringArray[i], " ");
 		strcat(CommandLineArguentStringArray[i], outputLogFile);
 
+		command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[i]);
+		//command = ConvertCharStringToLPTSTR(ex);
+		retVal = CreateProcessSimple(command, &procinfo[i]);
+		if (retVal == 0) {
+			printf("Process Creation Failed!\n");
+			//writing into runTime_logFile error message
+			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %d !!!\n", fileToTest, GetLastError());
+			// TODO: Need to output hex rep. error code
+		}
+		else {
+			fprintf(runTime_logFileOutput, "Successfully created a process with ID %d to execute %s\n", procinfo->dwProcessId, fileToTest);
+			// TODO: Need to output ProcessID
+		}
+
+		// save all hProcess in an array
+		hProcessArray[i] = procinfo->hProcess;
 	}
 
-	//// Demonstrates win32 process creation and termination of a process
-	PROCESS_INFORMATION *procinfo;
-	DWORD				waitcode;
-	DWORD				exitcode;
-	BOOL				retVal;
-	LPTSTR				command;
-
-	procinfo = (PROCESS_INFORMATION*)malloc(sizeof(PROCESS_INFORMATION));
-	char *ex = { "calc.exe" };
-	command = ConvertCharStringToLPTSTR(ex);
-	retVal = CreateProcessSimple(command, procinfo);
-	if (retVal == 0) {
-		printf("Process Creation Failed!\n");
-		return;
-	}
-	getchar();
-
-	//waitcode = WaitForSingleObject(
-	//	procinfo.hProcess,
-	//	TIMEOUT_IN_MILLISECONDS); /* Waiting 5 secs for the process to end */
+	// After calling all processes, analyze results into runTime_logFile
+	waitcode = WaitForMultipleObjects(TotalNumberOfFiles, &hProcessArray, 1, ProcessStatusCheckFrequency);
 
 	//printf("WaitForSingleObject output: ");
 	//switch (waitcode)
@@ -174,10 +185,10 @@ int main(int argc, char *argv[]) {
 
 	//printf("The exit code for the process is 0x%x\n", exitcode);
 
-	//closing files that have been opened during the program
+	CloseHandle(procinfo->hProcess); /* Closing the handle to the process */
+	CloseHandle(procinfo->hThread); /* Closing the handle to the main thread of the process */
 	fclose(fileInput);
-	//CloseHandle(procinfo.hProcess); /* Closing the handle to the process */
-	//CloseHandle(procinfo.hThread); /* Closing the handle to the main thread of the process */
+	fclose(runTime_logFileOutput);
 
 	// free all allocated memories
 	free(FilesToTestLengthArray);
@@ -188,8 +199,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-char *openRunTimeLogFile(char *dirName, char *runTime_logFileName) {
-
+char *createRunTimeLogFileInsideOutputDirectory(char *dirName, char *runTime_logFileName) {
 	// create runTime_log File inside <OutputFilesDirectory> directory
 	char *runTime_logFileNameEnding = "\\runtime_logfile.txt"; char *runTime_logFileOutput = NULL;
 	runTime_logFileName = (char *)malloc(1 + strlen(dirName) + strlen(runTime_logFileNameEnding));
@@ -199,13 +209,8 @@ char *openRunTimeLogFile(char *dirName, char *runTime_logFileName) {
 	}
 	strcpy(runTime_logFileName, dirName);
 	strcat(runTime_logFileName, runTime_logFileNameEnding);
-	runTime_logFileOutput = fopen(runTime_logFileName, "w");
-	if (runTime_logFileOutput == NULL) {
-		printf("Could not open file, error %ul\n", GetLastError()); //TODO: need to add an error handling function
-		exit(1);
-	}
-	fclose(runTime_logFileOutput);
-	return runTime_logFileOutput;
+
+	return runTime_logFileName;
 }
 
 char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {

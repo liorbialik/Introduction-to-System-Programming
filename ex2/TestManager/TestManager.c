@@ -340,7 +340,6 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INF
 
 }
 
-
 //TCHAR *charArray_To_TcharArray(char *source, char *dest) {
 //	
 //	int i;

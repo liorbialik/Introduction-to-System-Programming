@@ -12,7 +12,6 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #define TIMEOUT_IN_MILLISECONDS 5000
 #define BRUTAL_TERMINATION_CODE 0x55
 
-
 /* Libraries: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #include <stdio.h>
@@ -36,53 +35,59 @@ char *outputLogFileArgumentCreation(char*, char*);
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
 char *createRunTimeLogFileInsideOutputDirectory(char*, char*);
 LPTSTR ConvertCharStringToLPTSTR(const char *Source);
-void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, int TotalNumberOfFiles);
-
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, HANDLE *handleProcessArray, DWORD *exitcodeArray, int NumberOfProcess);
+//void printListOfProcess(HANDLE *handleProcessArray, DWORD *exitcodeArray);
+void *getDWORDMallocArray(DWORD *nameArray, int MUL);
 
 
 int main(int argc, char *argv[]) {
-	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL; 
+	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL;
 	char *fileName = NULL; char *outputFileName = NULL;
-	const char *dirName = NULL; LPTSTR dirNameLPTSTR = NULL;
+	char *dirName = NULL; LPTSTR dirNameLPTSTR = NULL; char *loopTime = NULL;
 	char *runTime_logFileName = NULL;
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	fileName = argv[1];
 	dirName = argv[2];
+	loopTime = argv[3];
 	PROCESS_INFORMATION *procinfo;
 	DWORD				waitcode;
-	DWORD				exitcode;
+	DWORD				*exitcodeArray;
 	BOOL				retVal;
 	LPTSTR				command;
-	DWORD				retValueFromMultipleObjects;
-	DWORD				ProcessStatusCheckFrequency = argv[3];
-	HANDLE				*hProcessArray;
+	DWORD				ProcessStatusCheckFrequency = (int)loopTime;
+	HANDLE				*handleProcessArray;
+
 
 	const FILETIME		*FileTime;
 	LPSYSTEMTIME		*SystemTime = NULL;
 
-	
+
+
 	// Verify that the number of command line argument is correct
 	if (argc != 4) {
 		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
 		exit(1);
 	}
 
+
 	// open the FileInput by getting the file Name as an argument
 	fileInput = fopen(fileName, "r");
 	if (fileInput == NULL) {
-		printf("Could not open file, error %ul\n", GetLastError()); 
+		printf("Could not open file, error %ul\n", GetLastError());
 		exit(1);
 	}
 
+
 	// Create directory if not exist
-	// TODO: Need to create a case whether to open a dir if not exist
 	mkdir(dirName);
+
 
 	runTime_logFileOutput = fopen(createRunTimeLogFileInsideOutputDirectory(dirName, NULL), "w");
 	if (runTime_logFileOutput == NULL) {
 		printf("failed to open runTime_logFile, error %ul\n", GetLastError()); //TODO: need to add an error handling function
 		exit(1);
 	}
+
 
 	// go over 'FilesToTest' file and count all files to be tested
 	// fgetc() is inspired by http://stackoverflow.com/questions/12733105/c-function-that-counts-lines-in-file
@@ -94,7 +99,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	// Resetting pointer to the start of file
-	rewind(fileInput);	
+	rewind(fileInput);
+
 
 	// Assign *FilesToTestArray in size of TotalNumberOfFiles
 	int *FilesToTestLengthArray = NULL; int i;
@@ -114,18 +120,41 @@ int main(int argc, char *argv[]) {
 	// Resetting pointer to the start of file
 	rewind(fileInput);
 
+
 	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
 	// concatenated all parameters to a single string
-	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "main.exe " }; 
+
+
+	// TODO: Move to declerations
+	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "main.exe " };
 	char *TestFileArgumentString = NULL; char *fileToTest = NULL;
 	procinfo = (PROCESS_INFORMATION*)malloc(TotalNumberOfFiles * sizeof(PROCESS_INFORMATION));
-	hProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE)); 
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		hProcessArray[i] = 0;	// initialize hProcessArray
+	int numOfRunningProcess = 0;
+	if (procinfo == NULL) {
+		printf("allocation was failed, error %ul\n", GetLastError());
 	}
 
+
+	//Dynamic memory allocations
+	handleProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE));
+	if (handleProcessArray == NULL) {
+		printf("allocation was failed, error %ul\n", GetLastError());
+	}
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		handleProcessArray[i] = 0;	// initialize handleProcessArray
+	}
 	FileTime = (const FILETIME*)malloc(TotalNumberOfFiles * sizeof(const FILETIME));
-	FileTimeToSystemTime(FileTime, SystemTime);
+	if (FileTime == NULL) {
+		printf("allocation was failed, error %ul\n", GetLastError());
+	}
+	//for (i = 0; i < TotalNumberOfFiles; i++) {
+	//	FileTime[i] = NULL;	// initialize handleProcessArray
+	//}
+	//FileTimeToSystemTime(FileTime, SystemTime);
+	getDWORDMallocArray(exitcodeArray, TotalNumberOfFiles);
+
+
+
 
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		fileToTest = (char *)malloc(FilesToTestLengthArray[i] * sizeof(char));
@@ -134,10 +163,10 @@ int main(int argc, char *argv[]) {
 		}
 		if (fgets(fileToTest, 1 + FilesToTestLengthArray[i], fileInput) == NULL) {
 			printf("reading a string from fileInput was failed, error %ul\n", GetLastError());
-		} 
+		}
 		fgetc(fileInput);
 		outputLogFile = outputLogFileArgumentCreation(dirName, fileToTest);
-		CommandLineArguentStringArray[i] = (char *)malloc(((FilesToTestLengthArray[i]) +  14 + strlen(outputLogFile)) * sizeof(char));
+		CommandLineArguentStringArray[i] = (char *)malloc(((FilesToTestLengthArray[i]) + 14 + strlen(outputLogFile)) * sizeof(char));
 		// 14 for the const "FileTest.exe" and for two spaces
 		if (CommandLineArguentStringArray[i] == NULL) {
 			printf("allocation was failed, error %ul\n", GetLastError());
@@ -147,34 +176,48 @@ int main(int argc, char *argv[]) {
 		strcat(CommandLineArguentStringArray[i], " ");
 		strcat(CommandLineArguentStringArray[i], outputLogFile);
 
+
 		command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[i]);
 		retVal = CreateProcessSimple(command, &procinfo[i]);
 		if (retVal == 0) {
-			printf("Process Creation Failed!\n");
+			printf("!!! Failed to create new process to run %s. Error code: %d !!!\n", fileToTest, GetLastError());
 			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %d !!!\n", fileToTest, GetLastError());
 			// TODO: Need to output hex rep. error code
 		}
 		else {
 			fprintf(runTime_logFileOutput, "Successfully created a process with ID %d to execute %s\n", procinfo->dwProcessId, fileToTest);
+			// save handleProcess that were succedded in an handleProcessArray
+			handleProcessArray[i] = procinfo->hProcess;
 		}
-		// save all hProcess in an array
-		hProcessArray[i] = procinfo->hProcess;
 	}
 
-	waitcode = WaitForMultipleObjects(TotalNumberOfFiles, &hProcessArray, 1, ProcessStatusCheckFrequency);
-	while(waitcode != 0) {
-		// analyze results into runTime_logFile
-		checkProcessStatus(waitcode, runTime_logFileOutput, procinfo, TotalNumberOfFiles);
-		waitcode = WaitForMultipleObjects(TotalNumberOfFiles, &hProcessArray, 1, ProcessStatusCheckFrequency);
-	} 
 
-	//All	the	processes	have	finished	running.	Exiting	program.
+	for (i = 0; i<TotalNumberOfFiles; i++) {
+		if (handleProcessArray[i] != 0) {
+			numOfRunningProcess++;
+		}
+	}
+	// TODO: call organizeArray for handleProcessArray
+
+
+	do {
+		waitcode = WaitForMultipleObjects(numOfRunningProcess, handleProcessArray, 1, ProcessStatusCheckFrequency);
+		// analyze results into runTime_logFile
+		checkProcessStatus(waitcode, runTime_logFileOutput, procinfo, handleProcessArray, exitcodeArray, numOfRunningProcess);
+
+
+	} while (numOfRunningProcess > 0);
+
+
+	//All the processes have finished running. Exiting program
 	fprintf(runTime_logFileOutput, "All the processes have finished running. Exiting program\n");
+
 
 	CloseHandle(procinfo->hProcess); /* Closing the handle to the process */
 	CloseHandle(procinfo->hThread); /* Closing the handle to the main thread of the process */
 	fclose(fileInput);
 	fclose(runTime_logFileOutput);
+
 
 	// free all allocated memories
 	free(FilesToTestLengthArray);
@@ -184,6 +227,7 @@ int main(int argc, char *argv[]) {
 	}
 	return 0;
 }
+
 
 char *createRunTimeLogFileInsideOutputDirectory(char *dirName, char *runTime_logFileName) {
 	// create runTime_log File inside <OutputFilesDirectory> directory
@@ -196,16 +240,17 @@ char *createRunTimeLogFileInsideOutputDirectory(char *dirName, char *runTime_log
 	strcpy(runTime_logFileName, dirName);
 	strcat(runTime_logFileName, runTime_logFileNameEnding);
 
+
 	return runTime_logFileName;
 }
 
 char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 	// prepare arguments for calling 'TestFiles' program
 	char *outputLogFileNameEnding = { "_log.txt" }; char *outputLogFileName = NULL; size_t outputLogFileNameLength = 0;
-	
+
 	outputLogFileNameLength = strlen(dirName) + strlen(fileToTestName) + strlen(outputLogFileNameEnding) - 4 + 2 + 1;
 	// '-4' due to deduction of '.txt' ending since it appearse twice, '-2' due to addition of '\\', '+1' due to '\0' ending
-	outputLogFileName = malloc(sizeof(char) * outputLogFileNameLength); 
+	outputLogFileName = malloc(sizeof(char) * outputLogFileNameLength);
 	if (outputLogFileName == NULL) {
 		printf("outputLogFileName allocation failed/n");
 		exit(1);
@@ -216,6 +261,7 @@ char *outputLogFileArgumentCreation(char* dirName, char* fileToTestName) {
 	outputLogFileName[strlen(outputLogFileName) - 4] = '\0'; // mark the end of the precious string before the '.txt' ending
 	strcat(outputLogFileName, outputLogFileNameEnding); // add the correct ending
 
+
 	return outputLogFileName;
 }
 
@@ -223,6 +269,7 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	/* the win32 API LPTSTR string type is defined in one of two ways, */
 	/* as a simple char string or as a wide-character (unicode) string.*/
 	/* If the second case is true, the macro UNICODE should be defined. */
+
 
 #ifdef UNICODE     
 #define STR_COPY_FUNCTION mbstowcs /* converts a simple char string */
@@ -233,27 +280,34 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	typedef char *CopyFunctionOutput_t;
 #endif
 
+
 	TCHAR *Dest = NULL;
 	CopyFunctionOutput_t CopyFunctionOutput;
 	BOOL CopyFunctionSucceeded;
 	size_t NumOfLettersInSource;
 	size_t LengthOfSourceIncludingTerminatingZero;
 
+
 	if (Source == NULL)
 		return NULL;
+
 
 	NumOfLettersInSource = strlen(Source);
 	LengthOfSourceIncludingTerminatingZero = NumOfLettersInSource + 1;
 
+
 	Dest = (TCHAR*)malloc(sizeof(TCHAR) * LengthOfSourceIncludingTerminatingZero);
+
 
 	CopyFunctionOutput = STR_COPY_FUNCTION(
 		Dest,
 		Source,
 		LengthOfSourceIncludingTerminatingZero);
 
+
 	/* Add terminating zero: */
 	Dest[LengthOfSourceIncludingTerminatingZero - 1] = _T('\0');
+
 
 #ifdef UNICODE     
 	CopyFunctionSucceeded = (CopyFunctionOutput == NumOfLettersInSource);
@@ -261,13 +315,16 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	CopyFunctionSucceeded = STRINGS_ARE_IDENTICAL(Dest, Source);
 #endif
 
+
 	if (!CopyFunctionSucceeded)
 	{
 		free(Dest);
 		return NULL;
 	}
 
+
 	return (LPTSTR)Dest;
+
 
 #undef STR_COPY_FUNCTION 
 }
@@ -279,6 +336,7 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 															  /* CreateProcess() means we have no special interest in this parameter. */
 															  /* This is equivalent to what we are doing by supplying NULL to most other */
 															  /* parameters of CreateProcess(). */
+
 
 	return CreateProcess(NULL, /*  No module name (use command line). */
 		CommandLine,			/*  Command line. */
@@ -293,68 +351,56 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 	);
 }
 
-void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, int TotalNumberOfFiles) {
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, HANDLE *handleProcessArray, DWORD *exitcodeArray, int numOfRunningProcess) {
 	//Check status of processes and print to runTime_logFile
 	//printf("WaitForSingleObject output: ");
-	int i; DWORD exitCode = 0;
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		switch (waitcode)
-		{
-		case WAIT_TIMEOUT:
-			printf("WAIT_TIMEOUT\n"); break;
-		case WAIT_OBJECT_0:
-			printf("WAIT_OBJECT_0\n"); break;
-		default:
-			printf("0x%x\n", waitcode);
-		}
+	int i; DWORD exitCode = 0; DWORD *finishedProcessArray; DWORD *runningProcessArray;
+	getDWORDMallocArray(finishedProcessArray, numOfRunningProcess);
+	getDWORDMallocArray(runningProcessArray, numOfRunningProcess);
 
-		if (waitcode == WAIT_TIMEOUT) /* Process is still alive */
-		{
-			printf("Process was not terminated before timeout!\n"
-				"Terminating brutally!\n");
-			TerminateProcess(
-				procinfo->hProcess,
-				BRUTAL_TERMINATION_CODE); /* Terminating process with an exit code of 55h */
-			Sleep(10); /* Waiting a few milliseconds for the process to terminate */
-		}
-
-		if (GetExitCodeProcess(procinfo->hProcess, &exitCode) == FALSE)	{
-			printf("Handle GetExitCodeProcess %d failure\n", procinfo->dwProcessId);
-		}
-		if (exitCode != STILL_ACTIVE)
-		{
-			break;
-		}
-		//switch (GetExitCodeProcess)
-		//{
-		//case finished:
-		//	print message; break;
-		//case running:
-		//	print message; break;
-		//default:
-		//	ggg;
-		//}
-
-		printf("The exit code for the process is 0x%x\n", exitCode);
+	switch (waitcode)
+	{
+	case WAIT_TIMEOUT:
+		printf("WAIT_TIMEOUT\n"); break;
+	case WAIT_FAILED:
+		printf("WaitForMultipleObjects function has failed, error %ul\n", GetLastError()); break;
+	default:
+		printf("0x%x\n", waitcode);
 	}
 
+
+	if (waitcode == WAIT_TIMEOUT) { /* Processes is still alive */
+									//go over handleProcessArray and getExitCodeProcess
+		for (i = 0; i<numOfRunningProcess; i++) {
+			if (GetExitCodeProcess(handleProcessArray[i], exitcodeArray) == FALSE) {
+				printf("Handle GetExitCodeProcess %d failure\n", procinfo->dwProcessId);
+			}
+		}
+		Sleep(10);
+		//printListOfProcess(handleProcessArray, exitcodeArray);
+		if (exitcodeArray[i] == STILL_ACTIVE) {
+			finishedProcessArray[i] = procinfo[i]->dwProcessId;
+			numOfRunningProcess--;
+		}
+		else {
+			runningProcessArray[i] = procinfo[i]->dwProcessId;
+		}
+	}
+	printProcessArray(runningProcessArray, );
+	printProcessArray(finishedProcessArray, );
 }
 
-//TCHAR *charArray_To_TcharArray(char *source, char *dest) {
-//	
-//	int i;
-//	dest = (TCHAR*)malloc((strlen(source) + 10) * sizeof(TCHAR));
-//	if (dest == NULL) {
-//		printf("runTime_logFileName allocation failed/n");
-//		exit(1);
-//	}
-//	for (i = 0; i < strlen(source); i++) {
-//		dest[i] = (TCHAR)source[i];
-//	}
-//	dest[i] = 0;
-//
-//	return dest;
-//}
+void *getDWORDMallocArray(DWORD *nameArray, int MUL) {
+	int i;
+	nameArray = (DWORD*)malloc(MUL * sizeof(DWORD));
+	if (nameArray == NULL) {
+		printf("allocation was failed, error %ul\n", GetLastError());
+	}
+	for (i = 0; i < MUL; i++) {
+		nameArray[i] = 0;	// initialize nameArray
+	}
+}
+
 
 // TestManager algorithm flow:
 // 1. gets a 'fileToTest' file name and opens it.
@@ -372,12 +418,6 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INF
 // 5. The TestManager samples every x milisecond each process, and update its progress.
 // 6. TODO: Dealing with error handles
 // 7. 
-//going over the fileInput in a loop:
-// 1. read the lines as a single string
-// 2. build arguments for the file string
-// 3. concatenated all parameters to a single string as well, "TestFiles.exe <hw.txt> <OutputFilesDirectory>\<hw.txt>"
-// 4. create process for that string
-// 5. call TestFiles.exe 
 
 /*
 //TEST
@@ -386,3 +426,7 @@ printf("%s\n", CommandLineArguentStringArray[i]);
 }
 getchar();
 */
+
+
+
+

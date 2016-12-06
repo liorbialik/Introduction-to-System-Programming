@@ -36,6 +36,7 @@ char *outputLogFileArgumentCreation(char*, char*);
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr);
 char *createRunTimeLogFileInsideOutputDirectory(char*, char*);
 LPTSTR ConvertCharStringToLPTSTR(const char *Source);
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, int TotalNumberOfFiles);
 
 
 
@@ -55,6 +56,9 @@ int main(int argc, char *argv[]) {
 	DWORD				retValueFromMultipleObjects;
 	DWORD				ProcessStatusCheckFrequency = argv[3];
 	HANDLE				*hProcessArray;
+
+	const FILETIME		*FileTime;
+	LPSYSTEMTIME		*SystemTime = NULL;
 
 	
 	// Verify that the number of command line argument is correct
@@ -115,10 +119,14 @@ int main(int argc, char *argv[]) {
 	char *CommandLineArguentStringArray[] = { NULL }; char *TestFileProgramName = { "main.exe " }; 
 	char *TestFileArgumentString = NULL; char *fileToTest = NULL;
 	procinfo = (PROCESS_INFORMATION*)malloc(TotalNumberOfFiles * sizeof(PROCESS_INFORMATION));
-	hProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE));
+	hProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE)); 
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		hProcessArray[i] = 0;	// initialize hProcessArray
+	}
 
-	char *ex = { "calc.exe" }; 
-	
+	FileTime = (const FILETIME*)malloc(TotalNumberOfFiles * sizeof(const FILETIME));
+	FileTimeToSystemTime(FileTime, SystemTime);
+
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		fileToTest = (char *)malloc(FilesToTestLengthArray[i] * sizeof(char));
 		if (fileToTest == NULL) {
@@ -140,50 +148,28 @@ int main(int argc, char *argv[]) {
 		strcat(CommandLineArguentStringArray[i], outputLogFile);
 
 		command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[i]);
-		//command = ConvertCharStringToLPTSTR(ex);
 		retVal = CreateProcessSimple(command, &procinfo[i]);
 		if (retVal == 0) {
 			printf("Process Creation Failed!\n");
-			//writing into runTime_logFile error message
 			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %d !!!\n", fileToTest, GetLastError());
 			// TODO: Need to output hex rep. error code
 		}
 		else {
 			fprintf(runTime_logFileOutput, "Successfully created a process with ID %d to execute %s\n", procinfo->dwProcessId, fileToTest);
-			// TODO: Need to output ProcessID
 		}
-
 		// save all hProcess in an array
 		hProcessArray[i] = procinfo->hProcess;
 	}
 
-	// After calling all processes, analyze results into runTime_logFile
 	waitcode = WaitForMultipleObjects(TotalNumberOfFiles, &hProcessArray, 1, ProcessStatusCheckFrequency);
+	while(waitcode != 0) {
+		// analyze results into runTime_logFile
+		checkProcessStatus(waitcode, runTime_logFileOutput, procinfo, TotalNumberOfFiles);
+		waitcode = WaitForMultipleObjects(TotalNumberOfFiles, &hProcessArray, 1, ProcessStatusCheckFrequency);
+	} 
 
-	//printf("WaitForSingleObject output: ");
-	//switch (waitcode)
-	//{
-	//case WAIT_TIMEOUT:
-	//	printf("WAIT_TIMEOUT\n"); break;
-	//case WAIT_OBJECT_0:
-	//	printf("WAIT_OBJECT_0\n"); break;
-	//default:
-	//	printf("0x%x\n", waitcode);
-	//}
-
-	//if (waitcode == WAIT_TIMEOUT) /* Process is still alive */
-	//{
-	//	printf("Process was not terminated before timeout!\n"
-	//		"Terminating brutally!\n");
-	//	TerminateProcess(
-	//		procinfo.hProcess,
-	//		BRUTAL_TERMINATION_CODE); /* Terminating process with an exit code of 55h */
-	//	Sleep(10); /* Waiting a few milliseconds for the process to terminate */
-	//}
-
-	//GetExitCodeProcess(procinfo.hProcess, &exitcode);
-
-	//printf("The exit code for the process is 0x%x\n", exitcode);
+	//All	the	processes	have	finished	running.	Exiting	program.
+	fprintf(runTime_logFileOutput, "All the processes have finished running. Exiting program\n");
 
 	CloseHandle(procinfo->hProcess); /* Closing the handle to the process */
 	CloseHandle(procinfo->hThread); /* Closing the handle to the main thread of the process */
@@ -306,6 +292,54 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 		ProcessInfoPtr			/*  Pointer to PROCESS_INFORMATION structure. */
 	);
 }
+
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, PROCESS_INFORMATION *procinfo, int TotalNumberOfFiles) {
+	//Check status of processes and print to runTime_logFile
+	//printf("WaitForSingleObject output: ");
+	int i; DWORD exitCode = 0;
+	for (i = 0; i < TotalNumberOfFiles; i++) {
+		switch (waitcode)
+		{
+		case WAIT_TIMEOUT:
+			printf("WAIT_TIMEOUT\n"); break;
+		case WAIT_OBJECT_0:
+			printf("WAIT_OBJECT_0\n"); break;
+		default:
+			printf("0x%x\n", waitcode);
+		}
+
+		if (waitcode == WAIT_TIMEOUT) /* Process is still alive */
+		{
+			printf("Process was not terminated before timeout!\n"
+				"Terminating brutally!\n");
+			TerminateProcess(
+				procinfo->hProcess,
+				BRUTAL_TERMINATION_CODE); /* Terminating process with an exit code of 55h */
+			Sleep(10); /* Waiting a few milliseconds for the process to terminate */
+		}
+
+		if (GetExitCodeProcess(procinfo->hProcess, &exitCode) == FALSE)	{
+			printf("Handle GetExitCodeProcess %d failure\n", procinfo->dwProcessId);
+		}
+		if (exitCode != STILL_ACTIVE)
+		{
+			break;
+		}
+		//switch (GetExitCodeProcess)
+		//{
+		//case finished:
+		//	print message; break;
+		//case running:
+		//	print message; break;
+		//default:
+		//	ggg;
+		//}
+
+		printf("The exit code for the process is 0x%x\n", exitCode);
+	}
+
+}
+
 
 //TCHAR *charArray_To_TcharArray(char *source, char *dest) {
 //	

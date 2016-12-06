@@ -1,8 +1,8 @@
 /*
 TestFile - Main.c:
 - the program recieves the following arguments from testManager.exe:
-		@param filePath: the path of the file which tests will be executed on
-		@param OutputLogFile: the path of the log file to which the results will be written to
+@param filePath: the path of the file which tests will be executed on
+@param OutputLogFile: the path of the log file to which the results will be written to
 
 - the program will create a thread for each test needed to run
 - each test will save the result to a designated structure
@@ -57,11 +57,11 @@ int main(int argc, char *argv[]) {
 	DWORD threadIDs[NUM_OF_THREADS] = { 0 }; /* An array of threadIDs */
 	DWORD exitCode;
 	testResults newTestResults;
-	
+
 	// Initiating newTestResults pointers:
 	newTestResults.inputFileName = NULL;
 	newTestResults.fileExtention = NULL;
-	
+
 	// Getting the arguments given by testManager
 	newTestResults.inputFileName = argv[1];
 	outputFilePath = argv[2];
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[4]);                                        /*  returns the thread identifier */
 
-	//Wait for thread to finish
+															   //Wait for thread to finish
 	WaitForMultipleObjects(
 		NUM_OF_THREADS,
 		threadHandles,
@@ -103,9 +103,9 @@ int main(int argc, char *argv[]) {
 	Sleep(10);
 
 	// Writing the results into the output file
-	writeTestResultsToFile(outputFilePath ,&newTestResults); // TODO: 
+	writeTestResultsToFile(outputFilePath, &newTestResults); // TODO: 
 
-	// Safely close all threads and print their exit code:
+															 // Safely close all threads and print their exit code:
 	for (i = 0; i < NUM_OF_THREADS; i++)
 	{
 		GetExitCodeThread(threadHandles[i], &exitCode);
@@ -146,10 +146,10 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 }
 
 
-BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
+BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString) {
 	/*
 	@ Description: The function recieve a FILETIME instance and convert it into a readable string in the desired format.
-		           inspired by https://msdn.microsoft.com/en-us/library/windows/desktop/ms724926(v=vs.85).aspx 
+	inspired by https://msdn.microsoft.com/en-us/library/windows/desktop/ms724926(v=vs.85).aspx
 	@ Param fileCreationTime: the FILETIME instance which will be converted.
 	@ Param bufferForString: the buffer to which the out string is saved.
 	@ Return: TRUE -> Success, FALSE -> Failure
@@ -157,18 +157,18 @@ BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
 	DWORD timeInStringFormatSize = 21;
 	SYSTEMTIME utcTime, localTime;
 	DWORD timeToStringFormatResult;
-	
+
 	// Convert the last-write time to local time.
-	FileTimeToSystemTime( &fileCreationTime, &utcTime );
-	SystemTimeToTzSpecificLocalTime( NULL, &utcTime, &localTime );
+	FileTimeToSystemTime(&fileCreationTime, &utcTime);
+	SystemTimeToTzSpecificLocalTime(NULL, &utcTime, &localTime);
 
 	// Build a string showing the date and time.
-	timeToStringFormatResult = StringCchPrintf( bufferForString, timeInStringFormatSize,
+	timeToStringFormatResult = StringCchPrintf(bufferForString, timeInStringFormatSize,
 		TEXT("%02d/%02d/%04d  %02d:%02d:%02d"),
 		localTime.wMonth, localTime.wDay, localTime.wYear,
-		localTime.wHour, localTime.wMinute, localTime.wSecond );
+		localTime.wHour, localTime.wMinute, localTime.wSecond);
 
-	if (timeToStringFormatResult == S_OK )
+	if (timeToStringFormatResult == S_OK)
 		return TRUE;
 	else return FALSE;
 }
@@ -177,8 +177,8 @@ BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString){
 int getFileExtention(testResults *newTestResults) {
 	/*
 	@ Description: The function will retrive the input file's extention type.
-				   it will save it into the relevant result structure variable.
-				   inspired by http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
+	it will save it into the relevant result structure variable.
+	inspired by http://stackoverflow.com/questions/5309471/getting-file-extension-in-c
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
@@ -198,15 +198,15 @@ int getFileExtention(testResults *newTestResults) {
 		return 1;
 	newTestResults->fileExtention = dotLocationInFileName + 1;
 
- 	fclose(inputFile);
+	fclose(inputFile);
 	return 0;
 }
 
 
 int getFirstFiveCharsInFile(testResults *newTestResults) {
 	/*
-	@ Description: The function will retrive the input file's first five characters. 
-	               it will save it into the relevant result structure variable.
+	@ Description: The function will retrive the input file's first five characters.
+	it will save it into the relevant result structure variable.
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
@@ -219,10 +219,10 @@ int getFirstFiveCharsInFile(testResults *newTestResults) {
 		printf("Could not open file, error %ul\n", GetLastError());
 		return 1;
 	}
-	
+
 	// retrieving the first five chars from the input file: 
 	fgets(newTestResults->firstFiveChars, 6, inputFile);
-	
+
 	fclose(inputFile); // Closing both file and handler
 
 	return 0;
@@ -231,8 +231,8 @@ int getFirstFiveCharsInFile(testResults *newTestResults) {
 
 int getFileSize(testResults *newTestResults) {
 	/*
-	@ Description: The function will create a file handler and use the GetFileSize() function to 
-			       retrive the input file's size. it will save it into the relevant result structure variable.
+	@ Description: The function will create a file handler and use the GetFileSize() function to
+	retrive the input file's size. it will save it into the relevant result structure variable.
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
@@ -250,7 +250,7 @@ int getFileSize(testResults *newTestResults) {
 
 	// creating a file handler to use in 'GetFileSize' function:
 	fileHandler = (HANDLE)_get_osfhandle(_fileno(inputFile));
-	if ( fileHandler == INVALID_HANDLE_VALUE ) {
+	if (fileHandler == INVALID_HANDLE_VALUE) {
 		printf("File Handler Error: could not open file, error %ul\n", GetLastError());
 		return 1;
 	}
@@ -267,9 +267,9 @@ int getFileSize(testResults *newTestResults) {
 
 int getFileCreationTime(testResults *newTestResults) {
 	/*
-	@ Description: The function will create a file handler and use the GetFileTime() function 
-				   to retrive the input file's creation time. it will save it into the 
-				   relevant result structure variable.
+	@ Description: The function will create a file handler and use the GetFileTime() function
+	to retrive the input file's creation time. it will save it into the
+	relevant result structure variable.
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
@@ -301,16 +301,16 @@ int getFileCreationTime(testResults *newTestResults) {
 	}
 
 	fclose(inputFile); // Closing both file and handler
-	
+
 	return 0;
 }
 
 
 int getFileLastModifiedTime(testResults *newTestResults) {
 	/*
-	@ Description: The function will create a file handler and use the GetFileTime() function to 
-			       retrive the input file's time when it was last modified. it will save it into 
-				   the relevant result structure variable.
+	@ Description: The function will create a file handler and use the GetFileTime() function to
+	retrive the input file's time when it was last modified. it will save it into
+	the relevant result structure variable.
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
@@ -349,13 +349,13 @@ int getFileLastModifiedTime(testResults *newTestResults) {
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterPtr, LPDWORD ThreadIdPtr)
 {
 	/*
-	@ Description: This function creates a thread by calling Win32 Api's CreateThread() 
-	               function, and setting some of the parameters to default value.
+	@ Description: This function creates a thread by calling Win32 Api's CreateThread()
+	function, and setting some of the parameters to default value.
 	@ Param StartAddress: a pointer to the function that will be run by the thread
 	@ Param ParameterPtr: a pointer to the parameter that will be supplied to the
-                          function run by the thread
+	function run by the thread
 	@ Param ThreadIdPtr: return argument: a pointer to a DWORD variable into which
-	                     the function will write the created thread's ID.
+	the function will write the created thread's ID.
 	@ Return: The thread handler
 	*/
 	return CreateThread(

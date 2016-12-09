@@ -20,9 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c" />
+    <ClCompile Include="testFile.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="example.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="testFile.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D787AC23-E8B8-4578-8BA4-A60797F15EEB}</ProjectGuid>

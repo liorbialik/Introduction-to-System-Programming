@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 	char *fileName = NULL; char *outputFileName = NULL;
 	char *outpuDirName = NULL;
 	LPTSTR dirNameLPTSTR = NULL;
-	const char *loopTime = NULL;
+	const char *loopTime = NULL; 	int errorCodeFlag = 0; int ProcessesAreStillRunningFlag = 0;
 	char *runTime_logFileName = NULL;
 	char *outputLogFile = NULL; char *FileToTestName = NULL;
 	int TotalNumberOfFiles = 0; int *FilesToTestLengthArray = NULL; char *CommandLineArguentStringArray[] = { NULL };
@@ -89,9 +89,7 @@ int main(int argc, char *argv[]) {
 	loopTime = argv[3];
 
 
-
-
-	PROCESS_INFORMATION *ProcessInfoPtr;
+	PROCESS_INFORMATION *ProcessInfoPtr = NULL;
 	DWORD				waitcode;
 	DWORD				*exitcodeArray;
 	BOOL				retVal;
@@ -186,14 +184,14 @@ int main(int argc, char *argv[]) {
 		command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[i]);		// Convert char* to TCHAR 
 		retVal = CreateProcessSimple(command, &ProcessInfoPtr[i]);
 		if (retVal == 0) {
-			printf("!!! Failed to create new process to run %s. Error code: %d !!!\n", CommandLineArguentStringArray[i], GetLastError());
+			printf("!!! Failed to create new process to run %s. Error code: %ul !!!\n", CommandLineArguentStringArray[i], GetLastError());
 			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %d !!!\n", CommandLineArguentStringArray[i], GetLastError());
 			// TODO: Need to output hex rep. error code
 		}
 		else {
-			fprintf(runTime_logFileOutput, "Successfully created a process with ID %d to execute %s\n", ProcessInfoPtr->dwProcessId, CommandLineArguentStringArray[i]);
+			fprintf(runTime_logFileOutput, "Successfully created a process with ID %d to execute %s\n", ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i]);
 			// save handleProcess that were succedded in an handleProcessArray
-			handleProcessArray[i] = &(ProcessInfoPtr[i].hProcess);
+			handleProcessArray[i] = ProcessInfoPtr[i].hProcess;
 		}
 	}
 
@@ -202,9 +200,19 @@ int main(int argc, char *argv[]) {
 
 	// analyze results into runTime_logFile
 	do {
+		ProcessesAreStillRunningFlag = 0;
 		waitcode = WaitForMultipleObjects(TotalNumberOfFiles, handleProcessArray, TRUE, ProcessStatusCheckFrequency);
-		checkProcessStatus(waitcode, runTime_logFileOutput, *CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles);
-	} while (waitcode);		// return value of waitcode == TIME_0 means all process have finished, thus define as end condition
+		if (waitcode == 0xFFFFFFFF) {
+			printf("!!! WaitForMultipleObjects function failed, Error code: %ul !!!\n", GetLastError()); break;
+		}
+		if(waitcode == 0) {
+			checkProcessStatus(waitcode, runTime_logFileOutput, *CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles); break;
+		}
+		else {
+			ProcessesAreStillRunningFlag = 1;
+			checkProcessStatus(waitcode, runTime_logFileOutput, *CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles);
+		}
+	} while (ProcessesAreStillRunningFlag);		
 
 
 
@@ -359,7 +367,7 @@ char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char
 
 
 
-	char *CommandLineArguentStringArray = NULL; char *TestFileProgramName = { "TestFile1.exe " };
+	char *CommandLineArguentStringArray = NULL; char *TestFileProgramName = { "TestFile.exe " };
 	char *fileToTest = NULL; char *fileTestOutputLogPath = NULL;
 	fileToTest = (char *)malloc(FilesToTestLength * sizeof(char));
 	if (fileToTest == NULL) {

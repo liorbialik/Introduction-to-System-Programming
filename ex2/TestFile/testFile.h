@@ -23,6 +23,13 @@ typedef struct testResults
 	TCHAR fileCreationTimeString[21];
 	TCHAR fileLastModifiedTimeString[21];
 	char firstFiveChars[6];
+	
+	// possible thread errors:
+	const char *fileSizeThreadError;
+	const char *fileExtentionThreadError;
+	const char *firstFiveCharsThreadError;
+	const char *fileCreationTimeStringThreadError;
+	const char *fileLastModifiedTimeThreadStringError;
 } testResults;
 
 /* Function Declarations: */

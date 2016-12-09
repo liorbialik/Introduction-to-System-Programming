@@ -24,6 +24,7 @@ TestFile - testFile.c:
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress,
 	LPVOID ParameterPtr,
 	LPDWORD ThreadIdPtr);
+void initializeTestResultsPointersToNull(testResults *newTestResults);
 int getFileExtention(testResults *newtestResults);
 int getFirstFiveCharsInFile(testResults *newtestResults);
 int getFileSize(testResults *newtestResults);
@@ -35,6 +36,7 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults);
 
 int executeTestsOnFile(char *argv[])
 {
+	// Variables decleration:
 	char *outputFilePath = NULL;
 	int i;
 	HANDLE threadHandles[NUM_OF_THREADS] = { 0 }; /* An array of thread handles */
@@ -42,42 +44,67 @@ int executeTestsOnFile(char *argv[])
 	DWORD exitCode;
 	testResults newTestResults;
 
+	// possible thread error strings:
+	const char *getFileExtentionThreadCreationError = "Problem creating 'File Extention Test' thread\n";
+	const char *getFileSizeThreadCreationError = "Problem creating 'File Size Test' thread\n";
+	const char *getFirstFiveCharsInFileThreadCreationError = "Problem creating 'First Five Chars Test' thread\n";
+	const char *getFileCreationTimeThreadCreationError = "Problem creating 'File Creation Time Test' thread\n";
+	const char *getFileLastModifiedTimeThreadCreationError = "Problem creating 'File Last Modified Time Test' thread\n";
+
 	// Initiating newTestResults pointers:
-	newTestResults.inputFileName = NULL;
-	newTestResults.fileExtention = NULL;
+	initializeTestResultsPointersToNull(&newTestResults);
 
 	// Getting the arguments given by testManager
 	newTestResults.inputFileName = argv[1];
 	outputFilePath = argv[2];
 
 	// running each test on the input file in a different thread, using 'CreateThreadSimple' function from the recitation: 
-
 	threadHandles[0] = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)getFileExtention,              /*  thread function */
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[0]);                                        /*  returns the thread identifier */
+	if (threadHandles[0] == NULL) {
+		printf("Problem creating 'File Extention Test' thread");
+		newTestResults.fileExtentionThreadError = getFileExtentionThreadCreationError;
+	}
 
 	threadHandles[1] = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)getFileSize,                   /*  thread function */
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[1]);                                        /*  returns the thread identifier */
+	if (threadHandles[1] == NULL) {
+		printf("Problem creating 'File Size Test' thread");
+		newTestResults.fileSizeThreadError = getFileSizeThreadCreationError;
+	}
 
 	threadHandles[2] = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)getFirstFiveCharsInFile,       /*  thread function */
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[2]);										   /*  returns the thread identifier */
+	if (threadHandles[5] == NULL) {
+		printf("Problem creating 'First Five Chars Test' thread");
+		newTestResults.firstFiveCharsThreadError = getFirstFiveCharsInFileThreadCreationError;
+	}
 
 	threadHandles[3] = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)getFileCreationTime,           /*  thread function */
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[3]);                                        /*  returns the thread identifier */
+	if (threadHandles[3] == NULL) {
+		printf("Problem creating 'File Creation Time Test' thread");
+		newTestResults.fileCreationTimeStringThreadError = getFileCreationTimeThreadCreationError;
+	}
 
 	threadHandles[4] = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)getFileLastModifiedTime,       /*  thread function */
 		&newTestResults,                                       /*  argument to thread function */
 		&threadIDs[4]);                                        /*  returns the thread identifier */
+	if (threadHandles[4] == NULL) {
+		printf("Problem creating 'File Last Modified Time Test' thread");
+		newTestResults.fileLastModifiedTimeThreadStringError = getFileLastModifiedTimeThreadCreationError;
+	}
 
-															   //Wait for thread to finish
+	//Wait for thread to finish
 	WaitForMultipleObjects(
 		NUM_OF_THREADS,
 		threadHandles,
@@ -89,17 +116,33 @@ int executeTestsOnFile(char *argv[])
 	// Writing the results into the output file
 	writeTestResultsToFile(outputFilePath, &newTestResults); // TODO: 
 
-															 // Safely close all threads and print their exit code:
+	// Safely close all threads and print their exit code:
 	for (i = 0; i < NUM_OF_THREADS; i++)
 	{
-		GetExitCodeThread(threadHandles[i], &exitCode);
-		printf("Thread number %d returned exit code %d\n", i, exitCode);
-		CloseHandle(threadHandles[i]);
+		if (GetExitCodeThread(threadHandles[i], &exitCode)) {
+			printf("Problem getting exit code for thread number %d", i);
+		}
+		else {
+			printf("Thread number %d returned exit code %d\n", i, exitCode);
+			CloseHandle(threadHandles[i]);
+		}
 	}
 
 	return 0;
 }
 
+
+void initializeTestResultsPointersToNull(testResults *newTestResults) {
+	
+	newTestResults->inputFileName = NULL;
+	newTestResults->fileExtention = NULL;
+	newTestResults->fileCreationTimeStringThreadError = NULL;
+	newTestResults->fileLastModifiedTimeThreadStringError = NULL;
+	newTestResults->firstFiveCharsThreadError = NULL;
+	newTestResults->fileSizeThreadError = NULL;
+	newTestResults->fileExtentionThreadError = NULL;
+	return;
+}
 
 
 void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
@@ -120,11 +163,31 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 
 	// Writing the results:
 	fprintf(outputFile, "%s\n", newTestResults->inputFileName);
-	fprintf(outputFile, "The file extension of the test file is \".%s\"\n", newTestResults->fileExtention);
-	fprintf(outputFile, "The test file size is %ld bytes\n", newTestResults->fileSize);
-	fprintf(outputFile, "The file was created on %ws\n", newTestResults->fileCreationTimeString);
-	fprintf(outputFile, "The file was last modified on %ws\n", newTestResults->fileLastModifiedTimeString);
-	fprintf(outputFile, "The files first 5 bytes are: %s\n", newTestResults->firstFiveChars);
+	
+	if (newTestResults->fileExtentionThreadError)
+		fprintf(outputFile, "%s", newTestResults->fileExtentionThreadError);
+	else
+		fprintf(outputFile, "The file extension of the test file is \".%s\"\n", newTestResults->fileExtention);
+	
+	if (newTestResults->fileSizeThreadError)
+		fprintf(outputFile, "%s", newTestResults->fileSizeThreadError);
+	else
+		fprintf(outputFile, "The test file size is %ld bytes\n", newTestResults->fileSize);
+	
+	if (newTestResults->fileCreationTimeStringThreadError)
+		fprintf(outputFile, "%s", newTestResults->fileCreationTimeStringThreadError);
+	else
+		fprintf(outputFile, "The file was created on %ws\n", newTestResults->fileCreationTimeString);
+	
+	if (newTestResults->fileLastModifiedTimeThreadStringError)
+		fprintf(outputFile, "%s", newTestResults->fileLastModifiedTimeThreadStringError);
+	else
+		fprintf(outputFile, "The file was last modified on %ws\n", newTestResults->fileLastModifiedTimeString);
+	
+	if(newTestResults->firstFiveCharsThreadError)
+		fprintf(outputFile, "%s", newTestResults->firstFiveCharsThreadError);
+	else
+		fprintf(outputFile, "The files first 5 bytes are: %s\n", newTestResults->firstFiveChars);
 
 	fclose(outputFile);
 	return;
@@ -170,7 +233,6 @@ int getFileExtention(testResults *newTestResults) {
 	Sleep(10);
 
 	FILE *inputFile = NULL;
-	char *fileExtention = NULL;
 
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {

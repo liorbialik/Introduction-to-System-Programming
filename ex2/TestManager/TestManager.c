@@ -8,6 +8,8 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 */
 
 
+
+
 /* Constants: */
 #define TIMEOUT_IN_MILLISECONDS 5000
 #define BRUTAL_TERMINATION_CODE 0x55
@@ -15,6 +17,8 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #define FINISH 1
 #define LONG_SLEEP_TIME 5000
 #define SHORT_SLEEP_TIME 5
+
+
 
 
 /* Libraries: */
@@ -34,6 +38,8 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <direct.h>
 
 
+
+
 /* Function Declarations: */
 char *fileTestOutputLogPathCreation(char*, char*);
 char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_logFileName);
@@ -47,12 +53,14 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *Comma
 FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation);
 void bubble_sort(PROCESS_INFORMATION *ProcessInfoPtr, HANDLE *handleProcessArray, int n);
 
+
 struct PROCESS_TIME_INF {
 	FILETIME CreationTime;
 	FILETIME ExitTime;
 	FILETIME KernelTime;
 	FILETIME UserTime;
 };
+
 
 //typedef struct LPSYSTEMTIME {
 //	WORD wyear;
@@ -64,6 +72,7 @@ struct PROCESS_TIME_INF {
 //	WORD wsecond;
 //	WORD wmilliseconds;
 //};
+
 
 int main(int argc, char *argv[]) {
 	/* Internal Declarations: */
@@ -80,6 +89,8 @@ int main(int argc, char *argv[]) {
 	loopTime = argv[3];
 
 
+
+
 	PROCESS_INFORMATION *ProcessInfoPtr;
 	DWORD				waitcode;
 	DWORD				*exitcodeArray;
@@ -88,15 +99,19 @@ int main(int argc, char *argv[]) {
 	DWORD				ProcessStatusCheckFrequency;
 	HANDLE				*handleProcessArray;
 
+
 	//Start of Program
 
 	ProcessStatusCheckFrequency = atoi(loopTime);
+
 
 	// Verify that the number of command line argument is correct
 	if (argc != 4) {
 		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
 		exit(1);
 	}
+
+
 
 
 	// open the FileInput by getting the file Name as an argument
@@ -107,8 +122,12 @@ int main(int argc, char *argv[]) {
 	}
 
 
+
+
 	// Create directory if not exist
 	_mkdir(outpuDirName);
+
+
 
 
 	runTime_logFileOutput = fopen(createRunTimeLogFileInsideOutputDirName(outpuDirName, NULL), "w");
@@ -118,12 +137,18 @@ int main(int argc, char *argv[]) {
 	}
 
 
+
+
 	// go over 'FilesToTest' file and count all files to be tested
 	TotalNumberOfFiles = CountNumOfTests(fileInput);
 
 
+
+
 	// Assign FilesToTestLengthArray in size of TotalNumberOfFiles
 	FilesToTestLengthArray = CountLengthOfEachTest(fileInput, TotalNumberOfFiles);
+
+
 
 
 	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
@@ -131,6 +156,7 @@ int main(int argc, char *argv[]) {
 		int FilesToTestLength = FilesToTestLengthArray[i];
 		CommandLineArguentStringArray[i] = FullCommandLineStringCreation(fileInput, FilesToTestLength, outpuDirName);
 	}
+
 
 
 	//Dynamic memory allocations
@@ -154,6 +180,8 @@ int main(int argc, char *argv[]) {
 	}
 
 
+
+
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		command = ConvertCharStringToLPTSTR(CommandLineArguentStringArray[i]);		// Convert char* to TCHAR 
 		retVal = CreateProcessSimple(command, &ProcessInfoPtr[i]);
@@ -170,6 +198,8 @@ int main(int argc, char *argv[]) {
 	}
 
 
+
+
 	// analyze results into runTime_logFile
 	do {
 		waitcode = WaitForMultipleObjects(TotalNumberOfFiles, handleProcessArray, TRUE, ProcessStatusCheckFrequency);
@@ -178,16 +208,25 @@ int main(int argc, char *argv[]) {
 
 
 
+
+
+
 							//All the processes have finished running. Exiting program
 	fprintf(runTime_logFileOutput, "All the processes have finished running. Exiting program\n");
+
+
 
 
 	//CloseHandle(ProcessInfoPtr->hProcess);	 /* Closing the handle to the process */
 	//CloseHandle(ProcessInfoPtr->hThread);	/* Closing the handle to the main thread of the process */
 
 
+
+
 	fclose(fileInput);
 	fclose(runTime_logFileOutput);
+
+
 
 
 	// free all allocated memories
@@ -201,11 +240,15 @@ int main(int argc, char *argv[]) {
 		free(CommandLineArguentStringArray[i]);
 	}
 
+
 	return 0;
 }
 
 
+
+
 /* Function Definitions */
+
 
 char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_logFileName) {
 	// create runTime_log File inside <OutputFilesDirectory> directory
@@ -221,13 +264,20 @@ char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_
 
 
 
+
+
+
+
 	return runTime_logFileName;
 }
+
+
 
 
 char *fileTestOutputLogPathCreation(char* outpuDirName, char* fileToTestName) {
 	// prepare arguments for calling 'TestFiles' program
 	char *outputLogFileNameEnding = { "_log.txt" }; char *outputLogFileName = NULL; size_t outputLogFileNameLength = 0;
+
 
 	outputLogFileNameLength = strlen(outpuDirName) + strlen(fileToTestName) + strlen(outputLogFileNameEnding) - 4 + 2 + 1;
 	// '-4' due to deduction of '.txt' ending since it appearse twice, '-2' due to addition of '\\', '+1' due to '\0' ending
@@ -245,8 +295,14 @@ char *fileTestOutputLogPathCreation(char* outpuDirName, char* fileToTestName) {
 
 
 
+
+
+
+
 	return outputLogFileName;
 }
+
+
 
 
 int CountNumOfTests(FILE *fileInput) {
@@ -263,8 +319,12 @@ int CountNumOfTests(FILE *fileInput) {
 	rewind(fileInput);
 
 
+
+
 	return TotalNumberOfFiles;
 }
+
+
 
 
 int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
@@ -286,11 +346,17 @@ int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
 	rewind(fileInput);
 
 
+
+
 	return FilesToTestLengthArray;
 }
 
 
+
+
 char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char *outpuDirName) {
+
+
 
 
 	char *CommandLineArguentStringArray = NULL; char *TestFileProgramName = { "TestFile1.exe " };
@@ -302,6 +368,8 @@ char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char
 	if (fgets(fileToTest, 1 + FilesToTestLength, fileInput) == NULL) {
 		printf("reading a string from fileInput was failed, error %ul\n", GetLastError());
 	}
+
+
 
 
 	fileTestOutputLogPath = fileTestOutputLogPathCreation(outpuDirName, fileToTest);
@@ -317,16 +385,22 @@ char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char
 	strcat(CommandLineArguentStringArray, fileTestOutputLogPath);
 
 
+
+
 	fgetc(fileInput);				// This command should lower the fileToTest pointer to read the next line 
+
 
 	return CommandLineArguentStringArray;
 }
+
+
 
 
 LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	/* the win32 API LPTSTR string type is defined in one of two ways, */
 	/* as a simple char string or as a wide-character (unicode) string.*/
 	/* If the second case is true, the macro UNICODE should be defined. */
+
 
 #ifdef UNICODE     
 #define STR_COPY_FUNCTION mbstowcs /* converts a simple char string */
@@ -337,27 +411,34 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	typedef char *CopyFunctionOutput_t;
 #endif
 
+
 	TCHAR *Dest = NULL;
 	CopyFunctionOutput_t CopyFunctionOutput;
 	BOOL CopyFunctionSucceeded;
 	size_t NumOfLettersInSource;
 	size_t LengthOfSourceIncludingTerminatingZero;
 
+
 	if (Source == NULL)
 		return NULL;
+
 
 	NumOfLettersInSource = strlen(Source);
 	LengthOfSourceIncludingTerminatingZero = NumOfLettersInSource + 1;
 
+
 	Dest = (TCHAR*)malloc(sizeof(TCHAR) * LengthOfSourceIncludingTerminatingZero);
+
 
 	CopyFunctionOutput = STR_COPY_FUNCTION(
 		Dest,
 		Source,
 		LengthOfSourceIncludingTerminatingZero);
 
+
 	/* Add terminating zero: */
 	Dest[LengthOfSourceIncludingTerminatingZero - 1] = _T('\0');
+
 
 #ifdef UNICODE     
 	CopyFunctionSucceeded = (CopyFunctionOutput == NumOfLettersInSource);
@@ -365,16 +446,21 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source) {
 	CopyFunctionSucceeded = STRINGS_ARE_IDENTICAL(Dest, Source);
 #endif
 
+
 	if (!CopyFunctionSucceeded)
 	{
 		free(Dest);
 		return NULL;
 	}
 
+
 	return (LPTSTR)Dest;
+
 
 #undef STR_COPY_FUNCTION 
 }
+
+
 
 
 BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr)
@@ -384,6 +470,7 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 															  /* CreateProcess() means we have no special interest in this parameter. */
 															  /* This is equivalent to what we are doing by supplying NULL to most other */
 															  /* parameters of CreateProcess(). */
+
 
 	return CreateProcess(NULL, /*  No module name (use command line). */
 		CommandLine,			/*  Command line. */
@@ -399,8 +486,11 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 }
 
 
+
+
 void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *CommandLineArguentStringArray, PROCESS_INFORMATION *ProcessInfoPtr,
 	HANDLE *handleProcessArray, DWORD *exitcodeArray, int TotalNumberOfFiles) {
+
 
 	//Check status of processes and print to runTime_logFile
 	int i;
@@ -408,6 +498,8 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *Comma
 	//struct LPSYSTEMTIME *sysTime = malloc(TotalNumberOfFiles * sizeof(struct LPSYSTEMTIME));
 	struct PROCESS_TIME_INF *ProcessTimeInf = malloc(TotalNumberOfFiles * sizeof(struct PROCESS_TIME_INF));	// !!!*****without  check*****!!!
 	ProcessTimeResult = (FILETIME*)malloc(TotalNumberOfFiles * sizeof(FILETIME));				 // !!!*****without  check*****!!!
+
+
 
 
 	bubble_sort(ProcessInfoPtr, handleProcessArray, TotalNumberOfFiles);		// sort handle array and ProcInfo->dwProcessId array in order to print in ascending order
@@ -422,12 +514,15 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *Comma
 																				//}
 																				//getchar();
 
+
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
 			printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr->dwProcessId);
 		}
 		Sleep(10);
 	}
+
+
 
 
 	switch (waitcode) {
@@ -451,6 +546,7 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *Comma
 	case WAIT_TIMEOUT:															// Processes are still running, go over handleProcessArray, sort the ID field, get cell's ExitCodeProcess and print status		
 
 
+
 																				// Print running process
 		for (i = 0; i<TotalNumberOfFiles; i++) {
 			if (exitcodeArray[i] == STILL_ACTIVE) {
@@ -472,17 +568,22 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *Comma
 	free(ProcessTimeResult);
 	free(ProcessTimeInf);
 
+
 }
+
+
 
 
 void bubble_sort(PROCESS_INFORMATION *ProcessInfoPtr, HANDLE *handleProcessArray, int n) {
 	int c, d, t;
 	HANDLE s;
 
+
 	for (c = 0; c < (n - 1); c++) {
 		for (d = 0; d < n - c - 1; d++) {
 			if (ProcessInfoPtr[d].dwProcessId > ProcessInfoPtr[d + 1].dwProcessId) {
 				/* Swapping */
+
 
 				t = ProcessInfoPtr[d].dwProcessId;
 				s = handleProcessArray[d];
@@ -496,6 +597,8 @@ void bubble_sort(PROCESS_INFORMATION *ProcessInfoPtr, HANDLE *handleProcessArray
 }
 
 
+
+
 FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation)
 {
 	typedef  unsigned __int64 Unsigned64BitType;
@@ -505,16 +608,22 @@ FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation)
 	FILETIME DifferenceAsFILETIME;
 	const Unsigned64BitType Low32BitsMask = 0x00000000FFFFFFFF;
 
+
 	Late64BitVal = ((Unsigned64BitType)(exit.dwHighDateTime) << 32) + exit.dwLowDateTime;
 	Early64BitVal = ((Unsigned64BitType)(creation.dwHighDateTime) << 32) + creation.dwLowDateTime;
 
+
 	Difference64BitVal = Late64BitVal - Early64BitVal;
+
 
 	DifferenceAsFILETIME.dwLowDateTime = (DWORD)(Difference64BitVal & Low32BitsMask);
 	DifferenceAsFILETIME.dwHighDateTime = (DWORD)(Difference64BitVal >> 32);
 
+
 	return DifferenceAsFILETIME;
 }
+
+
 
 
 // TestManager algorithm flow:
@@ -533,6 +642,8 @@ FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation)
 //		
 
 
+
+
 /*
 //TEST
 for (i = 0; i < TotalNumberOfFiles; i++) {
@@ -540,6 +651,20 @@ printf("%s\n", CommandLineArguentStringArray[i]);
 }
 getchar();
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

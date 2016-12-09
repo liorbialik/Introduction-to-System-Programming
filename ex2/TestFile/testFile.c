@@ -177,7 +177,7 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 	if(newTestResults->firstFiveCharsThreadError)
 		fprintf(outputFile, "%s", newTestResults->firstFiveCharsThreadError);
 	else
-		fprintf(outputFile, "The files first 5 bytes are: %s\n", newTestResults->firstFiveChars);
+		fprintf(outputFile, "The file's first 5 bytes are: %s\n", newTestResults->firstFiveChars);
 
 	fclose(outputFile);
 	return;

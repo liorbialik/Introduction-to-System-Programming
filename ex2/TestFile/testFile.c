@@ -11,6 +11,7 @@ TestFile - testFile.c:
 
 /* Libraries: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+#define DIM(x) (sizeof(x)/sizeof(*(x))) // will be used in the file's size conversion function
 #include <stdio.h>
 #include <Windows.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@ TestFile - testFile.c:
 #include <io.h>
 #include <Strsafe.h>
 #include <tchar.h>
+#include <inttypes.h>
 #include "testFile.h"
 
 /* Function Declarations: */
@@ -32,7 +34,7 @@ int getFileCreationTime(testResults *newtestResults);
 int getFileLastModifiedTime(testResults *newtestResults);
 BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
 void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults);
-
+char *calculateSize(uint64_t size);
 
 int executeTestsOnFile(char *argv[])
 {
@@ -153,6 +155,7 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 	@ Return: None
 	*/
 	FILE *outputFile = NULL;
+	char *normalizedFileSize = NULL;
 
 	// creating the output file
 	outputFile = fopen(outputFilePath, "w+");
@@ -172,7 +175,8 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 	if (newTestResults->fileSizeThreadError)
 		fprintf(outputFile, "%s", newTestResults->fileSizeThreadError);
 	else
-		fprintf(outputFile, "The test file size is %ld bytes\n", newTestResults->fileSize);
+		normalizedFileSize = calculateSize(newTestResults->fileSize);
+		fprintf(outputFile, "The test file size is %s\n", normalizedFileSize);
 	
 	if (newTestResults->fileCreationTimeStringThreadError)
 		fprintf(outputFile, "%s", newTestResults->fileCreationTimeStringThreadError);
@@ -414,3 +418,33 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterP
 		ThreadIdPtr);    /*  returns the thread identifier */
 }
 
+
+char *calculateSize(uint64_t size)
+{
+	/*
+	@ Description: The function will get a size of a file in bytes and normalize it into bigger units if needed.
+	inspired by: http://stackoverflow.com/questions/3898840/converting-a-number-of-bytes-into-a-file-size-in-c
+	@ Param size: the size of the file in bytes.
+	@ Return: the normalized size of the file as a string
+	
+	*/
+
+	char     *sizes[] = { "EB", "PB", "TB", "GB", "MB", "KB", "Bytes" }; // list of normalized sizes
+	uint64_t  exbibytes = 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL; // the biggest size possible in this function
+	char     *result = (char *)malloc(sizeof(char) * 20);
+	uint64_t  multiplier = exbibytes;
+	int i;
+
+	for (i = 0; i < DIM(sizes); i++, multiplier /= 1024)
+	{
+		if (size < multiplier)
+			continue;
+		if (size % multiplier == 0)
+			sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
+		else
+			sprintf(result, "%.2f %s", (float)size / multiplier, sizes[i]);
+		return result;
+	}
+	strcpy(result, "0");
+	return result;
+}

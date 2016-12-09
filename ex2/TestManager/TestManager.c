@@ -8,17 +8,9 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 */
 
 
-
-
 /* Constants: */
-#define TIMEOUT_IN_MILLISECONDS 5000
-#define BRUTAL_TERMINATION_CODE 0x55
-#define RUN 2
-#define FINISH 1
 #define LONG_SLEEP_TIME 5000
 #define SHORT_SLEEP_TIME 5
-
-
 
 
 /* Libraries: */
@@ -38,8 +30,6 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <direct.h>
 
 
-
-
 /* Function Declarations: */
 char *fileTestOutputLogPathCreation(char*, char*);
 char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_logFileName);
@@ -48,11 +38,10 @@ LPTSTR ConvertCharStringToLPTSTR(const char *Source);
 int CountNumOfTests(FILE *fileInput);
 int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles);
 char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char *outpuDirName);
-void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *CommandLineArguentStringArray, PROCESS_INFORMATION *ProcessInfoPtr,
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **CommandLineArguentStringArray, PROCESS_INFORMATION *ProcessInfoPtr,
 	HANDLE *handleProcessArray, DWORD *exitcodeArray, int TotalNumberOfFiles);
 FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation);
 void bubble_sort(PROCESS_INFORMATION *ProcessInfoPtr, HANDLE *handleProcessArray, int n);
-
 
 struct PROCESS_TIME_INF {
 	FILETIME CreationTime;
@@ -62,25 +51,13 @@ struct PROCESS_TIME_INF {
 };
 
 
-//typedef struct LPSYSTEMTIME {
-//	WORD wyear;
-//	WORD wmonth;
-//	WORD wdayofweek;
-//	WORD wday;
-//	WORD whour;
-//	WORD wminute;
-//	WORD wsecond;
-//	WORD wmilliseconds;
-//};
-
-
 int main(int argc, char *argv[]) {
 	/* Internal Declarations: */
-	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL; 
+	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL;
 	LPTSTR dirNameLPTSTR = NULL;
-	const char *loopTime = NULL;
-	char *outputLogFile = NULL, *FileToTestName = NULL, *CommandLineArguentStringArray = NULL, *runTime_logFileName = NULL, 
-		 *outpuDirName = NULL, *fileName = NULL, *outputFileName = NULL;
+	char *loopTime = NULL;
+	char *outputLogFile = NULL, *FileToTestName = NULL, **CommandLineArguentStringArray = { NULL }, *runTime_logFileName = NULL,
+		*outpuDirName = NULL, *fileName = NULL, *outputFileName = NULL;
 	int TotalNumberOfFiles = 0, *FilesToTestLengthArray = NULL, i, AllProcessFinished = 0, errorCodeFlag = 0, ProcessesAreStillRunningFlag = 0;
 
 	PROCESS_INFORMATION *ProcessInfoPtr = NULL;
@@ -129,10 +106,9 @@ int main(int argc, char *argv[]) {
 	// Assign *CommandLineArguentStringArray[] in size of TotalNumberOfFiles, an array of pointers holding the commandLineArgumentString of eact test
 	CommandLineArguentStringArray = malloc(TotalNumberOfFiles * sizeof(char*));
 	for (i = 0; i < TotalNumberOfFiles; i++) {
-		strcpy(&CommandLineArguentStringArray[i], FullCommandLineStringCreation(fileInput, FilesToTestLengthArray[i], outpuDirName));
-		printf("%s", &CommandLineArguentStringArray[i]);  //REMOVE
-		getchar(); //REMOVE
+	CommandLineArguentStringArray[i] = FullCommandLineStringCreation(fileInput, FilesToTestLengthArray[i], outpuDirName);
 	}
+
 
 	//Dynamic memory allocations
 	handleProcessArray = (HANDLE*)malloc(TotalNumberOfFiles * sizeof(HANDLE));
@@ -176,16 +152,16 @@ int main(int argc, char *argv[]) {
 		if (waitcode == 0xFFFFFFFF) {
 			printf("!!! WaitForMultipleObjects function failed, Error code: %ul !!!\n", GetLastError()); break;
 		}
-		if(waitcode == 0) {
-			checkProcessStatus(waitcode, runTime_logFileOutput, *CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles); break;
+		if (waitcode == 0) {
+			checkProcessStatus(waitcode, runTime_logFileOutput, CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles); break;
 		}
 		else {
 			ProcessesAreStillRunningFlag = 1;
-			checkProcessStatus(waitcode, runTime_logFileOutput, *CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles);
+			checkProcessStatus(waitcode, runTime_logFileOutput, CommandLineArguentStringArray, ProcessInfoPtr, handleProcessArray, exitcodeArray, TotalNumberOfFiles);
 		}
-	} while (ProcessesAreStillRunningFlag);		
+	} while (ProcessesAreStillRunningFlag);
 
-							//All the processes have finished running. Exiting program
+	//All the processes have finished running. Exiting program
 	fprintf(runTime_logFileOutput, "All the processes have finished running. Exiting program\n");
 
 	//CloseHandle(ProcessInfoPtr->hProcess);	 /* Closing the handle to the process */
@@ -197,21 +173,15 @@ int main(int argc, char *argv[]) {
 	// free all allocated memories
 	free(handleProcessArray);
 	free(CommandLineArguentStringArray);
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		free(ProcessInfoPtr[i].dwProcessId);
-	}
+	free(ProcessInfoPtr);
 	free(FilesToTestLengthArray);
 	free(runTime_logFileName);
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		free(CommandLineArguentStringArray[i]);
-	}
 
 	return 0;
 }
 
 
 /* Function Definitions */
-
 char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_logFileName) {
 	// create runTime_log File inside <OutputFilesDirectory> directory
 	char *runTime_logFileNameEnding = "\\runtime_logfile.txt"; char *runTime_logFileOutput = NULL;
@@ -297,7 +267,7 @@ int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
 char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char *outpuDirName) {
 	char *CommandLineArguentStringArray = NULL; char *TestFileProgramName = { "TestFile.exe " };
 	char *fileToTest = NULL; char *fileTestOutputLogPath = NULL;
-	
+
 	fileToTest = (char *)malloc(FilesToTestLength * sizeof(char));
 	if (fileToTest == NULL) {
 		printf("allocation was failed, error %ul\n", GetLastError());
@@ -416,87 +386,77 @@ BOOL CreateProcessSimple(LPTSTR CommandLine, PROCESS_INFORMATION *ProcessInfoPtr
 }
 
 
-void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char *CommandLineArguentStringArray, PROCESS_INFORMATION *ProcessInfoPtr,
+void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **CommandLineArguentStringArray, PROCESS_INFORMATION *ProcessInfoPtr,
 	HANDLE *handleProcessArray, DWORD *exitcodeArray, int TotalNumberOfFiles) {
-
 
 	//Check status of processes and print to runTime_logFile
 	int i;
 	FILETIME *ProcessTimeResult;
-	//struct LPSYSTEMTIME *sysTime = malloc(TotalNumberOfFiles * sizeof(struct LPSYSTEMTIME));
-	struct PROCESS_TIME_INF *ProcessTimeInf = malloc(TotalNumberOfFiles * sizeof(struct PROCESS_TIME_INF));	// !!!*****without  check*****!!!
-	ProcessTimeResult = (FILETIME*)malloc(TotalNumberOfFiles * sizeof(FILETIME));				 // !!!*****without  check*****!!!
-
-
-
+	struct PROCESS_TIME_INF *ProcessTimeInf = malloc(TotalNumberOfFiles * sizeof(struct PROCESS_TIME_INF));	
+	ProcessTimeResult = (FILETIME*)malloc(TotalNumberOfFiles * sizeof(FILETIME));				 
 
 	bubble_sort(ProcessInfoPtr, handleProcessArray, TotalNumberOfFiles);		// sort handle array and ProcInfo->dwProcessId array in order to print in ascending order
 
-																				////TEST
-																				//for (i = 0; i < TotalNumberOfFiles; i++) {
-																				//	printf("%d\n", ProcessInfoPtr[i].dwProcessId);
-																				//}
-																				////TEST
-																				//for (i = 0; i < TotalNumberOfFiles; i++) {
-																				//	printf("%d\n", handleProcessArray[i]);
-																				//}
-																				//getchar();
-
-
-	for (i = 0; i < TotalNumberOfFiles; i++) {
-		if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
-			printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr->dwProcessId);
-		}
-		Sleep(10);
-	}
-
-
-
-
 	switch (waitcode) {
-	case WAIT_OBJECT_0:															// all process were signaled, need to print them as finished process
-																				// Print finished process
+
+	case WAIT_OBJECT_0:			// all process were signaled, need to print them as finished process														
+		// Print finished process																	
 		for (i = 0; i<TotalNumberOfFiles; i++) {
+			if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
+				printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr[i].dwProcessId);
+			}
 			if (exitcodeArray[i] != STILL_ACTIVE) {
 				fprintf(runTime_logFileOutput, "List of finished processes:\n");
-				GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]);
 				GetProcessTimes(handleProcessArray[i], &ProcessTimeInf[i].CreationTime,
 					&ProcessTimeInf[i].ExitTime, &ProcessTimeInf[i].KernelTime, &ProcessTimeInf[i].UserTime);
 				ProcessTimeResult[i] = SubtractTimesOfProcess(ProcessTimeInf[i].ExitTime, ProcessTimeInf[i].CreationTime);
-				//FileTimeToSystemTime(&ProcessTimeResult[i], sysTime);
-				printf("Process %d ran command %s and exited with exit code %d afrer %d \n", ProcessInfoPtr[i].dwProcessId, &CommandLineArguentStringArray[i], exitcodeArray[i], ProcessTimeResult[i]);
-				fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code %d after second and %lld millisecond \n",
-					ProcessInfoPtr[i].dwProcessId, &CommandLineArguentStringArray[i], exitcodeArray[i], ProcessTimeResult[i]);
-				//fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code %d after %d second and %d millisecond\n", 
-				//(ProcessInfoPtr)->dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], i/*times*/);
+				//printf("Process %d ran command %s and exited with exit code %d afrer %d seconds and %d millisecond\n", 
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
+				//fprintf("Process %d ran command %s and exited with exit code %d afrer %d seconds and %d millisecond\n",
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
 			}
 		}
-	case WAIT_TIMEOUT:															// Processes are still running, go over handleProcessArray, sort the ID field, get cell's ExitCodeProcess and print status		
 
-
-
-																				// Print running process
+	case WAIT_TIMEOUT:		// Not all process were signaled, need to print running & finished process															
+		// Print Running process
 		for (i = 0; i<TotalNumberOfFiles; i++) {
+			if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
+				printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr[i].dwProcessId);
+			}
 			if (exitcodeArray[i] == STILL_ACTIVE) {
 				fprintf(runTime_logFileOutput, "List of running processes:\n");
-				//fprintf(runTime_logFileOutput, "Process %d running command %s for %d second %d millisecond\n", 
-				//	(ProcessInfoPtr)->dwProcessId, CommandLineArguentStringArray[i], SubtractTimesOfProcess()/1E-9, SubtractTimesOfProcess()/1E-6);
+				GetProcessTimes(handleProcessArray[i], &ProcessTimeInf[i].CreationTime,
+					&ProcessTimeInf[i].ExitTime, &ProcessTimeInf[i].KernelTime, &ProcessTimeInf[i].UserTime);
+				ProcessTimeResult[i] = SubtractTimesOfProcess(ProcessTimeInf[i].ExitTime, ProcessTimeInf[i].CreationTime);
+				//printf("Process %d running command %s for %d seconds and %d millisecond\n",
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
+				//fprintf("Process %d running command %s for %d seconds and %d millisecond\n",
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
 			}
 		}
-		// Print finished process
+
+
+		// Print finished process																	
 		for (i = 0; i<TotalNumberOfFiles; i++) {
+			if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
+				printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr[i].dwProcessId);
+			}
 			if (exitcodeArray[i] != STILL_ACTIVE) {
 				fprintf(runTime_logFileOutput, "List of finished processes:\n");
-				//fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code %d after %d second and %d millisecond\n", 
-				//(ProcessInfoPtr)->dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], i/*times*/);
+				GetProcessTimes(handleProcessArray[i], &ProcessTimeInf[i].CreationTime,
+					&ProcessTimeInf[i].ExitTime, &ProcessTimeInf[i].KernelTime, &ProcessTimeInf[i].UserTime);
+				ProcessTimeResult[i] = SubtractTimesOfProcess(ProcessTimeInf[i].ExitTime, ProcessTimeInf[i].CreationTime);
+				//printf("Process %d ran command %s and exited with exit code %d afrer %d seconds and %d millisecond\n",
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
+				//fprintf("Process %d ran command %s and exited with exit code %d afrer %d seconds and %d millisecond\n",
+				//	ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], (ProcessTimeResult[i]), (ProcessTimeResult[i]));
 			}
 		}
 
 	}
+
 	free(ProcessTimeResult);
 	free(ProcessTimeInf);
-
-
 }
 
 
@@ -562,12 +522,3 @@ FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation)
 //		c. go over the process. if exitcode == STILL ALIVE => print process alive according to context.
 //								if exitcode != STILL ALIVE => print process finished according to context. 
 //		
-
-
-/*
-//TEST
-for (i = 0; i < TotalNumberOfFiles; i++) {
-printf("%s\n", CommandLineArguentStringArray[i]);
-}
-getchar();
-*/

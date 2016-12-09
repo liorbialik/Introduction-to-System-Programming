@@ -1,4 +1,6 @@
 example.txt
 The file extension of the test file is ".txt"
 The test file size is 49 bytes
-The file was created on The file was last modified on The files first 5 bytes are: H#E#L
+The file was created on 12/09/2016  16:54:52
+The file was last modified on 12/09/2016  16:54:52
+The files first 5 bytes are: H#E#L

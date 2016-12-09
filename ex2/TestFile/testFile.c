@@ -12,6 +12,7 @@ TestFile - testFile.c:
 /* Libraries: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #define DIM(x) (sizeof(x)/sizeof(*(x))) // will be used in the file's size conversion function
+
 #include <stdio.h>
 #include <Windows.h>
 #include <stdlib.h>
@@ -30,8 +31,7 @@ void initializeTestResultsPointersToNull(testResults *newTestResults);
 int getFileExtention(testResults *newtestResults);
 int getFirstFiveCharsInFile(testResults *newtestResults);
 int getFileSize(testResults *newtestResults);
-int getFileCreationTime(testResults *newtestResults);
-int getFileLastModifiedTime(testResults *newtestResults);
+int getFileCreationAndLastModifiedTime(testResults *newtestResults);
 BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
 void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults);
 char *calculateSize(uint64_t size);
@@ -50,8 +50,7 @@ int executeTestsOnFile(char *argv[])
 	const char *getFileExtentionThreadCreationError = "Problem creating 'File Extention Test' thread\n";
 	const char *getFileSizeThreadCreationError = "Problem creating 'File Size Test' thread\n";
 	const char *getFirstFiveCharsInFileThreadCreationError = "Problem creating 'First Five Chars Test' thread\n";
-	const char *getFileCreationTimeThreadCreationError = "Problem creating 'File Creation Time Test' thread\n";
-	const char *getFileLastModifiedTimeThreadCreationError = "Problem creating 'File Last Modified Time Test' thread\n";
+	const char *getFileCreationAndLastModifiedTimeThreadCreationError = "Problem creating 'File Creation And Last Modified Time Test' thread\n";
 
 	// Initiating newTestResults pointers:
 	initializeTestResultsPointersToNull(&newTestResults);
@@ -89,21 +88,12 @@ int executeTestsOnFile(char *argv[])
 	}
 
 	threadHandles[3] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)getFileCreationTime,           /*  thread function */
-		&newTestResults,                                       /*  argument to thread function */
-		&threadIDs[3]);                                        /*  returns the thread identifier */
+		(LPTHREAD_START_ROUTINE)getFileCreationAndLastModifiedTime,   /*  thread function */
+		&newTestResults,                                              /*  argument to thread function */
+		&threadIDs[3]);                                               /*  returns the thread identifier */
 	if (threadHandles[3] == NULL) {
-		printf("Problem creating 'File Creation Time Test' thread");
-		newTestResults.fileCreationTimeStringThreadError = getFileCreationTimeThreadCreationError;
-	}
-
-	threadHandles[4] = CreateThreadSimple(
-		(LPTHREAD_START_ROUTINE)getFileLastModifiedTime,       /*  thread function */
-		&newTestResults,                                       /*  argument to thread function */
-		&threadIDs[4]);                                        /*  returns the thread identifier */
-	if (threadHandles[4] == NULL) {
-		printf("Problem creating 'File Last Modified Time Test' thread");
-		newTestResults.fileLastModifiedTimeThreadStringError = getFileLastModifiedTimeThreadCreationError;
+		printf("Problem creating 'File Creation and Last Modified Time Test' thread");
+		newTestResults.fileCreationAndLastModifiedTimeStringThreadError = getFileCreationAndLastModifiedTimeThreadCreationError;
 	}
 
 	//Wait for thread to finish
@@ -138,8 +128,7 @@ void initializeTestResultsPointersToNull(testResults *newTestResults) {
 	
 	newTestResults->inputFileName = NULL;
 	newTestResults->fileExtention = NULL;
-	newTestResults->fileCreationTimeStringThreadError = NULL;
-	newTestResults->fileLastModifiedTimeThreadStringError = NULL;
+	newTestResults->fileCreationAndLastModifiedTimeStringThreadError = NULL;
 	newTestResults->firstFiveCharsThreadError = NULL;
 	newTestResults->fileSizeThreadError = NULL;
 	newTestResults->fileExtentionThreadError = NULL;
@@ -178,16 +167,13 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 		normalizedFileSize = calculateSize(newTestResults->fileSize);
 		fprintf(outputFile, "The test file size is %s\n", normalizedFileSize);
 	
-	if (newTestResults->fileCreationTimeStringThreadError)
-		fprintf(outputFile, "%s", newTestResults->fileCreationTimeStringThreadError);
-	else
+	if (newTestResults->fileCreationAndLastModifiedTimeStringThreadError)
+		fprintf(outputFile, "%s", newTestResults->fileCreationAndLastModifiedTimeStringThreadError);
+	else {
 		fprintf(outputFile, "The file was created on %ws\n", newTestResults->fileCreationTimeString);
-	
-	if (newTestResults->fileLastModifiedTimeThreadStringError)
-		fprintf(outputFile, "%s", newTestResults->fileLastModifiedTimeThreadStringError);
-	else
 		fprintf(outputFile, "The file was last modified on %ws\n", newTestResults->fileLastModifiedTimeString);
-	
+	}
+
 	if(newTestResults->firstFiveCharsThreadError)
 		fprintf(outputFile, "%s", newTestResults->firstFiveCharsThreadError);
 	else
@@ -216,8 +202,8 @@ BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString) {
 
 	// Build a string showing the date and time.
 	timeToStringFormatResult = StringCchPrintf(bufferForString, timeInStringFormatSize,
-		TEXT("%02d/%02d/%04d  %02d:%02d:%02d"),
-		localTime.wMonth, localTime.wDay, localTime.wYear,
+		TEXT("%02d/%02d/%04d, %02d:%02d:%02d"),
+		localTime.wDay, localTime.wMonth, localTime.wYear,
 		localTime.wHour, localTime.wMinute, localTime.wSecond);
 
 	if (timeToStringFormatResult == S_OK)
@@ -234,10 +220,9 @@ int getFileExtention(testResults *newTestResults) {
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
-	Sleep(10);
-
 	FILE *inputFile = NULL;
 
+	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
@@ -261,10 +246,9 @@ int getFirstFiveCharsInFile(testResults *newTestResults) {
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
-	Sleep(10);
-
 	FILE *inputFile = NULL;
 
+	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
@@ -287,12 +271,12 @@ int getFileSize(testResults *newTestResults) {
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
-	Sleep(10);
 
 	FILE *inputFile = NULL;
 	HANDLE fileHandler;
 	DWORD fileSize;
 
+	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
@@ -316,20 +300,19 @@ int getFileSize(testResults *newTestResults) {
 }
 
 
-int getFileCreationTime(testResults *newTestResults) {
+int getFileCreationAndLastModifiedTime(testResults *newTestResults) {
 	/*
 	@ Description: The function will create a file handler and use the GetFileTime() function
-	to retrive the input file's creation time. it will save it into the
-	relevant result structure variable.
+	to retrive the input file's creation time and when it was last modified. it will save it into the
+	relevant result structure variables.
 	@ Param newTestResults: the struct containing all the results.
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
-	Sleep(10);
-
 	FILE *inputFile = NULL;
 	HANDLE fileHandler;
-	FILETIME fileCreationTime;
-
+	FILETIME fileCreationTime, fileLastModifiedTime;
+	
+	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
 		printf("Could not open file, error %ul\n", GetLastError());
@@ -344,48 +327,13 @@ int getFileCreationTime(testResults *newTestResults) {
 	}
 
 	//getting file's creation time and last modified time:
-	GetFileTime(fileHandler, &fileCreationTime, NULL, NULL);
+	GetFileTime(fileHandler, &fileCreationTime, NULL, &fileLastModifiedTime);
 
+	// converting the times recieved into a string
 	if (getFileTimeString(fileCreationTime, newTestResults->fileCreationTimeString) == FALSE) {
 		printf("Failed converting the creation time to string, error %ul\n", GetLastError());
 		return 1;
 	}
-
-	fclose(inputFile); // Closing both file and handler
-
-	return 0;
-}
-
-
-int getFileLastModifiedTime(testResults *newTestResults) {
-	/*
-	@ Description: The function will create a file handler and use the GetFileTime() function to
-	retrive the input file's time when it was last modified. it will save it into
-	the relevant result structure variable.
-	@ Param newTestResults: the struct containing all the results.
-	@ Return: 0 -> Success, 1 -> Failure
-	*/
-	Sleep(10);
-
-	FILE *inputFile = NULL;
-	HANDLE fileHandler;
-	FILETIME fileLastModifiedTime;
-
-	inputFile = fopen(newTestResults->inputFileName, "r");
-	if (inputFile == NULL) {
-		printf("Could not open file, error %ul\n", GetLastError());
-		return 1;
-	}
-
-	// creating a file handler to use in 'GetFileSize' function:
-	fileHandler = (HANDLE)_get_osfhandle(_fileno(inputFile));
-	if (fileHandler == INVALID_HANDLE_VALUE) {
-		printf("File Handler Error: could not open file, error %ul\n", GetLastError());
-		return 1;
-	}
-
-	//getting file's creation time and last modified time:
-	GetFileTime(fileHandler, NULL, NULL, &fileLastModifiedTime);
 
 	if (getFileTimeString(fileLastModifiedTime, newTestResults->fileLastModifiedTimeString) == FALSE) {
 		printf("Failed converting the creation time to string, error %ul\n", GetLastError());
@@ -393,6 +341,7 @@ int getFileLastModifiedTime(testResults *newTestResults) {
 	}
 
 	fclose(inputFile); // Closing both file and handler
+
 	return 0;
 }
 

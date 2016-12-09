@@ -12,7 +12,7 @@ TestFile - testFile.h:
 #include <Windows.h>
 
 /* global definition for the number of tests being executed */
-#define NUM_OF_THREADS 5
+#define NUM_OF_THREADS 4
 
 /* restults struc*/
 typedef struct testResults
@@ -28,8 +28,7 @@ typedef struct testResults
 	const char *fileSizeThreadError;
 	const char *fileExtentionThreadError;
 	const char *firstFiveCharsThreadError;
-	const char *fileCreationTimeStringThreadError;
-	const char *fileLastModifiedTimeThreadStringError;
+	const char *fileCreationAndLastModifiedTimeStringThreadError;
 } testResults;
 
 /* Function Declarations: */

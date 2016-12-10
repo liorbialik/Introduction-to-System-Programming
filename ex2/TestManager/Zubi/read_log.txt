@@ -1,4 +1,0 @@
-read.txt
-The file extension of the test file is ".(null)"
-The test file size is -858993460 bytes
-The file was created on The file was last modified on The files first 5 bytes are: лллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллллл!╪≥|╞

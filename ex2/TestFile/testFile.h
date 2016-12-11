@@ -1,8 +1,9 @@
+#pragma once
 /*
 TestFile - testFile.h:
 - the header file for testFile.c which contains the execution log for threaded tests.
 - this file contains the definitions, used structs and the decleration which used to call the main
-  function in testFile.c
+function in testFile.c
 */
 
 #ifndef TEST_FILE
@@ -23,7 +24,7 @@ typedef struct testResults
 	TCHAR fileCreationTimeString[21];
 	TCHAR fileLastModifiedTimeString[21];
 	char firstFiveChars[6];
-	
+
 	// possible thread errors:
 	const char *fileSizeThreadError;
 	const char *fileExtentionThreadError;

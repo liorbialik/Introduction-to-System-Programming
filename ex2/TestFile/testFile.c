@@ -18,10 +18,10 @@ TestFile - testFile.c:
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
-#include <Strsafe.h>
 #include <tchar.h>
-#include <inttypes.h>
+#include <Strsafe.h>
 #include "testFile.h"
+#pragma warning( disable: 4995 ) // disabling the deprecation warnings of 'strcpy' and 'sprintf'
 
 /* Function Declarations: */
 HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress,
@@ -34,7 +34,7 @@ int getFileSize(testResults *newtestResults);
 int getFileCreationAndLastModifiedTime(testResults *newtestResults);
 BOOL getFileTimeString(FILETIME fileCreationTime, LPTSTR bufferForString);
 void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults);
-char *calculateSize(uint64_t size);
+char *calculateSize(unsigned long long size);
 
 int executeTestsOnFile(char *argv[])
 {
@@ -221,6 +221,7 @@ int getFileExtention(testResults *newTestResults) {
 	@ Return: 0 -> Success, 1 -> Failure
 	*/
 	FILE *inputFile = NULL;
+	char *dotLocationInFileName = NULL;
 
 	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
@@ -229,7 +230,7 @@ int getFileExtention(testResults *newTestResults) {
 		return 1;
 	}
 
-	char *dotLocationInFileName = strrchr(newTestResults->inputFileName, '.');
+	dotLocationInFileName = strrchr(newTestResults->inputFileName, '.');
 	if (!dotLocationInFileName || dotLocationInFileName == newTestResults->inputFileName)
 		return 1;
 	newTestResults->fileExtention = dotLocationInFileName + 1;
@@ -368,8 +369,7 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterP
 }
 
 
-char *calculateSize(uint64_t size)
-{
+char *calculateSize(unsigned long long size){
 	/*
 	@ Description: The function will get a size of a file in bytes and normalize it into bigger units if needed.
 	inspired by: http://stackoverflow.com/questions/3898840/converting-a-number-of-bytes-into-a-file-size-in-c
@@ -379,17 +379,17 @@ char *calculateSize(uint64_t size)
 	*/
 
 	char     *sizes[] = { "EB", "PB", "TB", "GB", "MB", "KB", "Bytes" }; // list of normalized sizes
-	uint64_t  exbibytes = 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL; // the biggest size possible in this function
+	unsigned long long  exbibytes = 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL; // the biggest size possible in this function
 	char     *result = (char *)malloc(sizeof(char) * 20);
-	uint64_t  multiplier = exbibytes;
+	unsigned long long  multiplier = exbibytes;
 	int i;
 
 	for (i = 0; i < DIM(sizes); i++, multiplier /= 1024)
 	{
 		if (size < multiplier)
 			continue;
-		if (size % multiplier == 0)
-			sprintf(result, "%" PRIu64 " %s", size / multiplier, sizes[i]);
+		if (size % multiplier == 0)                                          // check if the devision if mantissa free
+			sprintf(result, "%llu %s", size / multiplier, sizes[i]);
 		else
 			sprintf(result, "%.2f %s", (float)size / multiplier, sizes[i]);
 		return result;

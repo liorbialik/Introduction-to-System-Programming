@@ -253,7 +253,7 @@ int CountNumOfTests(FILE *fileInput) {
 //TODO: Check for '\n' at the end of the fileInput
 
 int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
-	int *FilesToTestLengthArray = NULL; int i;
+	int *FilesToTestLengthArray = NULL; int i; char ch = NULL;
 	FilesToTestLengthArray = (int *)malloc(TotalNumberOfFiles * sizeof(int));
 	if (FilesToTestLengthArray == NULL) {
 		printf("FilesToTestLengthArray allocation was failed, error %ul\n", GetLastError());
@@ -262,8 +262,13 @@ int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
 		FilesToTestLengthArray[i] = 0;			// initialize FilesToTestArray
 	}
 	// go over FilesToTestArray and save each test's length
-	for (i = 0; i<TotalNumberOfFiles; i++) {
+	for (i = 0; i<TotalNumberOfFiles-1; i++) {
 		while (fgetc(fileInput) != '\n') {
+				FilesToTestLengthArray[i]++;
+		}
+	}
+	if (i == TotalNumberOfFiles - 1) {
+		while (fgetc(fileInput) != EOF) {
 			FilesToTestLengthArray[i]++;
 		}
 	}

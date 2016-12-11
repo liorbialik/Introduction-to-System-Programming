@@ -106,6 +106,7 @@ int main(int argc, char *argv[]) {
 
 	// go over 'FilesToTest' file and count all files to be tested
 	TotalNumberOfFiles = CountNumOfTests(fileInput);
+	//TODO: Need to fix lines and gets errors
 
 	// Assign FilesToTestLengthArray in size of TotalNumberOfFiles
 	FilesToTestLengthArray = CountLengthOfEachTest(fileInput, TotalNumberOfFiles);
@@ -144,7 +145,7 @@ int main(int argc, char *argv[]) {
 		retVal = CreateProcessSimple(command, &ProcessInfoPtr[i]);
 		if (retVal == 0) {
 			printf("!!! Failed to create new process to run %s. Error code: %ul !!!\n", CommandLineArguentStringArray[i], GetLastError());
-			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %d !!!\n", CommandLineArguentStringArray[i], GetLastError());
+			fprintf(runTime_logFileOutput, "!!! Failed to create new process to run %s. Error code: %ul !!!\n", CommandLineArguentStringArray[i], GetLastError());
 			// TODO: Need to output hex rep. error code
 		}
 		else {
@@ -196,7 +197,7 @@ char *createRunTimeLogFileInsideOutputDirName(char *outpuDirName, char *runTime_
 	char *runTime_logFileNameEnding = "\\runtime_logfile.txt"; char *runTime_logFileOutput = NULL;
 	runTime_logFileName = (char *)malloc(1 + strlen(outpuDirName) + strlen(runTime_logFileNameEnding));
 	if (runTime_logFileName == NULL) {
-		printf("runTime_logFileName allocation failed/n");
+		printf("runTime_logFileName allocation failed, error %ul\n", GetLastError());
 		exit(1);
 	}
 	strcpy(runTime_logFileName, outpuDirName);
@@ -221,7 +222,7 @@ char *fileTestOutputLogPathCreation(char* outpuDirName, char* fileToTestName) {
 	// '-4' due to deduction of '.txt' ending since it appearse twice, '-2' due to addition of '\\', '+1' due to '\0' ending
 	outputLogFileName = (char*)malloc(sizeof(char) * outputLogFileNameLength);
 	if (outputLogFileName == NULL) {
-		printf("outputLogFileName allocation failed/n");
+		printf("outputLogFileName allocation failed, error %ul\n", GetLastError());
 		exit(1);
 	}
 	strcpy(outputLogFileName, outpuDirName);
@@ -240,7 +241,7 @@ int CountNumOfTests(FILE *fileInput) {
 	int TotalNumberOfFiles = 0;
 	while (!feof(fileInput)) {
 		ch = fgetc(fileInput);
-		if (ch == '\n') {
+		if ((ch == '\n') || (ch == EOF)) {
 			TotalNumberOfFiles++;
 		}
 	}
@@ -255,7 +256,7 @@ int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
 	int *FilesToTestLengthArray = NULL; int i;
 	FilesToTestLengthArray = (int *)malloc(TotalNumberOfFiles * sizeof(int));
 	if (FilesToTestLengthArray == NULL) {
-		printf("allocation was failed, error %ul\n", GetLastError());
+		printf("FilesToTestLengthArray allocation was failed, error %ul\n", GetLastError());
 	}
 	for (i = 0; i < TotalNumberOfFiles; i++) {
 		FilesToTestLengthArray[i] = 0;			// initialize FilesToTestArray
@@ -279,7 +280,7 @@ char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char
 
 	fileToTest = (char *)malloc(FilesToTestLength * sizeof(char));
 	if (fileToTest == NULL) {
-		printf("allocation was failed, error %ul\n", GetLastError());
+		printf("fileToTest allocation was failed, error %ul\n", GetLastError());
 	}
 	if (fgets(fileToTest, 1 + FilesToTestLength, fileInput) == NULL) {
 		printf("reading a string from fileInput was failed, error %ul\n", GetLastError());
@@ -289,7 +290,7 @@ char *FullCommandLineStringCreation(FILE *fileInput, int FilesToTestLength, char
 	CommandLineArguentStringArray = (char *)malloc((FilesToTestLength + 15 + strlen(fileTestOutputLogPath)) * sizeof(char));
 	// 15 for the const "FileTest.exe" + two spaces + '\0'
 	if (CommandLineArguentStringArray == NULL) {
-		printf("allocation was failed, error %ul\n", GetLastError());
+		printf("CommandLineArguentStringArray allocation was failed, error %ul\n", GetLastError());
 	}
 	// Building the command line string
 	strcpy(CommandLineArguentStringArray, TestFileProgramName);
@@ -420,7 +421,7 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 			fprintf(runTime_logFileOutput, "List of finished processes:\n");
 			for (i = 0; i < TotalNumberOfFiles; i++) {
 				if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
-					printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr[i].dwProcessId);
+					printf("Handle %d GetExitCodeProcess failure, error %ul\n", ProcessInfoPtr[i].dwProcessId, GetLastError());
 				}
 				if (exitcodeArray[i] != STILL_ACTIVE) {
 					GetProcessTimes(handleProcessArray[i], &ProcessTimeInf[i].CreationTime,
@@ -430,9 +431,9 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 					FinishedProcessTimeResult_int[i].millisecond = (FinishedProcessTimeResult[i].dwLowDateTime / MILLI_SECOND_DIVIDER);
 					FinishedProcessTimeResult_int[i].second = (FinishedProcessTimeResult[i].dwLowDateTime / SECOND_DIVIDER);
 
-					printf("Process %d ran command %s and exited with exit code %0x%x after %d seconds and %d millisecond\n",
+					printf("Process %d ran command %s and exited with exit code 0x%x after %d seconds and %d millisecond\n",
 						ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], FinishedProcessTimeResult_int[i].second, FinishedProcessTimeResult_int[i].millisecond);
-					fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code %0x%x after %d seconds and %d millisecond\n",
+					fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code 0x%x after %d seconds and %d millisecond\n",
 						ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], FinishedProcessTimeResult_int[i].second, FinishedProcessTimeResult_int[i].millisecond);
 				}
 			}
@@ -445,7 +446,7 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 			fprintf(runTime_logFileOutput, "List of running processes:\n");
 			for (i = 0; i < TotalNumberOfFiles; i++) {
 				if (GetExitCodeProcess(handleProcessArray[i], &exitcodeArray[i]) == FALSE) {
-					printf("Handle %d GetExitCodeProcess failure\n", ProcessInfoPtr[i].dwProcessId);
+					printf("Handle %d GetExitCodeProcess failure, error %ul\n", ProcessInfoPtr[i].dwProcessId, GetLastError());
 				}
 				if (exitcodeArray[i] == STILL_ACTIVE) {
 					GetProcessTimes(handleProcessArray[i], &ProcessTimeInf[i].CreationTime,
@@ -477,9 +478,9 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 						FinishedProcessTimeResult_int[i].millisecond = (FinishedProcessTimeResult[i].dwLowDateTime / MILLI_SECOND_DIVIDER) % SECOND_DIVIDER;
 						FinishedProcessTimeResult_int[i].second = (FinishedProcessTimeResult[i].dwLowDateTime / MILLI_SECOND_DIVIDER) / SECOND_DIVIDER;
 
-						printf("Process %d ran command %s and exited with exit code %0x%x after %d seconds and %d millisecond\n",
+						printf("Process %d ran command %s and exited with exit code 0x%x after %d seconds and %d millisecond\n",
 							ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], FinishedProcessTimeResult_int[i].second, FinishedProcessTimeResult_int[i].millisecond);
-						fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code %0x%x after %d seconds and %d millisecond\n",
+						fprintf(runTime_logFileOutput, "Process %d ran command %s and exited with exit code 0x%x after %d seconds and %d millisecond\n",
 							ProcessInfoPtr[i].dwProcessId, CommandLineArguentStringArray[i], exitcodeArray[i], FinishedProcessTimeResult_int[i].second, FinishedProcessTimeResult_int[i].millisecond);
 					}
 				}

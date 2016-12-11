@@ -241,3 +241,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /ex2/TestFile/OutputFilesDirectory
+/ex2/TestManager/TestFile1.exe

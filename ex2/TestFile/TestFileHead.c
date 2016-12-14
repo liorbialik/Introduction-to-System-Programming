@@ -9,14 +9,13 @@ TestFile - Main.c:
 
 /* Libraries: */
 #include <stdio.h>
-#include "testFile.h"
+#include "TestFile.h"
 
 int main(int argc, char *argv[]) {
-	
+
 	int returnValueFromTestModule = 0;
 
 	returnValueFromTestModule = executeTestsOnFile(argv);
 
 	return 0;
 }
-

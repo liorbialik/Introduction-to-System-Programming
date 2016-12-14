@@ -1,20 +1,13 @@
 /*
-Main.c: TestManager.exe
+TestManager - TestManager.c:
+- the program recieves the following arguments from the main module:
+@param FilesToTest: A text file which consists the processes to be tested
+@param OutputFilesDirectory: The output file directory that will hold in it all log files
 - This program manages all runnings of TestFiles.
 - Each file will be sent by TestManager to a set of tests, as a different process.
 - The TestManager also outputs a status log file by sampling the processes every time set, noted by 'processStatusCheckFrequency'
 - The testManager finishes its work only when all processes are finished running.
-Tomer Shahar 301359410, Lior Bialik 301535316
 */
-
-
-/* Constants: */
-#define LONG_SLEEP_TIME 5000
-#define SHORT_SLEEP_TIME 5
-#define SECOND_DIVIDER 10000000000
-#define MILLI_SECOND_DIVIDER 1000000
-
-
 
 
 /* Libraries: */
@@ -33,6 +26,7 @@ Tomer Shahar 301359410, Lior Bialik 301535316
 #include <sys/types.h>
 #include <direct.h>
 
+#pragma warning( disable: 4995 ) // disabling the deprecation warnings of 'strcpy' and 'sprintf'
 
 /* Function Declarations: */
 char *fileTestOutputLogPathCreation(char*, char*);
@@ -47,19 +41,9 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 FILETIME SubtractTimesOfProcess(FILETIME exit, FILETIME creation);
 void bubble_sort(PROCESS_INFORMATION *ProcessInfoPtr, HANDLE *handleProcessArray, int n);
 
-struct PROCESS_TIME_INF {
-	FILETIME CreationTime;
-	FILETIME ExitTime;
-	FILETIME KernelTime;
-	FILETIME UserTime;
-};
-struct FILE_TIME {
-	DWORD second;
-	DWORD millisecond;
-};
 
 
-int main(int argc, char *argv[]) {
+int executeManagerOnFile(char *argv[], int argc) {
 	/* Internal Declarations: */
 	FILE *fileInput = NULL; FILE *runTime_logFileOutput = NULL;
 	LPTSTR dirNameLPTSTR = NULL;
@@ -252,7 +236,7 @@ int CountNumOfTests(FILE *fileInput) {
 
 
 int *CountLengthOfEachTest(FILE *fileInput, int TotalNumberOfFiles) {
-	int *FilesToTestLengthArray = NULL; int i; char ch = NULL;
+	int *FilesToTestLengthArray = NULL, i;
 	FilesToTestLengthArray = (int *)malloc(TotalNumberOfFiles * sizeof(int));
 	if (FilesToTestLengthArray == NULL) {
 		printf("FilesToTestLengthArray allocation was failed, error %ul\n", GetLastError());
@@ -406,10 +390,10 @@ void checkProcessStatus(DWORD waitcode, FILE *runTime_logFileOutput, char **Comm
 
 	/* Function Declarations: */
 	int i, SomeProcesssHasFinishedFlag = 0;
-	PROCESS_TIME_INF *ProcessTimeInf = NULL;
-	FILE_TIME *RunningProcessTimeResult_int;
-	FILE_TIME *FinishedProcessTimeResult_int;
-	FILETIME *RunningProcessTimeResult, *FinishedProcessTimeResult, SystemTime_FILETIME;
+	PROCESS_TIME_INF *ProcessTimeInf;
+	FILE_TIME *RunningProcessTimeResult_int = NULL;
+	FILE_TIME *FinishedProcessTimeResult_int = NULL;
+	FILETIME *RunningProcessTimeResult = NULL, *FinishedProcessTimeResult = NULL, SystemTime_FILETIME;
 	ProcessTimeInf = (PROCESS_TIME_INF*)malloc(TotalNumberOfFiles * sizeof(PROCESS_TIME_INF));
 	RunningProcessTimeResult = (FILETIME*)malloc(TotalNumberOfFiles * sizeof(FILETIME));
 	FinishedProcessTimeResult = (FILETIME*)malloc(TotalNumberOfFiles * sizeof(FILETIME));

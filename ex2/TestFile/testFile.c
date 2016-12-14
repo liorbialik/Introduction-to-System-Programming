@@ -1,8 +1,8 @@
 /*
 TestFile - testFile.c:
 - the program recieves the following arguments from the main module:
-	@param filePath: the path of the file which tests will be executed on
-	@param OutputLogFile: the path of the log file to which the results will be written to
+@param filePath: the path of the file which tests will be executed on
+@param OutputLogFile: the path of the log file to which the results will be written to
 - the program will create a thread for each test needed to run
 - each test will save the result to a designated structure
 - when all the threads are done, the results will be written into the output log file
@@ -108,7 +108,7 @@ int executeTestsOnFile(char *argv[])
 	// Writing the results into the output file
 	writeTestResultsToFile(outputFilePath, &newTestResults); // TODO: 
 
-	// Safely close all threads and print their exit code:
+															 // Safely close all threads and print their exit code:
 	for (i = 0; i < NUM_OF_THREADS; i++)
 	{
 		if (GetExitCodeThread(threadHandles[i], &exitCode)) {
@@ -125,7 +125,7 @@ int executeTestsOnFile(char *argv[])
 
 
 void initializeTestResultsPointersToNull(testResults *newTestResults) {
-	
+
 	newTestResults->inputFileName = NULL;
 	newTestResults->fileExtention = NULL;
 	newTestResults->fileCreationAndLastModifiedTimeStringThreadError = NULL;
@@ -155,18 +155,18 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 
 	// Writing the results:
 	fprintf(outputFile, "%s\n", newTestResults->inputFileName);
-	
+
 	if (newTestResults->fileExtentionThreadError)
 		fprintf(outputFile, "%s", newTestResults->fileExtentionThreadError);
 	else
 		fprintf(outputFile, "The file extension of the test file is \".%s\"\n", newTestResults->fileExtention);
-	
+
 	if (newTestResults->fileSizeThreadError)
 		fprintf(outputFile, "%s", newTestResults->fileSizeThreadError);
 	else
 		normalizedFileSize = calculateSize(newTestResults->fileSize);
-		fprintf(outputFile, "The test file size is %s\n", normalizedFileSize);
-	
+	fprintf(outputFile, "The test file size is %s\n", normalizedFileSize);
+
 	if (newTestResults->fileCreationAndLastModifiedTimeStringThreadError)
 		fprintf(outputFile, "%s", newTestResults->fileCreationAndLastModifiedTimeStringThreadError);
 	else {
@@ -174,7 +174,7 @@ void writeTestResultsToFile(char *outputFilePath, testResults *newTestResults) {
 		fprintf(outputFile, "The file was last modified on %ws\n", newTestResults->fileLastModifiedTimeString);
 	}
 
-	if(newTestResults->firstFiveCharsThreadError)
+	if (newTestResults->firstFiveCharsThreadError)
 		fprintf(outputFile, "%s", newTestResults->firstFiveCharsThreadError);
 	else
 		fprintf(outputFile, "The file's first 5 bytes are: %s\n", newTestResults->firstFiveChars);
@@ -312,7 +312,7 @@ int getFileCreationAndLastModifiedTime(testResults *newTestResults) {
 	FILE *inputFile = NULL;
 	HANDLE fileHandler;
 	FILETIME fileCreationTime, fileLastModifiedTime;
-	
+
 	Sleep(10);
 	inputFile = fopen(newTestResults->inputFileName, "r");
 	if (inputFile == NULL) {
@@ -369,13 +369,13 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterP
 }
 
 
-char *calculateSize(unsigned long long size){
+char *calculateSize(unsigned long long size) {
 	/*
 	@ Description: The function will get a size of a file in bytes and normalize it into bigger units if needed.
 	inspired by: http://stackoverflow.com/questions/3898840/converting-a-number-of-bytes-into-a-file-size-in-c
 	@ Param size: the size of the file in bytes.
 	@ Return: the normalized size of the file as a string
-	
+
 	*/
 
 	char     *sizes[] = { "EB", "PB", "TB", "GB", "MB", "KB", "Bytes" }; // list of normalized sizes

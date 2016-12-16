@@ -49,7 +49,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 }
 
-// initialize a new allAccounts
+// initialize a new allAccounts.
 // open CommandFile 
 
 // read CommandFile line by line:

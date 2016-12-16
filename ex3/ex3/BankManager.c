@@ -6,25 +6,79 @@ ex3 - BankManager.c:
 - The program return a BOOL value, which indicated whether the managing operations done successfully, and log file was written.
 */
 
-///* Libraries: */
-//#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
-//#include <stdio.h>
-//#include <Windows.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <io.h>
-//#include <tchar.h>
-//#include <Strsafe.h>
-//#include <conio.h>
-//#include <process.h>
-//#include <sys/stat.h>
-//#include "TestManager.h"
-//#include <sys/types.h>
-//#include <direct.h>
+/* Libraries: */
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+#include <stdio.h>
+#include <Windows.h>
+#include <stdlib.h>
+#include <string.h>
+#include <io.h>
+#include <tchar.h>
+#include <Strsafe.h>
+#include <conio.h>
+#include <process.h>
+#include <sys/stat.h>
+#include "Header.h"
+#include <sys/types.h>
+#include <direct.h>
 
 int executeBankManager(int argc, char *argv[]) {
 
+	/* Internal Declarations: */
+	FILE *CommandFile = NULL, *RunTime_LogFile = NULL;
+	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL;
+
+	// Start of Program
+	CommandFileName = argv[1];
+	BalanceReportFileName = argv[2];
+	RunTime_LogFileName = argv[3];
+
+	// Verify that the number of command line argument is correct
+	if (argc != 4) {
+		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
+		exit(1);
+	}
+
+	// open CommandFile by getting CommandFileNAme as an argument
+	CommandFile = fopen(CommandFileName, "r");
+	if (CommandFile == NULL) {
+		printf("Could not open CommandFile, error %ul\n", GetLastError());
+		exit(1);
+	}
+
+
 }
+
+// initialize a new allAccounts
+// open CommandFile 
+
+// read CommandFile line by line:
+// while (CommandFileLine != EOF){
+//     - parse CommandFileLine into a command
+//     - check what command is it (switch-case using the enums)
+//	   - execute the relevant command in a new thread:
+//     switch(command)
+//	      * createAccountCmd:
+//             # check that all other threads closed
+//             # execute createAccount()
+//             # check return value :
+//                    success => 
+//                    
+//	      * closeAccountCmd:
+//             # check that all other threads closed
+//             # execute closeAccount()
+//	      * printBalancesCmd:
+//             # check that all other threads closed
+//             # execute printBalances()
+//	      * depositeCmd:
+//             # execute deposite()
+//	      * withdrawalCmd:
+//             # execute withdrawal()
+// }
+
+// printBalanceReport(accountsList, runTimeLogFileName);
+// print into log file the final line
+// free all handlers and memory allocations
 
 /*
 Algorithm flow:

@@ -21,19 +21,36 @@ function in BankManager.c
 
 
 ///* Struct Declarations: */
-//typedef struct PROCESS_TIME_INF {
-//	FILETIME CreationTime;
-//	FILETIME ExitTime;
-//	FILETIME KernelTime;
-//	FILETIME UserTime;
-//} PROCESS_TIME_INF;
-//
-//typedef struct FILE_TIME {
-//	DWORD second;
-//	DWORD millisecond;
-//} FILE_TIME;
+
+// struct for a single account
+typedef struct account {
+	unsigned long long accountNumber;
+	unsigned long long accountBalance;
+	int accountBalanceSign;
+	// another field for the account's mutex
+	struct account *nextInList;
+}account;
+
+
+// struct that will be using the the runtimeLogFile
+typedef struct logFile {
+	FILE logFile;
+	// another field for the logFile's mutex
+}logFile;
+
+
+// struct for all accounts
+typedef struct allAccounts {
+	account *accountList;
+	unsigned long long totalNumberOfAccounts;
+	logFile *runtimeLogFile;
+} allAccounts; //Added allAccounts as a name for the struct
 
 /* Function Declarations: */
+
+// enumerations for possible commands:
+enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, depositeCmd, withdrawalCmd };
+
 int executeBankManager(int argc, char *argv[]);
 
 #endif#pragma once

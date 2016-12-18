@@ -24,18 +24,20 @@ ex3 - BankManager.c:
 
 
 /* Function Declarations: */
-char **ReadCommandStrings(FILE *CommandFile, int TotalNumberOfCommands);
 int CountNumOfCommands(FILE *CommandFile);
 int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
-char *FullCommandLineString(FILE *CommandFile, int CommandLength);
+const char *readLine(FILE *file, int CommandLength);
+void ParseLineIntoCommand(char *LineString);
 
 
 int executeBankManager(int argc, char *argv[]) {
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *RunTime_LogFile = NULL; 
-	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL; char **LineCommandPtrArray = NULL;
-	int TotalNumberOfCommands = 0, i = 0;
+	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL, *CommandType = NULL, *LineString = NULL;
+	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
+	char *AccountNumber = NULL;
+	int Amount = 0;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -56,17 +58,17 @@ int executeBankManager(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	// go over 'CommandFile' and count all commands
+	// go over 'CommandFile', count all commands & assign CommandLengthArray
 	TotalNumberOfCommands = CountNumOfCommands(CommandFile);
-	
-	LineCommandPtrArray = ReadCommandStrings(CommandFile, TotalNumberOfCommands);
-	//test
-	for (i = 0; i < TotalNumberOfCommands; i++) {
-		printf("%s\n", LineCommandPtrArray[i]);
-	}
-	getchar();
+	CommandLengthArray = CountLengthOfEachCommand(CommandFile, TotalNumberOfCommands);
 
-	//parse CommandFileLine into a command
+	// go over 'CommandFile' and read commands line by line
+	for (i = 0; i < TotalNumberOfCommands; i++) {
+		LineString = readLine(CommandFile, CommandLengthArray[i]);
+		ParseLineIntoCommand(LineString);								//check for command type and parse CommandLine according to its type
+
+	}
+	
 
 	fclose(CommandFile);
 
@@ -74,45 +76,30 @@ int executeBankManager(int argc, char *argv[]) {
 
 }
 
+////test
+//for (i = 0; i < TotalNumberOfCommands; i++) {
+//	printf("%s\n", LineCommandPtrArray[i]);
+//}
+//getchar();
+
 /* Function Definitions */
-char **ReadCommandStrings(FILE *CommandFile, int TotalNumberOfCommands) {
-	int i = 0, *CommandLengthArray = NULL;
-	char **LineCommandPtrArray = { NULL };
 
-	// Assign CommandLengthArray in size of TotalNumberOfCommands
-	CommandLengthArray = CountLengthOfEachCommand(CommandFile, TotalNumberOfCommands);
+const char *readLine(FILE *file, int CommandLength) {
 
-	// Assign *LineCommandPtrArray[] in size of TotalNumberOfCommands, an array of pointers holding the command string
-	LineCommandPtrArray = (char**)malloc(TotalNumberOfCommands * sizeof(char*));
-	for (i = 0; i < TotalNumberOfCommands; i++) {
-		LineCommandPtrArray[i] = FullCommandLineString(CommandFile, CommandLengthArray[i]);
+	char *LineCommandPtr = NULL;
+
+	LineCommandPtr = (char *)malloc((CommandLength) * sizeof(char));
+	if (LineCommandPtr == NULL) {
+		printf("LineCommandPtr allocation was failed, error %ul\n", GetLastError());
 	}
 
-	return LineCommandPtrArray;
+	if (fgets(LineCommandPtr, CommandLength+1, file) == NULL) {
+		printf("reading a command from CommandFile was failed, error %ul\n", GetLastError());
+	}
 
-	//int numOfChar = 1;
-	//char *LineCommandPtr = NULL, ch = NULL;
-	////ch = fgetc(CommandFile);
-	//while (ch != '\n' && ch != EOF) {
-	//	ch = fgetc(CommandFile);
-	//	numOfChar++;
-	//}
-	//if (ch == EOF) {
-	//	fseek(CommandFile, -(numOfChar + 1), SEEK_END);
-	//}
-	//else {
-	//	fseek(CommandFile, -(numOfChar + 1), SEEK_CUR);
-	//}
-	////rewind(CommandFile);
-	//LineCommandPtrArray = (char *)malloc(numOfChar * sizeof(char));
-	//if (LineCommandPtr == NULL) {
-	//	printf("LineCommandPtr allocation was failed, error %ul\n", GetLastError());
-	//}
-	//if (fgets(LineCommandPtr, numOfChar, CommandFile) == NULL) {
-	//	printf("reading a command from CommandFile was failed, error %ul\n", GetLastError());
-	//}
+	fgetc(file);
+	return LineCommandPtr;
 
-	//return LineCommandPtr;
 }
 
 int CountNumOfCommands(FILE *CommandFile) {
@@ -157,25 +144,19 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands) {
 	return CommandLengthArray;
 }
 
-char *FullCommandLineString(FILE *CommandFile, int CommandLength) {
-	char *CommandLineArguentString = NULL;;
-	char *commandToExecute = NULL; char *fileTestOutputLogPath = NULL;
-
-	commandToExecute = (char *)malloc(1 + CommandLength * sizeof(char));
-	if (commandToExecute == NULL) {
-		printf("commandToExecute allocation was failed, error %ul\n", GetLastError());
-	}
-	if (fgets(commandToExecute, 1 + CommandLength, CommandFile) == NULL) {
-		printf("reading a string command from CommandFile was failed, error %ul\n", GetLastError());
-	}
-
-
-	fgetc(CommandFile);				// This command should lower the fileToTest pointer to read the next line 
-
-
-	return commandToExecute;
-}
-
+//void ParseLineIntoCommand(char *LineString) {
+//
+//	char *command = NULL, *AccountNumberChar = NULL, *AmountChar = NULL;
+//	unsigned long int AccountNumber = 0;
+//	double Amount = 0;
+//
+//	command = strtok(LineString, " ");
+//	if (command == "CreateAccount") {
+//		AccountNumber = atoi(strtok(NULL, " "));
+//		Amount = atoi(strtok(NULL, " "));
+//	
+//	}
+//}
 
 
 // initialize a new allAccounts.

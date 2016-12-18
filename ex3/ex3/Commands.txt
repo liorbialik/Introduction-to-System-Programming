@@ -1,5 +1,4 @@
-CloseAccount
-CreateAccount 12345 10
+CreateAccount 1234730345645 -10
 CreateAccount 11111 55
 CreateAccount 11111 100
 Deposit 12345 1000

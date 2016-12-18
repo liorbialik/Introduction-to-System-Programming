@@ -144,19 +144,21 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands) {
 	return CommandLengthArray;
 }
 
-//void ParseLineIntoCommand(char *LineString) {
-//
-//	char *command = NULL, *AccountNumberChar = NULL, *AmountChar = NULL;
-//	unsigned long int AccountNumber = 0;
-//	double Amount = 0;
-//
-//	command = strtok(LineString, " ");
-//	if (command == "CreateAccount") {
-//		AccountNumber = atoi(strtok(NULL, " "));
-//		Amount = atoi(strtok(NULL, " "));
-//	
-//	}
-//}
+void ParseLineIntoCommand(char *LineString) {
+
+	char *command = NULL, *AccountNumberChar = NULL, *AmountChar = NULL;
+	unsigned long int AccountNumber = 0;
+	float Amount = 0;
+
+	command = strtok(LineString, " ");
+	switch (inputCommands(command)) {
+	case createAccountCmd:
+		AccountNumber = atoi(strtok(NULL, " "));
+		Amount = atoi(strtok(NULL, " "));
+
+
+	}
+}
 
 
 // initialize a new allAccounts.

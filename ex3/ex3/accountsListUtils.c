@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "BankManager.h"
 
-bool addNewAccountToList(allAccounts *accountsList, unsigned long int newAccountNumber, long long newAccountBalance) {
+bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long int newAccountNumber, long long newAccountBalance) {
 	
 	account *newAccountPtr = malloc(sizeof(account));
 	if (newAccountPtr = NULL) {
@@ -22,29 +22,50 @@ bool addNewAccountToList(allAccounts *accountsList, unsigned long int newAccount
 	newAccountPtr->nextInList = NULL;
 
 	// search the account list for the correct position for the new account (to preserve ascending order)
-	if (accountsList->totalNumberOfAccounts != 0) {
-		while (accountsList->accountListHead->nextInList != NULL) {
+	if (accountsListPtr->totalNumberOfAccounts != 0) {
+		while (accountsListPtr->accountListHeadPtr->nextInList != NULL) {
 			//check where accountListHead->accountNumber < newAccountPtr->accountNumber < accountListHead->nextInList->accountNumber
 		}
 	
 	}
 	
 	else {
-		accountsList->accountListHead = newAccountPtr;
+		accountsListPtr->accountListHeadPtr = newAccountPtr;
 	}
 
 
 	return true;
 }
 
-bool removeAccountFromList(allAccounts *accountsList, unsigned long int accountNumber) {
+bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long int accountNumber) {
 	return true;
 }
 
-bool createAccountBalanceString(account *accountToPrint) {
+bool createAccountBalanceString(account *accountsListPtr) {
 	return true;
 }
 
-bool isAccountInList(allAccounts *accountsList, unsigned long int newAccountNumber) {
+bool isAccountInList(allAccounts *accountsListPtr, unsigned long int newAccountNumber) {
+	
+	account *currentAccountPtr = NULL;
+
+	for(currentAccountPtr = accountsListPtr->accountListHeadPtr;
+		currentAccountPtr->nextInList != NULL; 
+		currentAccountPtr = currentAccountPtr->nextInList){
+		
+		if (newAccountNumber == currentAccountPtr->accountNumber)
+			return true;
+	}
+
+	return false;
+}
+
+bool initializeNewAccountsList(allAccounts *accountsListPtr) {
+	
+	printf("Initializing new allAccounts instance\n");
+	accountsListPtr->accountListHeadPtr = NULL;
+	accountsListPtr->totalNumberOfAccounts = 0;
+	accountsListPtr->runtimeLogFilePtr = NULL;
+
 	return true;
 }

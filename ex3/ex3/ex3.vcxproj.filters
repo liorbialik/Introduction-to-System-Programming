@@ -29,5 +29,8 @@
     <ClInclude Include="BankManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="accountsListUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

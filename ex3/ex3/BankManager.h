@@ -24,9 +24,13 @@ function in BankManager.c
 
 // struct for a single account
 typedef struct account {
-	unsigned long long accountNumber;
-	unsigned long long accountBalance;
-	int accountBalanceSign;
+	unsigned long int accountNumber;
+	long long initialBalance;
+	long long currentBalance;
+	long long totalDepositeSum;
+	long long totalWithdrawalSum;
+	long long ammountOfDeposits;
+	long long ammountOfWithdrawals;
 	// another field for the account's mutex
 	struct account *nextInList;
 }account;
@@ -41,9 +45,9 @@ typedef struct logFile {
 
 // struct for all accounts
 typedef struct allAccounts {
-	account *accountList;
+	account *accountListHeadPtr;
 	unsigned long long totalNumberOfAccounts;
-	logFile *runtimeLogFile;
+	logFile *runtimeLogFilePtr;
 } allAccounts; //Added allAccounts as a name for the struct
 
 /* Function Declarations: */

@@ -142,9 +142,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Header.h" />
+    <ClInclude Include="accountsListUtils.h" />
+    <ClInclude Include="BankManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="accountsListUtils.c" />
     <ClCompile Include="BankManager.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>

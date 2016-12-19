@@ -7,7 +7,7 @@ enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, deposi
 
 // struct for a single account
 typedef struct account {
-	unsigned long long accountNumber;
+	unsigned long int accountNumber;
 	unsigned long long accountBalance;
 	int accountBalanceSign;
 	// another field for the account's mutex

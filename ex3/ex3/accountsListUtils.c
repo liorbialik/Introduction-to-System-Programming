@@ -47,17 +47,25 @@ bool createAccountBalanceString(account *accountsListPtr) {
 
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long int newAccountNumber) {
 	
+	printf("Checking if account number %ld is in the accounts list\n", newAccountNumber);
+
 	account *currentAccountPtr = NULL;
 
-	for(currentAccountPtr = accountsListPtr->accountListHeadPtr;
-		currentAccountPtr->nextInList != NULL; 
-		currentAccountPtr = currentAccountPtr->nextInList){
-		
-		if (newAccountNumber == currentAccountPtr->accountNumber)
-			return true;
-	}
+	// check if the accounts list is empty:
+	if (accountsListPtr->accountListHeadPtr == NULL)
+		return false;
 
-	return false;
+	else{
+		for(currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr != NULL; 
+			currentAccountPtr = currentAccountPtr->nextInList){
+
+			if (newAccountNumber == currentAccountPtr->accountNumber)
+				return true;
+		}
+
+		return false;
+	}
 }
 
 bool initializeNewAccountsList(allAccounts *accountsListPtr) {

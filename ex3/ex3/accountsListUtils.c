@@ -77,3 +77,24 @@ bool initializeNewAccountsList(allAccounts *accountsListPtr) {
 
 	return true;
 }
+
+bool printCurrentBalancesInBank() {
+
+	allAccounts *accountsListPtr = NULL;
+	account *currentAccountPtr = NULL;
+
+	printf("Current balances in bank accounts are:\nBank Account #,Current Balance\n");
+
+	// check if the accounts list is empty:
+	if (accountsListPtr->accountListHeadPtr != NULL) {
+		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr != NULL;
+			currentAccountPtr = currentAccountPtr->nextInList) {
+
+			printf("%lui, %lli\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			fprintf(accountsListPtr->runtimeLogFilePtr, "%lui, %lli\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+
+		}
+	}
+	return true;
+}

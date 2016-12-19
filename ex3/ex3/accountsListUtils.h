@@ -12,4 +12,6 @@ bool createAccountBalanceString(account *accountsListPtr);
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long int newAccountNumber);
 bool initializeNewAccountsList(allAccounts *accountsListPtr);
 
+bool printCurrentBalancesInBank();
+
 #endif

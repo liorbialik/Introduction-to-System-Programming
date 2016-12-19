@@ -19,6 +19,7 @@ ex3 - BankManager.c:
 #include <process.h>
 #include <sys/stat.h>
 #include "BankManager.h"
+#include "accountsListUtils.h"
 #include <sys/types.h>
 #include <direct.h>
 
@@ -36,8 +37,8 @@ int executeBankManager(int argc, char *argv[]) {
 	FILE *CommandFile = NULL, *RunTime_LogFile = NULL; 
 	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL, *CommandType = NULL, *LineString = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
-	char *AccountNumber = NULL;
-	int Amount = 0;
+	unsigned long long int AccountNumber = 0;
+	long long Amount = 0, CurrentBalance = 0;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -190,9 +191,9 @@ void ParseLineIntoCommand(char *LineString) {
 
 
 	case 2:		//PrintBalances
-		//printCurrentBalancesInBank(allAccounts);
-		//TEST:
-		printf("No need to print fields\n");
+		if (printCurrentBalancesInBank() == 0) {
+			printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
+		}
 		break;
 
 
@@ -215,7 +216,6 @@ void ParseLineIntoCommand(char *LineString) {
 
 	}
 
-	
 }
 
 

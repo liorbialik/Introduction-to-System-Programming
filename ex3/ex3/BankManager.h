@@ -10,10 +10,6 @@ function in BankManager.c
 #define BankManager_H
 
 ///* Constants: */
-//#define LONG_SLEEP_TIME 5000
-//#define SHORT_SLEEP_TIME 5
-//#define SECOND_DIVIDER 10000000000
-//#define MILLI_SECOND_DIVIDER 1000000
 
 
 /* Libraries: */
@@ -21,7 +17,6 @@ function in BankManager.c
 
 
 ///* Struct Declarations: */
-
 // struct for a single account
 typedef struct account {
 	unsigned long int accountNumber;

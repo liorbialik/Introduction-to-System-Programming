@@ -22,7 +22,16 @@ bool addNewAccountToList(account *accountListHead, unsigned long int newAccountN
 	newAccountPtr->nextInList = NULL;
 
 	// search the account list for the correct position for the new account (to preserve ascending order)
-
+	if (accountListHead = !NULL) {
+		while (accountListHead->nextInList != NULL) {
+			//check where accountListHead->accountNumber < newAccountPtr->accountNumber < newAccountPtr->nextInList->accountNumber
+		}
+	
+	}
+	
+	else {
+		accountListHead = newAccountPtr;
+	}
 
 	return true;
 }

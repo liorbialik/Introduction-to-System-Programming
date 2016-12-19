@@ -50,11 +50,18 @@ int executeBankManager(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	// open CommandFile by getting CommandFileNAme as an argument
+	// open CommandFile by getting CommandFileName as an argument
 	CommandFile = fopen(CommandFileName, "r");
 	if (CommandFile == NULL) {
 		perror("Error: ");
 		printf("Could not open CommandFile, error %ul\n", GetLastError());
+		exit(1);
+	}
+
+	// open RunTime_LogFile by getting RunTimeLogFileName as an argument
+	RunTime_LogFile = fopen(RunTime_LogFileName, "w");
+	if (RunTime_LogFile == NULL) {
+		printf("failed to open RunTime_LogFile, error %ul\n", GetLastError()); 
 		exit(1);
 	}
 
@@ -71,6 +78,8 @@ int executeBankManager(int argc, char *argv[]) {
 	
 
 	fclose(CommandFile);
+	fclose(RunTime_LogFile);
+
 
 	return 0;
 

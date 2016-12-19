@@ -45,7 +45,7 @@ typedef struct logFile {
 
 // struct for all accounts
 typedef struct allAccounts {
-	account *accountList;
+	account *accountListHead;
 	unsigned long long totalNumberOfAccounts;
 	logFile *runtimeLogFile;
 } allAccounts; //Added allAccounts as a name for the struct

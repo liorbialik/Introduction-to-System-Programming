@@ -18,7 +18,7 @@ ex3 - BankManager.c:
 #include <conio.h>
 #include <process.h>
 #include <sys/stat.h>
-#include "Header.h"
+#include "BankManager.h"
 #include <sys/types.h>
 #include <direct.h>
 

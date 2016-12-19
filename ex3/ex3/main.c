@@ -7,9 +7,9 @@
  - The program manages operational and managable bank accounts.
  */
 	
-	/* Libraries: */
-	#include <stdio.h>
-	#include "Header.h"
+/* Libraries: */
+#include <stdio.h>
+#include "BankManager.h"
 	
 int main(int argc, char *argv[]) {
 

@@ -1,67 +1,22 @@
-#include <stdio.h>
+/*
+ ex3 - Main.c:
+ - the program recieves the following arguments:
+ @param Command line: The text file that includes all banking operations the program should perform.
+ @param Balance report file: The output file of the program. This file sums all balances in bank account.
+ @param RunTime log file: The log file of the program. This file will centralize the program runtime documentation
+ - The program manages operational and managable bank accounts.
+ */
+	
+	/* Libraries: */
+	#include <stdio.h>
+	#include "Header.h"
+	
+int main(int argc, char *argv[]) {
 
+	int returnValueFromBankManager = 0;
 
-// enumerations for possible commands:
-enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, depositeCmd, withdrawalCmd };
-
-
-// struct for a single account
-typedef struct account {
-	unsigned long int accountNumber;
-	unsigned long long accountBalance;
-	int accountBalanceSign;
-	// another field for the account's mutex
-	struct account *nextInList;
-}account;
-
-
-// struct that will be using the the runtimeLogFile
-typedef struct logFile {
-	FILE logFile;
-	// another field for the logFile's mutex
-}logFile;
-
-
-// struct for all accounts
-typedef struct allAccounts {
-	account *accountList;
-	unsigned long long totalNumberOfAccounts;
-	logFile *runtimeLogFile;
-};
-
-
-int main(argc, argv) {
-
-	// initialize a new allAccounts
-	// open CommandFile 
-
-	// read CommandFile line by line:
-	// while (CommandFileLine != EOF){
-	//     - parse CommandFileLine into a command
-	//     - check what command is it (switch-case using the enums)
-	//	   - execute the relevant command in a new thread:
-	//     switch(command)
-	//	      * createAccountCmd:
-	//             # check that all other threads closed
-	//             # execute createAccount()
-	//             # check return value :
-	//                    success => 
-	//                    
-	//	      * closeAccountCmd:
-	//             # check that all other threads closed
-	//             # execute closeAccount()
-	//	      * printBalancesCmd:
-	//             # check that all other threads closed
-	//             # execute printBalances()
-	//	      * depositeCmd:
-	//             # execute deposite()
-	//	      * withdrawalCmd:
-	//             # execute withdrawal()
-	// }
-
-	// printBalanceReport(accountsList, runTimeLogFileName);
-	// print into log file the final line
-	// free all handlers and memory allocations
+	returnValueFromBankManager = executeBankManager(argc, argv);
 
 	return 0;
+
 }

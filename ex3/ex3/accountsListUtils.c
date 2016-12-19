@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include "BankManager.h"
 
-bool addNewAccountToList(account *accountListHead, unsigned long int newAccountNumber, long long newAccountBalance) {
+bool addNewAccountToList(allAccounts *accountsList, unsigned long int newAccountNumber, long long newAccountBalance) {
 	
 	account *newAccountPtr = malloc(sizeof(account));
 	if (newAccountPtr = NULL) {
@@ -22,24 +22,29 @@ bool addNewAccountToList(account *accountListHead, unsigned long int newAccountN
 	newAccountPtr->nextInList = NULL;
 
 	// search the account list for the correct position for the new account (to preserve ascending order)
-	if (accountListHead = !NULL) {
-		while (accountListHead->nextInList != NULL) {
-			//check where accountListHead->accountNumber < newAccountPtr->accountNumber < newAccountPtr->nextInList->accountNumber
+	if (accountsList->totalNumberOfAccounts != 0) {
+		while (accountsList->accountListHead->nextInList != NULL) {
+			//check where accountListHead->accountNumber < newAccountPtr->accountNumber < accountListHead->nextInList->accountNumber
 		}
 	
 	}
 	
 	else {
-		accountListHead = newAccountPtr;
+		accountsList->accountListHead = newAccountPtr;
 	}
+
 
 	return true;
 }
 
 bool removeAccountFromList(allAccounts *accountsList, unsigned long int accountNumber) {
-
+	return true;
 }
 
 bool createAccountBalanceString(account *accountToPrint) {
+	return true;
+}
 
+bool isAccountInList(allAccounts *accountsList, unsigned long int newAccountNumber) {
+	return true;
 }

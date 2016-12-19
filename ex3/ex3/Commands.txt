@@ -1,8 +1,8 @@
-CreateAccount 1234730345645 -10
+CreateAccount 1245645 -10
 CreateAccount 11111 55
 CreateAccount 11111 100
 Deposit 12345 1000
-Withdraw	12345 50
+Withdrawal 12345 50
 PrintBalances
 CloseAccount 12345
 CloseAccount 12345

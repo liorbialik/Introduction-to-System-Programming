@@ -146,18 +146,67 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands) {
 
 void ParseLineIntoCommand(char *LineString) {
 
-	char *command = NULL, *AccountNumberChar = NULL, *AmountChar = NULL;
-	unsigned long int AccountNumber = 0;
-	float Amount = 0;
-
+	char *command = NULL;
+	unsigned long long int AccountNumber = 0;
+	long long Amount = 0, CurrentBalance = 0;
+	int i = 0, commandCase = 0;
+	char *commandsArray[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
+	
+	//TEST
+	printf("The command is %s\n", LineString);
+	
 	command = strtok(LineString, " ");
-	switch (inputCommands(command)) {
-	case createAccountCmd:
+
+	for (i = 0; i < 5; i++) {
+		if (strcmp(command, commandsArray[i]) == 0) {
+			commandCase = i;
+		}
+	}
+
+	switch (commandCase) {
+	case 0:		//CreateAccount
+		AccountNumber = atoi(strtok(NULL, " "));
+		CurrentBalance = atoi(strtok(NULL, " "));
+		//createNewAccount(AccountNumber, AccountBalance);
+		//TEST:
+		printf("%lli %lld\n", AccountNumber, CurrentBalance);
+		break;
+
+	case 1:		//CloseAccount
+		AccountNumber = atoi(strtok(NULL, " "));
+		//closeExistedAccount(AccountNumber);
+		//TEST:
+		printf("%lli\n", AccountNumber);
+		break;
+
+
+	case 2:		//PrintBalances
+		//printCurrentBalancesInBank(allAccounts);
+		//TEST:
+		printf("No need to print fields\n");
+		break;
+
+
+	case 3:		//Deposit
 		AccountNumber = atoi(strtok(NULL, " "));
 		Amount = atoi(strtok(NULL, " "));
+		//depositAmountToAccount(AccountNumber, Amount);
+		//TEST:
+		printf("%lli %lld\n", AccountNumber, Amount);
+		break;
 
+
+	case 4:		//Withdrawal
+		AccountNumber = atoi(strtok(NULL, " "));
+		Amount = atoi(strtok(NULL, " "));
+		//withdrawalAmountFromAccount(AccountNumber, Amount);
+		//TEST:
+		printf("%lli %lld\n", AccountNumber, Amount);
+		break;
 
 	}
+
+	
 }
 
 

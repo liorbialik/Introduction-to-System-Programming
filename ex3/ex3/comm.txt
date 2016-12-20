@@ -1,2 +1,1 @@
-PrintBalances
-CreateAccount 11111 100
+CreateAccount 1020304050 -1020304050.75

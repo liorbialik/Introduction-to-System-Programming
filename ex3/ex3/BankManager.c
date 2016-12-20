@@ -28,6 +28,7 @@ ex3 - BankManager.c:
 int CountNumOfCommands(FILE *CommandFile);
 int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
 char *readLine(FILE *file, int CommandLength);
+char *readCommandLinebyLine(FILE *CommandFile);
 struct Parsing {
 		char *command;
 		unsigned long long AccountNumber;
@@ -45,7 +46,7 @@ int executeBankManager(int argc, char *argv[]) {
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
-	struct Parsing parameter;
+	struct Parsing parsingFields;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -78,20 +79,23 @@ int executeBankManager(int argc, char *argv[]) {
 	CommandLengthArray = CountLengthOfEachCommand(CommandFile, TotalNumberOfCommands);
 
 	// go over 'CommandFile' and read commands line by line
-	for (i = 0; i < TotalNumberOfCommands; i++) {
-		LineString = readLine(CommandFile, CommandLengthArray[i]);
-		printf("The command is %s\n", LineString);
-		parameter = ParseLineIntoCommand(LineString);
+	//for (i = 0; i < TotalNumberOfCommands; i++) {
+		//LineString = readLine(CommandFile, CommandLengthArray[i]);
 
-		switch (parameter.commandTypePosition) {
+	do { 
+		LineString = readCommandLinebyLine(CommandFile);
+		printf("The command is %s\n", LineString);
+		parsingFields = ParseLineIntoCommand(LineString);
+
+		switch (parsingFields.commandTypePosition) {
 		case createAccountCmd:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//createNewAccount(parameters);
 			//TEST:
 			break;
 
 		case closeAccountCmd:
-			printf("%lli\n", parameter.AccountNumber);
+			printf("%lli\n", parsingFields.AccountNumber);
 			//closeExistedAccount(AccountNumber);
 			//TEST:
 			break;
@@ -104,19 +108,21 @@ int executeBankManager(int argc, char *argv[]) {
 			break;
 
 		case depositeCmd:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//depositAmountToAccount(AccountNumber, Amount);
 			//TEST:
 			break;
 
 		case withdrawalCmd:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//withdrawalAmountFromAccount(AccountNumber, Amount);
 			//TEST:
 			break;
 		}
 
-	}
+	} while (feof(CommandFile) == 0);
+		
+	free(LineString);
 	fclose(CommandFile);
 	fclose(RunTime_LogFile);
 
@@ -134,7 +140,7 @@ int executeBankManager(int argc, char *argv[]) {
 /* Function Definitions */
 
 char *readLine(FILE *file, int CommandLength) {
-
+	//This function reads lines only by giving each string's length
 	char *LineCommandPtr = NULL;
 
 	LineCommandPtr = (char *)malloc((CommandLength) * sizeof(char));
@@ -149,6 +155,23 @@ char *readLine(FILE *file, int CommandLength) {
 	fgetc(file);
 	return LineCommandPtr;
 
+}		
+
+char *readCommandLinebyLine(FILE *CommandFile) {
+
+	char *LineString = NULL;
+	int buffer = 100;			// '13' for the longest command, '20' for the longest int variable type in c ('10' each)
+	LineString = (char *)malloc((buffer) * sizeof(char));
+	if (LineString == NULL) {
+		printf("LineCommandPtr allocation was failed, error %ul\n", GetLastError());
+	}
+
+	if (fgets(LineString, buffer, CommandFile) == NULL) {
+		printf("reading a command from CommandFile was failed, error %ul\n", GetLastError());
+	}
+
+	LineString[strlen(LineString) - 1] = '\0';
+	return LineString;
 }
 
 int CountNumOfCommands(FILE *CommandFile) {

@@ -27,8 +27,14 @@ ex3 - BankManager.c:
 /* Function Declarations: */
 int CountNumOfCommands(FILE *CommandFile);
 int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
-const char *readLine(FILE *file, int CommandLength);
-void ParseLineIntoCommand(char *LineString);
+char *readLine(FILE *file, int CommandLength);
+struct Parsing {
+		char *command;
+		unsigned long long int AccountNumber;
+		float Amount;
+		int commandTypePosition;
+};
+struct Parsing ParseLineIntoCommand(char *);
 
 
 int executeBankManager(int argc, char *argv[]) {
@@ -39,6 +45,7 @@ int executeBankManager(int argc, char *argv[]) {
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
+	struct Parsing parameter;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -73,11 +80,45 @@ int executeBankManager(int argc, char *argv[]) {
 	// go over 'CommandFile' and read commands line by line
 	for (i = 0; i < TotalNumberOfCommands; i++) {
 		LineString = readLine(CommandFile, CommandLengthArray[i]);
-		ParseLineIntoCommand(LineString);								//check for command type and parse CommandLine according to its type
+		printf("The command is %s\n", LineString);
+		parameter = ParseLineIntoCommand(LineString);
+
+		switch (parameter.commandTypePosition) {
+		case createAccountCmd:
+			//createNewAccount(parameters);
+			//TEST:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			break;
+
+		case closeAccountCmd:
+			//closeExistedAccount(AccountNumber);
+			//TEST:
+			printf("%lli\n", parameter.AccountNumber);
+			break;
+
+
+		case printBalancesCmd:
+			//if (printCurrentBalancesInBank() == 0) {
+			//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
+			//}
+			break;
+
+
+		case depositeCmd:
+			//depositAmountToAccount(AccountNumber, Amount);
+			//TEST:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			break;
+
+
+		case withdrawalCmd:
+			//withdrawalAmountFromAccount(AccountNumber, Amount);
+			//TEST:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
+			break;
+		}
 
 	}
-	
-
 	fclose(CommandFile);
 	fclose(RunTime_LogFile);
 
@@ -94,7 +135,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 /* Function Definitions */
 
-const char *readLine(FILE *file, int CommandLength) {
+char *readLine(FILE *file, int CommandLength) {
 
 	char *LineCommandPtr = NULL;
 
@@ -154,67 +195,51 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands) {
 	return CommandLengthArray;
 }
 
-void ParseLineIntoCommand(char *LineString) {
+//static inline char *stringFromInputCommands(enum inputCommands c)
+//{
+//	static const char *commands[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
+//
+//	return commands[c];
+//}
 
-	char *command = NULL;
-	unsigned long long int AccountNumber = 0;
-	long long Amount = 0, CurrentBalance = 0;
-	int i = 0, commandCase = 0;
+struct Parsing ParseLineIntoCommand(char *LineString) {
+
+	struct Parsing parameter = { NULL };
+	int i = 0;
 	char *commandsArray[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
-	
-	//TEST
-	printf("The command is %s\n", LineString);
-	
-	command = strtok(LineString, " ");
 
+	parameter.command = strtok(LineString, " ");
 	for (i = 0; i < 5; i++) {
-		if (strcmp(command, commandsArray[i]) == 0) {
-			commandCase = i;
+		if (strcmp(parameter.command, commandsArray[i]) == 0) {
+			parameter.commandTypePosition = i;
 		}
 	}
 
-	switch (commandCase) {
-	case 0:		//CreateAccount
-		AccountNumber = atoi(strtok(NULL, " "));
-		CurrentBalance = atoi(strtok(NULL, " "));
-		//createNewAccount(AccountNumber, AccountBalance);
-		//TEST:
-		printf("%lli %lld\n", AccountNumber, CurrentBalance);
+	switch (parameter.commandTypePosition) {
+	case createAccountCmd:
+		parameter.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parameter.Amount = strtof(strtok(NULL, " "),NULL);
 		break;
 
-	case 1:		//CloseAccount
-		AccountNumber = atoi(strtok(NULL, " "));
-		//closeExistedAccount(AccountNumber);
-		//TEST:
-		printf("%lli\n", AccountNumber);
+	case closeAccountCmd:
+		parameter.AccountNumber = (unsigned long long int)strtok(NULL, " ");
 		break;
 
-
-	case 2:		//PrintBalances
-		if (printCurrentBalancesInBank() == 0) {
-			printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
-		}
+	case printBalancesCmd:
 		break;
 
-
-	case 3:		//Deposit
-		AccountNumber = atoi(strtok(NULL, " "));
-		Amount = atoi(strtok(NULL, " "));
-		//depositAmountToAccount(AccountNumber, Amount);
-		//TEST:
-		printf("%lli %lld\n", AccountNumber, Amount);
+	case depositeCmd:
+		parameter.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parameter.Amount = strtof(strtok(NULL, " "), NULL);
 		break;
 
-
-	case 4:		//Withdrawal
-		AccountNumber = atoi(strtok(NULL, " "));
-		Amount = atoi(strtok(NULL, " "));
-		//withdrawalAmountFromAccount(AccountNumber, Amount);
-		//TEST:
-		printf("%lli %lld\n", AccountNumber, Amount);
+	case withdrawalCmd:
+		parameter.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parameter.Amount = strtof(strtok(NULL, " "), NULL);
 		break;
-
 	}
+
+	return parameter;
 
 }
 

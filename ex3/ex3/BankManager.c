@@ -30,7 +30,7 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
 char *readLine(FILE *file, int CommandLength);
 struct Parsing {
 		char *command;
-		unsigned long long int AccountNumber;
+		unsigned long long AccountNumber;
 		float Amount;
 		int commandTypePosition;
 };
@@ -85,33 +85,34 @@ int executeBankManager(int argc, char *argv[]) {
 
 		switch (parameter.commandTypePosition) {
 		case createAccountCmd:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			//createNewAccount(parameters);
 			//TEST:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			break;
 
 		case closeAccountCmd:
+			printf("%lli\n", parameter.AccountNumber);
 			//closeExistedAccount(AccountNumber);
 			//TEST:
-			printf("%lli\n", parameter.AccountNumber);
 			break;
 
 		case printBalancesCmd:
+			printf("Printing Account Balances if exists\n");
 			//if (printCurrentBalancesInBank() == 0) {
 			//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
 			//}
 			break;
 
 		case depositeCmd:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			//depositAmountToAccount(AccountNumber, Amount);
 			//TEST:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			break;
 
 		case withdrawalCmd:
+			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			//withdrawalAmountFromAccount(AccountNumber, Amount);
 			//TEST:
-			printf("%lli %.2f\n", parameter.AccountNumber, parameter.Amount);
 			break;
 		}
 
@@ -207,24 +208,24 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 
 	switch (parsingFields.commandTypePosition) {
 	case createAccountCmd:
-		parsingFields.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		parsingFields.Amount = strtof(strtok(NULL, " "),NULL);
 		break;
 
 	case closeAccountCmd:
-		parsingFields.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		break;
 
 	case printBalancesCmd:
 		break;
 
 	case depositeCmd:
-		parsingFields.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		parsingFields.Amount = strtof(strtok(NULL, " "), NULL);
 		break;
 
 	case withdrawalCmd:
-		parsingFields.AccountNumber = (unsigned long long int)strtok(NULL, " ");
+		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		parsingFields.Amount = strtof(strtok(NULL, " "), NULL);
 		break;
 	}

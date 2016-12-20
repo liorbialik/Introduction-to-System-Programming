@@ -1,1 +1,2 @@
 PrintBalances
+CreateAccount 11111 100

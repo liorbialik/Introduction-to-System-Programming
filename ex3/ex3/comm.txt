@@ -1,1 +1,2 @@
-CreateAccount 1020304050 -1020304050.75
+CreateAccount 12345 -10
+Deposit 12345 1000

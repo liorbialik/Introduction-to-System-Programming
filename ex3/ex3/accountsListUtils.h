@@ -9,8 +9,8 @@
 bool initializeNewAccountsList(allAccounts *accountsListPtr);
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber);
 
-//bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
-//bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber);
+bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
+bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber);
 //bool createAccountBalanceString(account *accountsListPtr);
 bool printCurrentBalancesInBank(allAccounts *accountsListPtr);
 

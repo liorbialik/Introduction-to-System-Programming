@@ -19,13 +19,13 @@ function in BankManager.c
 ///* Struct Declarations: */
 // struct for a single account
 typedef struct account {
-	unsigned long int accountNumber;
-	long long initialBalance;
-	long long currentBalance;
-	long long totalDepositeSum;
-	long long totalWithdrawalSum;
-	long long ammountOfDeposits;
-	long long ammountOfWithdrawals;
+	unsigned long long accountNumber;
+	double initialBalance;
+	double currentBalance;
+	double totalDepositeSum;
+	double totalWithdrawalSum;
+	int ammountOfDeposits;
+	int ammountOfWithdrawals;
 	// another field for the account's mutex
 	struct account *nextInList;
 }account;

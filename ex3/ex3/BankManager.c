@@ -40,6 +40,7 @@ int executeBankManager(int argc, char *argv[]) {
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
 	struct Parsing parsingFields;
+	allAccounts *allAccountsPtr = NULL;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -83,8 +84,10 @@ int executeBankManager(int argc, char *argv[]) {
 		switch (parsingFields.commandTypePosition) {
 		case createAccountCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//createNewAccount(parameters);
-			//TEST:
+			// creating the new account
+			if (addNewAccountToList(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount) == 0) {
+				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
+			}			
 			break;
 
 		case closeAccountCmd:
@@ -102,8 +105,24 @@ int executeBankManager(int argc, char *argv[]) {
 
 		case depositeCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//depositAmountToAccount(AccountNumber, Amount);
 			//TEST:
+			//account *newAccountPtr = malloc(sizeof(struct account));
+			//if (newAccountPtr = NULL) {
+			//	printf("Memory allocation for new account failed!");
+			//	return false;
+			//}
+			//newAccountPtr = allAccountsPtr->accountListHeadPtr;
+			//newAccountPtr->accountNumber = 12345;
+			//newAccountPtr->initialBalance = 500.25;
+			//newAccountPtr->currentBalance = 500.25;
+			//newAccountPtr->totalDepositeSum = 0;
+			//newAccountPtr->totalWithdrawalSum = 0;
+			//newAccountPtr->ammountOfDeposits = 0;
+			//newAccountPtr->ammountOfWithdrawals = 0;
+			// another field for the account's mutex
+			//newAccountPtr->nextInList = NULL;
+			//allAccountsPtr->accountListHeadPtr = newAccountPtr;
+			depositAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount);
 			break;
 
 		case withdrawalCmd:
@@ -250,10 +269,9 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 
 }
 
-
+/*
 // initialize a new allAccounts.
 // open CommandFile 
-
 // read CommandFile line by line:
 // while (CommandFileLine != EOF){
 //     - parse CommandFileLine into a command
@@ -277,12 +295,10 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 //	      * withdrawalCmd:
 //             # execute withdrawal()
 // }
-
 // printBalanceReport(accountsList, runTimeLogFileName);
 // print into log file the final line
 // free all handlers and memory allocations
 
-/*
 Algorithm flow:
 
 1. Check if argc != 4 

@@ -50,6 +50,17 @@ typedef struct allAccounts {
 // enumerations for possible commands:
 enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, depositeCmd, withdrawalCmd };
 
+// struct for parsing the command line
+struct Parsing {
+	char *command;
+	unsigned long long AccountNumber;
+	double Amount;
+	int commandTypePosition;
+};
+
+struct Parsing ParseLineIntoCommand(char *);
+
+
 int executeBankManager(int argc, char *argv[]);
 
 #endif#pragma once

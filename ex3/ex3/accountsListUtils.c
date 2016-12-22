@@ -91,8 +91,8 @@ bool printCurrentBalancesInBank() {
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			printf("%lui, %lli\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-			fprintf(accountsListPtr->runtimeLogFilePtr, "%lui, %lli\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			printf("%lli, %.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			fprintf(accountsListPtr->runtimeLogFilePtr, "%lli, %.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
 
 		}
 	}

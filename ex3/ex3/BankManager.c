@@ -29,13 +29,6 @@ int CountNumOfCommands(FILE *CommandFile);
 int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
 char *readLine(FILE *file, int CommandLength);
 char *readCommandLinebyLine(FILE *CommandFile);
-struct Parsing {
-		char *command;
-		unsigned long long AccountNumber;
-		float Amount;
-		int commandTypePosition;
-};
-struct Parsing ParseLineIntoCommand(char *);
 
 
 int executeBankManager(int argc, char *argv[]) {
@@ -232,7 +225,7 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 	switch (parsingFields.commandTypePosition) {
 	case createAccountCmd:
 		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtof(strtok(NULL, " "),NULL);
+		parsingFields.Amount = strtod(strtok(NULL, " "),NULL);
 		break;
 
 	case closeAccountCmd:
@@ -244,12 +237,12 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 
 	case depositeCmd:
 		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtof(strtok(NULL, " "), NULL);
+		parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
 		break;
 
 	case withdrawalCmd:
 		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtof(strtok(NULL, " "), NULL);
+		parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
 		break;
 	}
 

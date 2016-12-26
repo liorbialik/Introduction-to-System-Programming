@@ -9,19 +9,19 @@ ex3 - BankManager.c:
 /* Libraries: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 #include <stdio.h>
-#include <Windows.h>
-#include <stdlib.h>
-#include <string.h>
-#include <io.h>
-#include <tchar.h>
-#include <Strsafe.h>
-#include <conio.h>
-#include <process.h>
-#include <sys/stat.h>
+//#include <Windows.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <io.h>
+//#include <tchar.h>
+//#include <Strsafe.h>
+//#include <conio.h>
+//#include <process.h>
+//#include <sys/stat.h>
 #include "BankManager.h"
 #include "accountsListUtils.h"
-#include <sys/types.h>
-#include <direct.h>
+//#include <sys/types.h>
+//#include <direct.h>
 
 /* Function Declarations: */
 char *readCommandLinebyLine(FILE *CommandFile);

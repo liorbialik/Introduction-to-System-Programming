@@ -6,7 +6,7 @@
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance) {
 
 	account *newAccountPtr = NULL;
-	
+
 	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
 		printf("!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
@@ -16,7 +16,7 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 
 	// allocate memory for the new account:
 	newAccountPtr = malloc(sizeof(account));
-	
+
 	if (newAccountPtr == NULL) {
 		printf("Memory allocation for new account failed!");
 		return false;

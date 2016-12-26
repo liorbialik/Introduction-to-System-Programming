@@ -5,11 +5,11 @@
 
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance) {
 
-	account *newAccountPtr = NULL;
-
+	account *newAccountPtr = NULL, *currentAccountPtr = NULL;
+	
 	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
-		printf("!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
+		printf("!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
 		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
 		return true;
 	}
@@ -23,16 +23,11 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 	}
 
 	// creating the new account
-	newAccountPtr->accountNumber = newAccountNumber;
-	newAccountPtr->initialBalance = newAccountBalance;
-	newAccountPtr->currentBalance = newAccountBalance;
-	newAccountPtr->totalDepositeSum = 0;
-	newAccountPtr->totalWithdrawalSum = 0;
-	newAccountPtr->ammountOfDeposits = 0;
-	newAccountPtr->ammountOfWithdrawals = 0;
-	// another field for the account's mutex
-	newAccountPtr->nextInList = NULL;
-
+	if (!initializeNewAccount(newAccountPtr, newAccountNumber, newAccountBalance)) {
+		printf("Account number %llu initialization Faild!\n", newAccountNumber);
+		return false;
+	}
+		
 	if (accountsListPtr->totalNumberOfAccounts == 0) {
 		accountsListPtr->accountListHeadPtr = newAccountPtr;
 		accountsListPtr->totalNumberOfAccounts++;
@@ -44,26 +39,31 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 		accountsListPtr->totalNumberOfAccounts++;
 	}
 
+	if (newAccountNumber > accountsListPtr->accountListHeadPtr->accountNumber) {
+		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr->nextInList != NULL;
+			currentAccountPtr = currentAccountPtr->nextInList) {
+
+			if (newAccountNumber > currentAccountPtr->accountNumber && 
+				newAccountNumber < currentAccountPtr->nextInList->accountNumber) {
+				
+				newAccountPtr->nextInList = currentAccountPtr->nextInList;
+				currentAccountPtr->nextInList = newAccountPtr;
+				accountsListPtr->totalNumberOfAccounts++;
+				break;
+			}
+		}
+
+		if (currentAccountPtr->nextInList == NULL) {
+			currentAccountPtr->nextInList = newAccountPtr;
+			accountsListPtr->totalNumberOfAccounts++;
+		}
+
+	}
+
+
 	printf("Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
 	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
-	return true;
-
-
-	//// search the account list for the correct position for the new account (to preserve ascending order)
-	//if (accountsListPtr->totalNumberOfAccounts != 0) {
-	//	
-
-	//	//while (accountslistptr->accountlistheadptr->nextinlist != null) {
-	//	//	check where accountlisthead->accountnumber < newaccountptr->accountnumber < accountlisthead->nextinlist->accountnumber
-	//	//}
-	//
-	//}
-	//
-	//else {
-	//	accountsListPtr->accountListHeadPtr = newAccountPtr;
-	//}
-
-
 	return true;
 }
 
@@ -104,6 +104,21 @@ bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLog
 	accountsListPtr->totalNumberOfAccounts = 0;
 	accountsListPtr->runtmieLogFile = runtmieLogFilePtr;
 	runtmieLogFilePtr->logFilePtr = NULL;
+	return true;
+}
+
+bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber, double accountBalance) {
+	
+	printf("Account number %llu initialization \n", accountNumber);
+	accountPtr->accountNumber = accountNumber;
+	accountPtr->initialBalance = accountBalance;
+	accountPtr->currentBalance = accountBalance;
+	accountPtr->totalDepositeSum = 0;
+	accountPtr->totalWithdrawalSum = 0;
+	accountPtr->ammountOfDeposits = 0;
+	accountPtr->ammountOfWithdrawals = 0;
+	// another field for the account's mutex
+	accountPtr->nextInList = NULL;
 	return true;
 }
 

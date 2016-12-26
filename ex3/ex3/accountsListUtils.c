@@ -6,7 +6,8 @@
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance) {
 
 	account *newAccountPtr = NULL, *currentAccountPtr = NULL;
-	
+	printf("Adding new account number %llu to list\n", newAccountNumber);
+
 	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
 		printf("!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
@@ -61,13 +62,45 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 
 	}
 
-
 	printf("Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
 	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
 	return true;
 }
 
-bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber) {
+bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumberToClose) {
+	
+	account *currentAccountPtr = NULL, *temporaryAccountPtr = NULL;
+	printf("Removing account number %llu from list\n", accountNumberToClose);
+	// check whether the account number already exists
+	if (!isAccountInList(accountsListPtr, accountNumberToClose)) {
+		printf("!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", accountNumberToClose);
+		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", accountNumberToClose);
+		return true;
+	}
+
+	if (accountsListPtr->accountListHeadPtr->accountNumber == accountNumberToClose) {
+		temporaryAccountPtr = accountsListPtr->accountListHeadPtr;
+		accountsListPtr->accountListHeadPtr = temporaryAccountPtr->nextInList;
+		accountsListPtr->totalNumberOfAccounts--;
+		free(temporaryAccountPtr);
+	}
+
+	else {
+		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr->nextInList != NULL;
+			currentAccountPtr = currentAccountPtr->nextInList) {
+
+			if (currentAccountPtr->nextInList->accountNumber == accountNumberToClose)
+				temporaryAccountPtr = currentAccountPtr->nextInList;
+				currentAccountPtr->nextInList = temporaryAccountPtr->nextInList;
+				accountsListPtr->totalNumberOfAccounts--;
+				free(temporaryAccountPtr);
+				break;
+			}
+		}
+
+	printf("Successfully closed bank account number %llu.\n", accountNumberToClose);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully closed bank account number %llu.\n", accountNumberToClose);
 	return true;
 }
 

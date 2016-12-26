@@ -10,7 +10,7 @@ bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLog
 bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber, double accountBalance);
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber);
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
-bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber);
+bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumberToClose);
 //bool createAccountBalanceString(account *accountsListPtr);
 bool printCurrentBalancesInBank(allAccounts *accountsListPtr);
 bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex);

@@ -43,10 +43,6 @@ bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long acco
 	return true;
 }
 
-//bool createAccountBalanceString(account *accountsListPtr) {
-//	return true;
-//}
-
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber) {
 	
 	printf("Checking if account number %lli is in the accounts list\n", newAccountNumber);

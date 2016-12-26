@@ -69,8 +69,8 @@ int executeBankManager(int argc, char *argv[]) {
 	}
 
 	// go over 'CommandFile', count all commands & assign CommandLengthArray
-	TotalNumberOfCommands = CountNumOfCommands(CommandFile);
-	CommandLengthArray = CountLengthOfEachCommand(CommandFile, TotalNumberOfCommands);
+	//TotalNumberOfCommands = CountNumOfCommands(CommandFile);
+	//CommandLengthArray = CountLengthOfEachCommand(CommandFile, TotalNumberOfCommands);
 
 	// go over 'CommandFile' and read commands line by line
 	//for (i = 0; i < TotalNumberOfCommands; i++) {

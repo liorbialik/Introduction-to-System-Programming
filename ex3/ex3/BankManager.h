@@ -24,8 +24,8 @@ typedef struct account {
 	double currentBalance;
 	double totalDepositeSum;
 	double totalWithdrawalSum;
-	int ammountOfDeposits;
-	int ammountOfWithdrawals;
+	unsigned long long ammountOfDeposits;
+	unsigned long long ammountOfWithdrawals;
 	// another field for the account's mutex
 	struct account *nextInList;
 }account;

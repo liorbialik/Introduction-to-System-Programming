@@ -99,7 +99,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 			case printBalancesCmd:
 				printf("Printing Account Balances if exists\n");
-				//if (printCurrentBalancesInBank() == 0) {
+				//if (printCurrentBalances() == 0) {
 				//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
 				//}
 				break;

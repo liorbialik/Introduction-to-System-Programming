@@ -45,23 +45,27 @@ typedef struct allAccounts {
 	logFile *runtmieLogFile;
 } allAccounts; //Added allAccounts as a name for the struct
 
-/* Function Declarations: */
-
-// enumerations for possible commands:
-enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, depositeCmd, withdrawalCmd };
 
 // struct for parsing the command line
-struct Parsing {
+typedef struct ParsingCommands {
 	char *command;
 	unsigned long long AccountNumber;
 	double Amount;
-	int commandTypePosition;
-};
-
-struct Parsing ParseLineIntoCommand(char *);
+	int commandTypeIndex;
+} ParsingCommands; //Added ParsingCommands as a name for the struct
 
 
+/* Function Declarations: */
+int CountNumOfCommands(FILE *CommandFile);
+int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
+char *readLine(FILE *file, int CommandLength);
+char *readCommandLinebyLine(FILE *CommandFile);
+ParsingCommands ParseLineIntoCommand(char *);
 int executeBankManager(int argc, char *argv[]);
+
+
+// enumerations for possible commands:
+enum inputCommands { createAccountCmd, closeAccountCmd, printBalancesCmd, depositCmd, withdrawalCmd };
 
 #endif#pragma once
 #pragma once

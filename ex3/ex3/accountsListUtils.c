@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+
 #include <stdio.h>
 #include <stdbool.h>
 #include "accountsListUtils.h"
@@ -168,10 +170,48 @@ bool printCurrentBalances(allAccounts *accountsListPtr) {
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			printf("%lli,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "%lli,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			printf("%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
 		}
 	}
+	return true;
+}
+
+
+// TODO: need to move this into bandManager.c
+bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileName) {
+	
+	FILE *BalanceReportFile = NULL;
+	account *currentAccountPtr = NULL;
+	printf("Printing finale balance report\n");
+
+	// open the balance report file:
+	BalanceReportFile = fopen(BalanceReportFileName, "w");
+	if (BalanceReportFile == NULL) {
+		perror("Error: ");
+		printf("Could not open balance report file, error %ul\n", GetLastError());
+		exit(1);
+	}
+
+	fprintf(BalanceReportFile, "Summary of balances in bank accounts:\n");
+	fprintf(BalanceReportFile, "Bank Account #, Current Balance, Initial Balance, Total Deposited, Total Withdrawal, # of Deposits, # of Withdrawals\n");
+	if (accountsListPtr->accountListHeadPtr != NULL) {
+		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr != NULL;
+			currentAccountPtr = currentAccountPtr->nextInList) {
+
+			fprintf(BalanceReportFile, "%llu,%.2f,%.2f,%.2f,%.2f,%llu,%llu\n",
+				currentAccountPtr->accountNumber,
+				currentAccountPtr->currentBalance,
+				currentAccountPtr->initialBalance,
+				currentAccountPtr->totalDepositeSum,
+				currentAccountPtr->totalWithdrawalSum,
+				currentAccountPtr->ammountOfDeposits,
+				currentAccountPtr->ammountOfWithdrawals);
+		}
+	}
+
+	fclose(BalanceReportFile);
 	return true;
 }
 

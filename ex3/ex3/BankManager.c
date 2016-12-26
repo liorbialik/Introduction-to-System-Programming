@@ -85,39 +85,41 @@ int executeBankManager(int argc, char *argv[]) {
 		switch (parsingFields.commandTypeIndex) {
 		case createAccountCmd:
 			printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			// creating the new account
 			if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
 				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
 			}
 			break;
 
 			case closeAccountCmd:
-				printf("%lli\n", parsingFields.AccountNumber);
-				//closeExistedAccount(AccountNumber);
-				//TEST:
+				printf("account number %lli\n", parsingFields.AccountNumber);
+				removeAccountFromList(&newAccountsList, parsingFields.AccountNumber);
 				break;
 
 			case printBalancesCmd:
 				printf("Printing Account Balances if exists\n");
-				//if (printCurrentBalances() == 0) {
-				//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
-				//}
+				if (!printCurrentBalances(&newAccountsList)) {
+					printf("Account list is empty\n");
+				}
 				break;
 
 		case depositCmd:
 			printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//TEST:
 			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 
 		case withdrawalCmd:
 			printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//TEST:
 			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 		}
 
 	} while (!feof(CommandFile));
+
+	// writing data accounts into balance report file
+	if (!printBalanceReport(&newAccountsList, BalanceReportFileName)) {
+		printf("cannot print into balance report file, error %ul\n", GetLastError());
+		exit(1);
+	}
 		
 	free(LineString);
 	fclose(CommandFile);
@@ -189,6 +191,46 @@ ParsingCommands ParseLineIntoCommand(char *LineString) {
 
 	return parsingFields;
 
+}
+
+bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileName) {
+	
+	FILE *BalanceReportFile = NULL;
+	account *currentAccountPtr = NULL;
+	printf("Printing final balance report\n");
+	
+	// open the balance report file:
+	BalanceReportFile = fopen(BalanceReportFileName, "w");
+	if (BalanceReportFile == NULL) {
+	perror("Error: ");
+	printf("Could not open balance report file, error %ul\n", GetLastError());
+	exit(1);
+		
+	}
+	
+	fprintf(BalanceReportFile, "Summary of balances in bank accounts:\n");
+	fprintf(BalanceReportFile, "Bank Account #, Current Balance, Initial Balance, Total Deposited, Total Withdrawal, # of Deposits, # of Withdrawals\n");
+	if (accountsListPtr->accountListHeadPtr != NULL) {
+		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+			currentAccountPtr != NULL;
+			currentAccountPtr = currentAccountPtr->nextInList) {
+			
+				fprintf(BalanceReportFile, "%llu,%.2f,%.2f,%.2f,%.2f,%llu,%llu\n",
+					currentAccountPtr->accountNumber,
+					currentAccountPtr->currentBalance,
+					currentAccountPtr->initialBalance,
+					currentAccountPtr->totalDepositeSum,
+					currentAccountPtr->totalWithdrawalSum,
+					currentAccountPtr->ammountOfDeposits,
+					currentAccountPtr->ammountOfWithdrawals);
+			
+		}
+		
+	}
+	
+	fclose(BalanceReportFile);
+	return true;
+	
 }
 
 /*

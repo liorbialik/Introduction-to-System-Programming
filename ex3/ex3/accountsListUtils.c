@@ -172,8 +172,8 @@ bool printCurrentBalances(allAccounts *accountsListPtr) {
 
 			printf("%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
 			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-			return true;
 		}
+		return true;
 	}
 	// account list is empty
 	return false;

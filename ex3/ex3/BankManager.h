@@ -33,7 +33,7 @@ typedef struct account {
 
 // struct that will be using the the runtimeLogFile
 typedef struct logFile {
-	FILE logFile;
+	FILE *logFilePtr;
 	// another field for the logFile's mutex
 }logFile;
 
@@ -42,7 +42,7 @@ typedef struct logFile {
 typedef struct allAccounts {
 	account *accountListHeadPtr;
 	unsigned long long totalNumberOfAccounts;
-	logFile *runtimeLogFilePtr;
+	logFile *runtmieLogFile;
 } allAccounts; //Added allAccounts as a name for the struct
 
 /* Function Declarations: */

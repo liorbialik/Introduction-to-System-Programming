@@ -23,6 +23,12 @@ ex3 - BankManager.c:
 #include <sys/types.h>
 #include <direct.h>
 
+/* Function Declarations: */
+int CountNumOfCommands(FILE *CommandFile);
+int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
+char *readLine(FILE *file, int CommandLength);
+char *readCommandLinebyLine(FILE *CommandFile);
+ParsingCommands ParseLineIntoCommand(char *);
 
 int executeBankManager(int argc, char *argv[]) {
 
@@ -33,7 +39,7 @@ int executeBankManager(int argc, char *argv[]) {
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
 	ParsingCommands parsingFields;
-	allAccounts *allAccountsPtr = NULL;
+	allAccounts *newAccountsList = NULL;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -107,13 +113,13 @@ int executeBankManager(int argc, char *argv[]) {
 		case depositCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//TEST:
-			depositOrWithdrawalAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 
 		case withdrawalCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//TEST:
-			depositOrWithdrawalAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 		}
 
@@ -227,28 +233,28 @@ ParsingCommands ParseLineIntoCommand(char *LineString) {
 	}
 
 	switch (parsingFields.commandTypeIndex) {
-	case createAccountCmd:
-		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtod(strtok(NULL, " "),NULL);
-		break;
+		case createAccountCmd:
+			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			parsingFields.Amount = strtod(strtok(NULL, " "),NULL);
+			break;
 
-	case closeAccountCmd:
-		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		break;
+		case closeAccountCmd:
+			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			break;
 
-	case printBalancesCmd:
-		break;
+		case printBalancesCmd:
+			break;
 
-	case depositCmd:
-		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
-		break;
+		case depositCmd:
+			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
+			break;
 
-	case withdrawalCmd:
-		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-		parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
-		break;
-	}
+		case withdrawalCmd:
+			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
+			break;
+		}
 
 	return parsingFields;
 

@@ -43,7 +43,7 @@ typedef struct allAccounts {
 	account *accountListHeadPtr;
 	unsigned long long totalNumberOfAccounts;
 	logFile *runtmieLogFile;
-} allAccounts; //Added allAccounts as a name for the struct
+} allAccounts;
 
 
 // struct for parsing the command line
@@ -52,15 +52,10 @@ typedef struct ParsingCommands {
 	unsigned long long AccountNumber;
 	double Amount;
 	int commandTypeIndex;
-} ParsingCommands; //Added ParsingCommands as a name for the struct
+} ParsingCommands;
 
 
 /* Function Declarations: */
-int CountNumOfCommands(FILE *CommandFile);
-int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
-char *readLine(FILE *file, int CommandLength);
-char *readCommandLinebyLine(FILE *CommandFile);
-ParsingCommands ParseLineIntoCommand(char *);
 int executeBankManager(int argc, char *argv[]);
 
 

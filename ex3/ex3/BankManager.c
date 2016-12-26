@@ -27,7 +27,7 @@ ex3 - BankManager.c:
 int executeBankManager(int argc, char *argv[]) {
 
 	/* Internal Declarations: */
-	FILE *CommandFile = NULL, *RunTime_LogFile = NULL; 
+	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
 	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL, *CommandType = NULL, *LineString = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
@@ -46,6 +46,14 @@ int executeBankManager(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	// initialize the account list struct
+	if (!initializeNewAccountsList(&newAccountsList)){
+		printf("accounts initialization failed!\n");
+		return 1;
+	}
+	else
+		printf("accounts initialized successfully\n");
+
 	// open CommandFile by getting CommandFileName as an argument
 	CommandFile = fopen(CommandFileName, "r");
 	if (CommandFile == NULL) {
@@ -55,8 +63,8 @@ int executeBankManager(int argc, char *argv[]) {
 	}
 
 	// open RunTime_LogFile by getting RunTimeLogFileName as an argument
-	RunTime_LogFile = fopen(RunTime_LogFileName, "w");
-	if (RunTime_LogFile == NULL) {
+	runTimeLogFile = fopen(RunTime_LogFileName, "w");
+	if (runTimeLogFile == NULL) {
 		printf("failed to open RunTime_LogFile, error %ul\n", GetLastError()); 
 		exit(1);
 	}
@@ -83,18 +91,18 @@ int executeBankManager(int argc, char *argv[]) {
 			}*/			
 			break;
 
-		case closeAccountCmd:
-			printf("%lli\n", parsingFields.AccountNumber);
-			//closeExistedAccount(AccountNumber);
-			//TEST:
-			break;
+			case closeAccountCmd:
+				printf("%lli\n", parsingFields.AccountNumber);
+				//closeExistedAccount(AccountNumber);
+				//TEST:
+				break;
 
-		case printBalancesCmd:
-			printf("Printing Account Balances if exists\n");
-			//if (printCurrentBalancesInBank() == 0) {
-			//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
-			//}
-			break;
+			case printBalancesCmd:
+				printf("Printing Account Balances if exists\n");
+				//if (printCurrentBalancesInBank() == 0) {
+				//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
+				//}
+				break;
 
 		case depositCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
@@ -113,7 +121,7 @@ int executeBankManager(int argc, char *argv[]) {
 		
 	free(LineString);
 	fclose(CommandFile);
-	fclose(RunTime_LogFile);
+	fclose(runTimeLogFile);
 
 
 	return 0;

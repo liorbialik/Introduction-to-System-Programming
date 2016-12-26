@@ -6,9 +6,8 @@
 #include <stdbool.h>
 
 /* Function Declarations: */
-bool initializeNewAccountsList(allAccounts *accountsListPtr);
+bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber);
-
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
 bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber);
 //bool createAccountBalanceString(account *accountsListPtr);

@@ -1,2 +1,0 @@
-CreateAccount 12345 -10
-Deposit 12345 1000

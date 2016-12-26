@@ -13,9 +13,9 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumber);
 //bool createAccountBalanceString(account *accountsListPtr);
 bool printCurrentBalancesInBank(allAccounts *accountsListPtr);
+bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex);
 
-bool depositAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumberForDeposit, double amountForDeposit);
-bool WithdrawalAmountFromAccount(allAccounts *accountsListPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal);
-
+void updateAccountFieldsForDepositing(currentAccountPtr);
+void updateAccountFieldsForWithdrawal(currentAccountPtr);
 
 #endif

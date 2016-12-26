@@ -24,13 +24,6 @@ ex3 - BankManager.c:
 #include <direct.h>
 
 
-/* Function Declarations: */
-int CountNumOfCommands(FILE *CommandFile);
-int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands);
-char *readLine(FILE *file, int CommandLength);
-char *readCommandLinebyLine(FILE *CommandFile);
-
-
 int executeBankManager(int argc, char *argv[]) {
 
 	/* Internal Declarations: */
@@ -39,7 +32,7 @@ int executeBankManager(int argc, char *argv[]) {
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
-	struct Parsing parsingFields;
+	ParsingCommands parsingFields;
 	allAccounts *allAccountsPtr = NULL;
 
 	// Start of Program
@@ -81,13 +74,13 @@ int executeBankManager(int argc, char *argv[]) {
 		printf("The command is %s\n", LineString);
 		parsingFields = ParseLineIntoCommand(LineString);
 
-		switch (parsingFields.commandTypePosition) {
+		switch (parsingFields.commandTypeIndex) {
 		case createAccountCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			// creating the new account
-			if (addNewAccountToList(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount) == 0) {
+/*			if (addNewAccountToList(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount) == 0) {
 				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
-			}			
+			}*/			
 			break;
 
 		case closeAccountCmd:
@@ -103,32 +96,16 @@ int executeBankManager(int argc, char *argv[]) {
 			//}
 			break;
 
-		case depositeCmd:
+		case depositCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//TEST:
-			//account *newAccountPtr = malloc(sizeof(struct account));
-			//if (newAccountPtr = NULL) {
-			//	printf("Memory allocation for new account failed!");
-			//	return false;
-			//}
-			//newAccountPtr = allAccountsPtr->accountListHeadPtr;
-			//newAccountPtr->accountNumber = 12345;
-			//newAccountPtr->initialBalance = 500.25;
-			//newAccountPtr->currentBalance = 500.25;
-			//newAccountPtr->totalDepositeSum = 0;
-			//newAccountPtr->totalWithdrawalSum = 0;
-			//newAccountPtr->ammountOfDeposits = 0;
-			//newAccountPtr->ammountOfWithdrawals = 0;
-			// another field for the account's mutex
-			//newAccountPtr->nextInList = NULL;
-			//allAccountsPtr->accountListHeadPtr = newAccountPtr;
-			depositAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount);
+			depositOrWithdrawalAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 
 		case withdrawalCmd:
 			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//withdrawalAmountFromAccount(AccountNumber, Amount);
 			//TEST:
+			depositOrWithdrawalAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 		}
 
@@ -228,20 +205,20 @@ int *CountLengthOfEachCommand(FILE *CommandFile, int TotalNumberOfCommands) {
 	return CommandLengthArray;
 }
 
-struct Parsing ParseLineIntoCommand(char *LineString) {
+ParsingCommands ParseLineIntoCommand(char *LineString) {
 
-	struct Parsing parsingFields = { NULL };
+	ParsingCommands parsingFields = { NULL };
 	int i = 0;
 	char *commandsArray[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
 
 	parsingFields.command = strtok(LineString, " ");
 	for (i = 0; i < 5; i++) {
 		if (strcmp(parsingFields.command, commandsArray[i]) == 0) {
-			parsingFields.commandTypePosition = i;
+			parsingFields.commandTypeIndex = i;
 		}
 	}
 
-	switch (parsingFields.commandTypePosition) {
+	switch (parsingFields.commandTypeIndex) {
 	case createAccountCmd:
 		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		parsingFields.Amount = strtod(strtok(NULL, " "),NULL);
@@ -254,7 +231,7 @@ struct Parsing ParseLineIntoCommand(char *LineString) {
 	case printBalancesCmd:
 		break;
 
-	case depositeCmd:
+	case depositCmd:
 		parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
 		parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
 		break;

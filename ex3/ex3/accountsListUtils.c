@@ -100,16 +100,22 @@ bool printCurrentBalancesInBank(allAccounts *accountsListPtr) {		//TODO: Need to
 	return true;
 }
 
-bool depositAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumberForDeposit, double amountForDeposit) {		//TODO: Need to test
+bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex) {		//TODO: Need to test
 
 	account *currentAccountPtr = NULL;
 
 	//check that account number isn't locked by mutex using WaitForSingleObject function on the relevant thread
 
 	// checking if accountNumber exists
-	if (isAccountInList(accountsListPtr, accountNumberForDeposit) == 0) {
-		printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amountForDeposit, accountNumberForDeposit);
-		fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amountForDeposit, accountNumberForDeposit);
+	if (isAccountInList(accountsListPtr, accountNumber) == 0) {
+		if (enumCommandTypeIndex == 3) {
+			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+		}
+		else if (enumCommandTypeIndex == 4) {
+			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			//fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+		}
 		return false;
 	}
 	else {
@@ -118,47 +124,38 @@ bool depositAmountToAccount(allAccounts *accountsListPtr, unsigned long long acc
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			if (accountNumberForDeposit == currentAccountPtr->accountNumber) {
-				//update account number fields
-				currentAccountPtr->currentBalance += amountForDeposit;
-				currentAccountPtr->ammountOfDeposits += 1;
-				currentAccountPtr->totalDepositeSum += amountForDeposit;
-				printf("Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
-				fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
+			if (accountNumber == currentAccountPtr->accountNumber) {
+				//check if deposit or withdrawal command and execute correspondingly
+				if (enumCommandTypeIndex == 3) {
+					//Deposit command
+					updateAccountFieldsForDepositing(accountsListPtr, currentAccountPtr, accountNumber, amount);
+					break;
+				}
+				else if (enumCommandTypeIndex == 4) {
+					//Withdrawal command
+					updateAccountFieldsForWithdrawal(accountsListPtr, currentAccountPtr, accountNumber, amount);
+					break;
+				}
 			}
 		}
 	}
 	return true;
 }
 
-bool WithdrawalAmountFromAccount(allAccounts *accountsListPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal) {		//TODO: Need to test
+void updateAccountFieldsForDepositing(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberForDeposit, double amountForDeposit) {
 
-	account *currentAccountPtr = NULL;
+	currentAccountPtr->currentBalance += amountForDeposit;
+	currentAccountPtr->ammountOfDeposits += 1;
+	currentAccountPtr->totalDepositeSum += amountForDeposit;
+	printf("Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
+	fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
+}
 
-	// checking if accountNumber exists
-	if (isAccountInList(accountsListPtr, accountNumberToWithdrawal) == 0) {
-		printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amountToWithdrawal, accountNumberToWithdrawal);
-		//fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amountToWithdrawal, accountNumberToWithdrawal);
-		return false;
-	}
-	else {
-		// accountNumber exists
-		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
-			currentAccountPtr != NULL;
-			currentAccountPtr = currentAccountPtr->nextInList) {
+void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal) {
 
-			if (accountNumberToWithdrawal == currentAccountPtr->accountNumber) {
-
-				//check that account number isn't locked by mutex using WaitForSingleObject function on the relevant thread
-
-				// update account number fields
-				currentAccountPtr->currentBalance -= amountToWithdrawal;
-				currentAccountPtr->ammountOfDeposits -= 1;
-				currentAccountPtr->totalDepositeSum += amountToWithdrawal;
-				printf("Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
-				//fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully deposited %.2f to account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
-			}
-		}
-	}
-	return true;
+	currentAccountPtr->currentBalance -= amountToWithdrawal;
+	currentAccountPtr->ammountOfWithdrawals += 1;
+	currentAccountPtr->totalWithdrawalSum += amountToWithdrawal;
+	printf("Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
+	fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
 }

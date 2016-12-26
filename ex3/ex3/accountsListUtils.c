@@ -155,11 +155,12 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 	return true;
 }
 
-bool printCurrentBalancesInBank(allAccounts *accountsListPtr) {		//TODO: Need to test
+bool printCurrentBalances(allAccounts *accountsListPtr) {
 
 	account *currentAccountPtr = NULL;
 
 	printf("Current balances in bank accounts are:\nBank Account #,Current Balance\n");
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Current balances in bank accounts are:\nBank Account #,Current Balance\n");
 
 	// check if the accounts list is empty:
 	if (accountsListPtr->accountListHeadPtr != NULL) {
@@ -167,9 +168,8 @@ bool printCurrentBalancesInBank(allAccounts *accountsListPtr) {		//TODO: Need to
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			printf("%lli, %.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-			//fprintf(RunTime_LogFile, "%lli, %.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-
+			printf("%lli,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "%lli,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
 		}
 	}
 	return true;

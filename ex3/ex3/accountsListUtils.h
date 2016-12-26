@@ -12,7 +12,7 @@ bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccount
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
 bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumberToClose);
 //bool createAccountBalanceString(account *accountsListPtr);
-bool printCurrentBalancesInBank(allAccounts *accountsListPtr);
+bool printCurrentBalances(allAccounts *accountsListPtr);
 bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex);
 void updateAccountFieldsForDepositing(currentAccountPtr);
 void updateAccountFieldsForWithdrawal(currentAccountPtr);

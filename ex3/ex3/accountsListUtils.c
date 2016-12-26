@@ -185,11 +185,11 @@ bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned l
 	if (isAccountInList(accountsListPtr, accountNumber) == 0) {
 		if (enumCommandTypeIndex == 3) {
 			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
-			fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
 		}
 		else if (enumCommandTypeIndex == 4) {
 			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
-			//fprintf(accountsListPtr->runtimeLogFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
 		}
 		return false;
 	}
@@ -223,7 +223,7 @@ void updateAccountFieldsForDepositing(allAccounts *accountsListPtr, account *cur
 	currentAccountPtr->ammountOfDeposits += 1;
 	currentAccountPtr->totalDepositeSum += amountForDeposit;
 	printf("Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
-	fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
 }
 
 void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal) {
@@ -232,5 +232,5 @@ void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *cur
 	currentAccountPtr->ammountOfWithdrawals += 1;
 	currentAccountPtr->totalWithdrawalSum += amountToWithdrawal;
 	printf("Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
-	fprintf(accountsListPtr->runtimeLogFilePtr, "Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
 }

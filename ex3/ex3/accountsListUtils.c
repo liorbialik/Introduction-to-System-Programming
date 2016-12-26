@@ -10,7 +10,7 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
 		printf("!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
-		// fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
+		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
 		return true;
 	}
 
@@ -35,16 +35,18 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 
 	if (accountsListPtr->totalNumberOfAccounts == 0) {
 		accountsListPtr->accountListHeadPtr = newAccountPtr;
-		return true;
+		accountsListPtr->totalNumberOfAccounts++;
 	}
 
 	if (newAccountNumber < accountsListPtr->accountListHeadPtr->accountNumber) {
 		newAccountPtr->nextInList = accountsListPtr->accountListHeadPtr;
 		accountsListPtr->accountListHeadPtr = newAccountPtr;
-		return true;
+		accountsListPtr->totalNumberOfAccounts++;
 	}
 
-	
+	printf("Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
+	return true;
 
 
 	//// search the account list for the correct position for the new account (to preserve ascending order)
@@ -70,24 +72,27 @@ bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long acco
 }
 
 bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber) {
-	
+
 	printf("Checking if account number %lli is in the accounts list\n", newAccountNumber);
 
 	account *currentAccountPtr = NULL;
 
 	// check if the accounts list is empty:
-	if (accountsListPtr->accountListHeadPtr == NULL)
+	if (accountsListPtr->accountListHeadPtr == NULL) {
+		printf("Account number %lli is NOT in the accounts list\n", newAccountNumber);
 		return false;
-
+	}
 	else{
 		for(currentAccountPtr = accountsListPtr->accountListHeadPtr;
 			currentAccountPtr != NULL; 
 			currentAccountPtr = currentAccountPtr->nextInList){
 
-			if (newAccountNumber == currentAccountPtr->accountNumber)
+			if (newAccountNumber == currentAccountPtr->accountNumber) {
+				printf("Account number %lli is in the accounts list\n", newAccountNumber);
 				return true;
+			}
 		}
-
+		printf("Account number %lli is NOT in the accounts list\n", newAccountNumber);
 		return false;
 	}
 }

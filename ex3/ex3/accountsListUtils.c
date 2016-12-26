@@ -10,8 +10,8 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 
 	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
-		printf("!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
-		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can’t create account. Skipping command. !!!\n", newAccountNumber);
+		printf("!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", newAccountNumber);
+		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", newAccountNumber);
 		return true;
 	}
 
@@ -182,14 +182,14 @@ bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned l
 	//check that account number isn't locked by mutex using WaitForSingleObject function on the relevant thread
 
 	// checking if accountNumber exists
-	if (isAccountInList(accountsListPtr, accountNumber) == 0) {
+	if (!isAccountInList(accountsListPtr, accountNumber)) {
 		if (enumCommandTypeIndex == 3) {
-			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
 		}
 		else if (enumCommandTypeIndex == 4) {
-			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command\n", amount, accountNumber);
+			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
+			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
 		}
 		return false;
 	}

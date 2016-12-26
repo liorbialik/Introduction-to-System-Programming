@@ -38,6 +38,7 @@ int executeBankManager(int argc, char *argv[]) {
 	ParsingCommands parsingFields;
 	allAccounts newAccountsList;
 	logFile newRunTimeLogFile;
+	 
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -67,8 +68,8 @@ int executeBankManager(int argc, char *argv[]) {
 	}
 
 	// open RunTime_LogFile by getting RunTimeLogFileName as an argument
-	runTimeLogFile = fopen(RunTime_LogFileName, "w");
-	if (runTimeLogFile == NULL) {
+	newAccountsList.runtmieLogFile->logFilePtr = fopen(RunTime_LogFileName, "w");
+	if (newAccountsList.runtmieLogFile->logFilePtr == NULL) {
 		printf("failed to open RunTime_LogFile, error %ul\n", GetLastError()); 
 		exit(1);
 	}
@@ -83,7 +84,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 		switch (parsingFields.commandTypeIndex) {
 		case createAccountCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+			printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			// creating the new account
 			if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
 				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
@@ -104,23 +105,23 @@ int executeBankManager(int argc, char *argv[]) {
 				break;
 
 		case depositCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+			printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//TEST:
 			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 
 		case withdrawalCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+			printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 			//TEST:
 			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 			break;
 		}
 
-	} while (feof(CommandFile) == 0);
+	} while (!feof(CommandFile));
 		
 	free(LineString);
 	fclose(CommandFile);
-	fclose(runTimeLogFile);
+	fclose(newAccountsList.runtmieLogFile->logFilePtr);
 
 
 	return 0;
@@ -149,7 +150,9 @@ char *readCommandLinebyLine(FILE *CommandFile) {
 		printf("reading a command from CommandFile was failed, error %ul\n", GetLastError());
 	}
 
-	LineString[strlen(LineString) - 1] = '\0';
+	if (!feof(CommandFile)) {
+		LineString[strlen(LineString) - 1] = '\0';
+	}
 	return LineString;
 }
 

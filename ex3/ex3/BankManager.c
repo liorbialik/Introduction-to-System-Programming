@@ -128,14 +128,8 @@ int executeBankManager(int argc, char *argv[]) {
 
 }
 
-////test
-//for (i = 0; i < TotalNumberOfCommands; i++) {
-//	printf("%s\n", LineCommandPtrArray[i]);
-//}
-//getchar();
 
 /* Function Definitions */
-
 
 char *readCommandLinebyLine(FILE *CommandFile) {
 

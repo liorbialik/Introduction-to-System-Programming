@@ -18,18 +18,15 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BankManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="accountsListUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BankManager.h">
+    <ClInclude Include="accountsListUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="accountsListUtils.h">
+    <ClInclude Include="BankManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

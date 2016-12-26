@@ -1,18 +1,23 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include "accountsListUtils.h"
 #include "BankManager.h"
 
 bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance) {
 
-	// check first whether the current account number already exists in allAccounts list using isAccountInList function
+	account *newAccountPtr = NULL;
+	
+	// check whether the account number already exists
 	if (isAccountInList(accountsListPtr, newAccountNumber)) {
-		printf("!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!", newAccountNumber);
-		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %ull already exists. Can’t create account. Skipping	command. !!!", newAccountNumber);
-		return false;
+		printf("!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
+		// fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can’t create account. Skipping	command. !!!\n", newAccountNumber);
+		return true;
 	}
 
-	account *newAccountPtr = malloc(sizeof(account));
-	if (newAccountPtr = NULL) {
+	// allocate memory for the new account:
+	newAccountPtr = malloc(sizeof(account));
+	
+	if (newAccountPtr == NULL) {
 		printf("Memory allocation for new account failed!");
 		return false;
 	}

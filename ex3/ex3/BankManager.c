@@ -34,13 +34,13 @@ char *readCommandLinebyLine(FILE *CommandFile);
 int executeBankManager(int argc, char *argv[]) {
 
 	/* Internal Declarations: */
-	FILE *CommandFile = NULL, *RunTime_LogFile = NULL; 
+	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
 	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL, *CommandType = NULL, *LineString = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
 	struct Parsing parsingFields;
-	allAccounts *allAccountsPtr = NULL;
+	allAccounts newAccountsList;
 
 	// Start of Program
 	CommandFileName = argv[1];
@@ -53,6 +53,14 @@ int executeBankManager(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	// initialize the account list struct
+	if (!initializeNewAccountsList(&newAccountsList)){
+		printf("accounts initialization failed!\n");
+		return 1;
+	}
+	else
+		printf("accounts initialized successfully\n");
+
 	// open CommandFile by getting CommandFileName as an argument
 	CommandFile = fopen(CommandFileName, "r");
 	if (CommandFile == NULL) {
@@ -62,8 +70,8 @@ int executeBankManager(int argc, char *argv[]) {
 	}
 
 	// open RunTime_LogFile by getting RunTimeLogFileName as an argument
-	RunTime_LogFile = fopen(RunTime_LogFileName, "w");
-	if (RunTime_LogFile == NULL) {
+	runTimeLogFile = fopen(RunTime_LogFileName, "w");
+	if (runTimeLogFile == NULL) {
 		printf("failed to open RunTime_LogFile, error %ul\n", GetLastError()); 
 		exit(1);
 	}
@@ -82,61 +90,61 @@ int executeBankManager(int argc, char *argv[]) {
 		parsingFields = ParseLineIntoCommand(LineString);
 
 		switch (parsingFields.commandTypePosition) {
-		case createAccountCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			// creating the new account
-			if (addNewAccountToList(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount) == 0) {
-				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
-			}			
-			break;
+			case createAccountCmd:
+				printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				// creating the new account
+				if (addNewAccountToList(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount) == 0) {
+					printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
+				}			
+				break;
 
-		case closeAccountCmd:
-			printf("%lli\n", parsingFields.AccountNumber);
-			//closeExistedAccount(AccountNumber);
-			//TEST:
-			break;
+			case closeAccountCmd:
+				printf("%lli\n", parsingFields.AccountNumber);
+				//closeExistedAccount(AccountNumber);
+				//TEST:
+				break;
 
-		case printBalancesCmd:
-			printf("Printing Account Balances if exists\n");
-			//if (printCurrentBalancesInBank() == 0) {
-			//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
-			//}
-			break;
+			case printBalancesCmd:
+				printf("Printing Account Balances if exists\n");
+				//if (printCurrentBalancesInBank() == 0) {
+				//	printf("cannot print current Balances in Bank, error %ul\n", GetLastError());
+				//}
+				break;
 
-		case depositeCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//TEST:
-			//account *newAccountPtr = malloc(sizeof(struct account));
-			//if (newAccountPtr = NULL) {
-			//	printf("Memory allocation for new account failed!");
-			//	return false;
-			//}
-			//newAccountPtr = allAccountsPtr->accountListHeadPtr;
-			//newAccountPtr->accountNumber = 12345;
-			//newAccountPtr->initialBalance = 500.25;
-			//newAccountPtr->currentBalance = 500.25;
-			//newAccountPtr->totalDepositeSum = 0;
-			//newAccountPtr->totalWithdrawalSum = 0;
-			//newAccountPtr->ammountOfDeposits = 0;
-			//newAccountPtr->ammountOfWithdrawals = 0;
-			// another field for the account's mutex
-			//newAccountPtr->nextInList = NULL;
-			//allAccountsPtr->accountListHeadPtr = newAccountPtr;
-			depositAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount);
-			break;
+			case depositeCmd:
+				printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				//TEST:
+				//account *newAccountPtr = malloc(sizeof(struct account));
+				//if (newAccountPtr = NULL) {
+				//	printf("Memory allocation for new account failed!");
+				//	return false;
+				//}
+				//newAccountPtr = allAccountsPtr->accountListHeadPtr;
+				//newAccountPtr->accountNumber = 12345;
+				//newAccountPtr->initialBalance = 500.25;
+				//newAccountPtr->currentBalance = 500.25;
+				//newAccountPtr->totalDepositeSum = 0;
+				//newAccountPtr->totalWithdrawalSum = 0;
+				//newAccountPtr->ammountOfDeposits = 0;
+				//newAccountPtr->ammountOfWithdrawals = 0;
+				// another field for the account's mutex
+				//newAccountPtr->nextInList = NULL;
+				//allAccountsPtr->accountListHeadPtr = newAccountPtr;
+				depositAmountToAccount(allAccountsPtr, parsingFields.AccountNumber, parsingFields.Amount);
+				break;
 
-		case withdrawalCmd:
-			printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			//withdrawalAmountFromAccount(AccountNumber, Amount);
-			//TEST:
-			break;
+			case withdrawalCmd:
+				printf("%lli %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				//withdrawalAmountFromAccount(AccountNumber, Amount);
+				//TEST:
+				break;
 		}
 
 	} while (feof(CommandFile) == 0);
 		
 	free(LineString);
 	fclose(CommandFile);
-	fclose(RunTime_LogFile);
+	fclose(runTimeLogFile);
 
 
 	return 0;

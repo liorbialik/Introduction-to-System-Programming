@@ -5,15 +5,23 @@
 #include "accountsListUtils.h"
 #include "BankManager.h"
 
-bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance) {
+bool addNewAccountToList(commandArguments *newCommandArguments) {
 
 	account *newAccountPtr = NULL, *currentAccountPtr = NULL;
-	printf("Adding new account number %llu to list\n", newAccountNumber);
+	unsigned long long newAccountNumberToCreate = newCommandArguments->accountNumber;
+	double newAccountBalance = newCommandArguments->amountOfMoney;
+
+	printf("Adding new account number %llu with current balance of %.2f to list\n", 
+		newAccountNumberToCreate,
+		newAccountBalance);
 
 	// check whether the account number already exists
-	if (isAccountInList(accountsListPtr, newAccountNumber)) {
-		printf("!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", newAccountNumber);
-		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", newAccountNumber);
+	if (isAccountInList(newCommandArguments)) {
+		printf("!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", 
+			newAccountNumberToCreate);
+		fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+			"!!! Account number %llu already exists. Can't create account. Skipping command. !!!\n", 
+			newAccountNumberToCreate);
 		return true;
 	}
 
@@ -26,120 +34,128 @@ bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAcc
 	}
 
 	// creating the new account
-	if (!initializeNewAccount(newAccountPtr, newAccountNumber, newAccountBalance)) {
-		printf("Account number %llu initialization Faild!\n", newAccountNumber);
+	if (!initializeNewAccount(newAccountPtr, newAccountNumberToCreate, newAccountBalance)) {
+		printf("Account number %llu initialization Faild!\n", 
+			newAccountNumberToCreate);
 		return false;
 	}
 		
-	if (accountsListPtr->totalNumberOfAccounts == 0) {
-		accountsListPtr->accountListHeadPtr = newAccountPtr;
-		accountsListPtr->totalNumberOfAccounts++;
+	if (newCommandArguments->accountsListPtr->totalNumberOfAccounts == 0) {
+		newCommandArguments->accountsListPtr->accountListHeadPtr = newAccountPtr;
+		newCommandArguments->accountsListPtr->totalNumberOfAccounts++;
 	}
 
-	if (newAccountNumber < accountsListPtr->accountListHeadPtr->accountNumber) {
-		newAccountPtr->nextInList = accountsListPtr->accountListHeadPtr;
-		accountsListPtr->accountListHeadPtr = newAccountPtr;
-		accountsListPtr->totalNumberOfAccounts++;
+	if (newAccountNumberToCreate < newCommandArguments->accountsListPtr->accountListHeadPtr->accountNumber) {
+		newAccountPtr->nextInList = newCommandArguments->accountsListPtr->accountListHeadPtr;
+		newCommandArguments->accountsListPtr->accountListHeadPtr = newAccountPtr;
+		newCommandArguments->accountsListPtr->totalNumberOfAccounts++;
 	}
 
-	if (newAccountNumber > accountsListPtr->accountListHeadPtr->accountNumber) {
-		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+	if (newAccountNumberToCreate > newCommandArguments->accountsListPtr->accountListHeadPtr->accountNumber) {
+		for (currentAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
 			currentAccountPtr->nextInList != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			if (newAccountNumber > currentAccountPtr->accountNumber && 
-				newAccountNumber < currentAccountPtr->nextInList->accountNumber) {
+			if (newAccountNumberToCreate > currentAccountPtr->accountNumber &&
+				newAccountNumberToCreate < currentAccountPtr->nextInList->accountNumber) {
 				
 				newAccountPtr->nextInList = currentAccountPtr->nextInList;
 				currentAccountPtr->nextInList = newAccountPtr;
-				accountsListPtr->totalNumberOfAccounts++;
+				newCommandArguments->accountsListPtr->totalNumberOfAccounts++;
 				break;
 			}
 		}
 
 		if (currentAccountPtr->nextInList == NULL) {
 			currentAccountPtr->nextInList = newAccountPtr;
-			accountsListPtr->totalNumberOfAccounts++;
+			newCommandArguments->accountsListPtr->totalNumberOfAccounts++;
 		}
 
 	}
 
-	printf("Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully created bank account number %llu with current balance of %.2f.\n", newAccountNumber, newAccountBalance);
+	printf("Successfully created bank account number %llu with current balance of %.2f.\n", 
+		newAccountNumberToCreate, 
+		newAccountBalance);
+	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+		"Successfully created bank account number %llu with current balance of %.2f.\n", 
+		newAccountNumberToCreate, 
+		newAccountBalance);
 	return true;
 }
 
-bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumberToClose) {
+bool removeAccountFromList(commandArguments *newCommandArguments) {
 	
+	unsigned long long accountNumberToClose = newCommandArguments->accountNumber;
+
 	account *currentAccountPtr = NULL, *temporaryAccountPtr = NULL;
-	printf("Removing account number %llu from list\n", accountNumberToClose);
+	printf("Removing account number %llu from list\n", 
+		accountNumberToClose);
 	// check whether the account number already exists
-	if (!isAccountInList(accountsListPtr, accountNumberToClose)) {
-		printf("!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", accountNumberToClose);
-		fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", accountNumberToClose);
+	if (!isAccountInList(newCommandArguments)) {
+		printf("!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", 
+			accountNumberToClose);
+		fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+			"!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n", 
+			accountNumberToClose);
 		return true;
 	}
 
-	if (accountsListPtr->accountListHeadPtr->accountNumber == accountNumberToClose) {
-		temporaryAccountPtr = accountsListPtr->accountListHeadPtr;
-		accountsListPtr->accountListHeadPtr = temporaryAccountPtr->nextInList;
-		accountsListPtr->totalNumberOfAccounts--;
+	if (newCommandArguments->accountsListPtr->accountListHeadPtr->accountNumber == accountNumberToClose) {
+		temporaryAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
+		newCommandArguments->accountsListPtr->accountListHeadPtr = temporaryAccountPtr->nextInList;
+		newCommandArguments->accountsListPtr->totalNumberOfAccounts--;
 		free(temporaryAccountPtr);
 	}
 
 	else {
-		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+		for (currentAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
 			currentAccountPtr->nextInList != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
 			if (currentAccountPtr->nextInList->accountNumber == accountNumberToClose)
 				temporaryAccountPtr = currentAccountPtr->nextInList;
 				currentAccountPtr->nextInList = temporaryAccountPtr->nextInList;
-				accountsListPtr->totalNumberOfAccounts--;
+				newCommandArguments->accountsListPtr->totalNumberOfAccounts--;
 				free(temporaryAccountPtr);
 				break;
 			}
 		}
 
-	printf("Successfully closed bank account number %llu.\n", accountNumberToClose);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully closed bank account number %llu.\n", accountNumberToClose);
+	printf("Successfully closed bank account number %llu.\n", 
+		accountNumberToClose);
+	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+		"Successfully closed bank account number %llu.\n", 
+		accountNumberToClose);
 	return true;
 }
 
-bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber) {
+bool isAccountInList(commandArguments *newCommandArguments) {
 
-	printf("Checking if account number %lli is in the accounts list\n", newAccountNumber);
+	printf("Checking if account number %lli is in the accounts list\n", newCommandArguments->accountNumber);
 
 	account *currentAccountPtr = NULL;
 
 	// check if the accounts list is empty:
-	if (accountsListPtr->accountListHeadPtr == NULL) {
-		printf("Account number %lli is NOT in the accounts list\n", newAccountNumber);
+	if (newCommandArguments->accountsListPtr->accountListHeadPtr == NULL) {
+		printf("Account number %lli is NOT in the accounts list\n", 
+			newCommandArguments->accountNumber);
 		return false;
 	}
 	else{
-		for(currentAccountPtr = accountsListPtr->accountListHeadPtr;
+		for(currentAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
 			currentAccountPtr != NULL; 
 			currentAccountPtr = currentAccountPtr->nextInList){
 
-			if (newAccountNumber == currentAccountPtr->accountNumber) {
-				printf("Account number %lli is in the accounts list\n", newAccountNumber);
+			if (newCommandArguments->accountNumber == currentAccountPtr->accountNumber) {
+				printf("Account number %lli is in the accounts list\n", 
+					newCommandArguments->accountNumber);
 				return true;
 			}
 		}
-		printf("Account number %lli is NOT in the accounts list\n", newAccountNumber);
+		printf("Account number %lli is NOT in the accounts list\n", 
+			newCommandArguments->accountNumber);
 		return false;
 	}
-}
-
-bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr) {
-	
-	printf("Initializing new allAccounts instance\n");
-	accountsListPtr->accountListHeadPtr = NULL;
-	accountsListPtr->totalNumberOfAccounts = 0;
-	accountsListPtr->runtmieLogFile = runtmieLogFilePtr;
-	runtmieLogFilePtr->logFilePtr = NULL;
-	return true;
 }
 
 bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber, double accountBalance) {
@@ -157,21 +173,27 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 	return true;
 }
 
-bool printCurrentBalances(allAccounts *accountsListPtr) {
+bool printCurrentBalances(commandArguments *newCommandArguments) {
 
 	account *currentAccountPtr = NULL;
 
 	printf("Current balances in bank accounts are:\nBank Account #,Current Balance\n");
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Current balances in bank accounts are:\nBank Account #,Current Balance\n");
+	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+		"Current balances in bank accounts are:\nBank Account #,Current Balance\n");
 
 	// check if the accounts list is empty:
-	if (accountsListPtr->accountListHeadPtr != NULL) {
-		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+	if (newCommandArguments->accountsListPtr->accountListHeadPtr != NULL) {
+		for (currentAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
-			printf("%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "%llu,%.2f\n", currentAccountPtr->accountNumber, currentAccountPtr->currentBalance);
+			printf("%llu,%.2f\n", 
+				currentAccountPtr->accountNumber, 
+				currentAccountPtr->currentBalance);
+			fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+				"%llu,%.2f\n", 
+				currentAccountPtr->accountNumber, 
+				currentAccountPtr->currentBalance);
 		}
 		return true;
 	}
@@ -179,62 +201,87 @@ bool printCurrentBalances(allAccounts *accountsListPtr) {
 	return false;
 }
 
-bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex) {		
+bool depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 
 	account *currentAccountPtr = NULL;
+	unsigned long long accountNumber = newCommandArguments->accountNumber;
+	double amount = newCommandArguments->amountOfMoney;
 
-	//check that account number isn't locked by mutex using WaitForSingleObject function on the relevant thread
+	printf("Making deposite/withdrawal for account number %llu with current balance of %.2f\n",
+		accountNumber,
+		amount);
 
 	// checking if accountNumber exists
-	if (!isAccountInList(accountsListPtr, accountNumber)) {
-		if (enumCommandTypeIndex == 3) {
-			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
+	if (!isAccountInList(newCommandArguments)) {
+		if (newCommandArguments->commandTypeIndex == 3) {
+			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", 
+				amount, 
+				accountNumber);
+			fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+				"!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", 
+				amount, 
+				accountNumber);
 		}
-		else if (enumCommandTypeIndex == 4) {
-			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
-			fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", amount, accountNumber);
+		else if (newCommandArguments->commandTypeIndex == 4) {
+			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", 
+				amount, 
+				accountNumber);
+			fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+				"!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", 
+				amount, 
+				accountNumber);
 		}
 		return false;
 	}
+	
 	else {
-		 //accountNumber exists
-		for (currentAccountPtr = accountsListPtr->accountListHeadPtr;
+		for (currentAccountPtr = newCommandArguments->accountsListPtr->accountListHeadPtr;
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
 			if (accountNumber == currentAccountPtr->accountNumber) {
 				//check if deposit or withdrawal command and execute correspondingly
-				if (enumCommandTypeIndex == 3) {
+				if (newCommandArguments->commandTypeIndex == 3) {
 					//Deposit command
-					updateAccountFieldsForDepositing(accountsListPtr, currentAccountPtr, accountNumber, amount);
+					makeDepositing(newCommandArguments, currentAccountPtr);
 					break;
 				}
-				else if (enumCommandTypeIndex == 4) {
+				else if (newCommandArguments->commandTypeIndex == 4) {
 					//Withdrawal command
-					updateAccountFieldsForWithdrawal(accountsListPtr, currentAccountPtr, accountNumber, amount);
+					makeWithdrawal(newCommandArguments, currentAccountPtr);
 					break;
 				}
 			}
 		}
 	}
+	
 	return true;
 }
 
-void updateAccountFieldsForDepositing(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberForDeposit, double amountForDeposit) {
+void makeDepositing(commandArguments *newCommandArguments, account *currentAccountPtr) {
 
-	currentAccountPtr->currentBalance += amountForDeposit;
+	currentAccountPtr->currentBalance += newCommandArguments->amountOfMoney;
 	currentAccountPtr->ammountOfDeposits += 1;
-	currentAccountPtr->totalDepositeSum += amountForDeposit;
-	printf("Successfully deposited %.2f to account number %lli.\n", amountForDeposit, accountNumberForDeposit);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully deposited %.2f to account number %lli.\n", amountForDeposit, accountNumberForDeposit);
+	currentAccountPtr->totalDepositeSum += newCommandArguments->amountOfMoney;
+	printf("Successfully deposited %.2f to account number %lli.\n", 
+		newCommandArguments->amountOfMoney, 
+		newCommandArguments->accountNumber);
+	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
+		"Successfully deposited %.2f to account number %lli.\n", 
+		newCommandArguments->amountOfMoney, 
+		newCommandArguments->accountNumber);
 }
 
-void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal) {
+void makeWithdrawal(commandArguments *newCommandArguments, account *currentAccountPtr) {
 
-	currentAccountPtr->currentBalance -= amountToWithdrawal;
+	currentAccountPtr->currentBalance -= newCommandArguments->amountOfMoney;
 	currentAccountPtr->ammountOfWithdrawals += 1;
-	currentAccountPtr->totalWithdrawalSum += amountToWithdrawal;
-	printf("Successfully withdrew %.2f from account number %lli.\n", amountToWithdrawal, accountNumberToWithdrawal);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully withdrew %.2f from account number %lli.\n", amountToWithdrawal, accountNumberToWithdrawal);
+	currentAccountPtr->totalWithdrawalSum += newCommandArguments->amountOfMoney;
+	printf("Successfully withdrew %.2f from account number %lli.\n", 
+		newCommandArguments->amountOfMoney, 
+		newCommandArguments->accountNumber);
+	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr,
+		"Successfully withdrew %.2f from account number %lli.\n", 
+		newCommandArguments->amountOfMoney, 
+		newCommandArguments->accountNumber);
 }

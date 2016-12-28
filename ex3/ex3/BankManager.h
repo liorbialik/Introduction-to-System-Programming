@@ -43,14 +43,13 @@ typedef struct allAccounts {
 } allAccounts;
 
 
-// struct for parsing the command line
-typedef struct ParsingCommands {
-	char *command;
-	unsigned long long AccountNumber;
-	double Amount;
+// struct for the commands execution arguments
+typedef struct commandArguments {
+	allAccounts *accountsListPtr;
+	unsigned long long accountNumber;
+	double amountOfMoney;
 	int commandTypeIndex;
-} ParsingCommands;
-
+} commandArguments;
 
 /* Function Declarations: */
 int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char *RunTimeLogFileName);

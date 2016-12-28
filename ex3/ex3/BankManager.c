@@ -16,7 +16,13 @@ ex3 - BankManager.c:
 
 /* Function Declarations: */
 char *readCommandLinebyLine(FILE *CommandFile);
-ParsingCommands ParseLineIntoCommand(char *);
+bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *LineString);
+bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr, logFile *runtmieLogFilePtr);
+bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
+bool initializeCommandArguments(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr);
+bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr);
+
+//extern HANDLE fileMutex;
 
 int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char *RunTimeLogFileName) {
 
@@ -26,18 +32,17 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
-	ParsingCommands parsingFields;
 	allAccounts newAccountsList;
 	logFile newRunTimeLogFile;
-	 
+	commandArguments newCommandArguments;
 
-	// initialize the account list struct
-	if (!initializeNewAccountsList(&newAccountsList, &newRunTimeLogFile)){
-		printf("accounts initialization failed!\n");
+	// initialize all struct
+	if (!initializeStructs(&newCommandArguments, &newAccountsList, &newRunTimeLogFile)) {
+		printf("Structs initialization failed!\n");
 		exit(1);
 	}
 	else
-		printf("accounts initialized successfully\n");
+		printf("Structs initialized successfully\n");
 
 	// open CommandFile by getting CommandFileName as an argument
 	CommandFile = fopen(CommandFileName, "r");
@@ -57,43 +62,42 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 	// go over 'CommandFile' and read commands line by line until EOF
 	do { 
 		LineString = readCommandLinebyLine(CommandFile);
-		if (LineString == "eof") break;
+		if (LineString == "eof") 
+			break;
 		printf("The command is %s\n", LineString);
-		parsingFields = ParseLineIntoCommand(LineString);
+		
+		parseLineIntoCommandArguments(&newCommandArguments, LineString);
 
-		switch (parsingFields.commandTypeIndex) {
+		switch (newCommandArguments.commandTypeIndex) {
 			case createAccountCmd:
 				// check all other threads are closed
-				printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-				if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
-					printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
+				if (!addNewAccountToList(&newCommandArguments)) {
+					printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments.accountNumber, GetLastError());
 				}
 				break;
-
+	
 			case closeAccountCmd:
 				// check all other threads are closed
-				printf("account number %lli\n", parsingFields.AccountNumber);
-				removeAccountFromList(&newAccountsList, parsingFields.AccountNumber);
+				removeAccountFromList(&newCommandArguments);
 				break;
-
+				
 			case printBalancesCmd:
 				// check all other threads are closed
-				printf("Printing Account Balances if exists\n");
-				if (!printCurrentBalances(&newAccountsList)) {
-					printf("Account list is empty\n");
+				if (!printCurrentBalances(&newCommandArguments)) {
+					printf("Failed printing balance, error %ul\n", GetLastError());
 				}
 				break;
-
+				
 			case depositCmd:
 				// add a new thread to the threads list
-				printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+				if (!depositOrWithdrawalAmountToAccount(&newCommandArguments));
+					printf("Failed to deposite to %lli , error %ul\n", newCommandArguments.accountNumber, GetLastError());
 				break;
-
+				////////////////////////////////////////////////////////////////////////////////////////////
 			case withdrawalCmd:
 				// add a new thread to the threads list
-				printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+				if (!depositOrWithdrawalAmountToAccount(&newCommandArguments));
+					printf("Failed to withdrawal to %lli , error %ul\n", newCommandArguments.accountNumber, GetLastError());
 				break;
 		}
 
@@ -118,6 +122,60 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 /* Function Definitions */
 
+bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr, logFile *runtmieLogFilePtr) {
+	
+	// initialize the runtime log file struct
+	if (!initializeRuntmieLogFile(runtmieLogFilePtr)) {
+		printf("Run time log file initialization failed!\n");
+		return false;
+	}
+	else
+		printf("Run time log file initialized successfully\n");
+
+	// initialize the account list struct
+	if (!initializeNewAccountsList(newAccountsListPtr, runtmieLogFilePtr)) {
+		printf("accounts initialization failed!\n");
+		return false;
+	}
+	else
+		printf("accounts initialized successfully\n");
+
+	// initialize the command arguments struct
+	if (!initializeCommandArguments(newCommandArguments, newAccountsListPtr)) {
+		printf("Command arguments initialization failed!\n");
+		return false;
+	}
+	else
+		printf("Command arguments initialized successfully\n");
+
+	return true;
+}
+
+bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr) {
+	runtmieLogFilePtr->logFilePtr = NULL;
+	// init mutex in struct
+	return true;
+}
+
+bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr) {
+
+	printf("Initializing new allAccounts instance\n");
+	accountsListPtr->accountListHeadPtr = NULL;
+	accountsListPtr->totalNumberOfAccounts = 0;
+	accountsListPtr->runtmieLogFile = runtmieLogFilePtr;
+	return true;
+}
+
+bool initializeCommandArguments(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr) {
+
+	printf("Initializing new CommandArguments instance\n");
+	newCommandArguments->accountsListPtr = newAccountsListPtr;
+	newCommandArguments->accountNumber = 0;
+	newCommandArguments->amountOfMoney = 0;
+	newCommandArguments->commandTypeIndex = 0;
+	return true;
+}
+
 char *readCommandLinebyLine(FILE *CommandFile) {
 
 	char *LineString = NULL;
@@ -138,44 +196,43 @@ char *readCommandLinebyLine(FILE *CommandFile) {
 	return LineString;
 }
 
-ParsingCommands ParseLineIntoCommand(char *LineString) {
+bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *LineString) {
 
-	ParsingCommands parsingFields = { NULL };
 	int i = 0;
-	char *commandsArray[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
+	char *currentCommand = NULL, *commandsArray[] = { "CreateAccount" , "CloseAccount" , "PrintBalances" , "Deposit", "Withdrawal" };
 
-	parsingFields.command = strtok(LineString, " ");
+	currentCommand = strtok(LineString, " ");
 	for (i = 0; i < 5; i++) {
-		if (strcmp(parsingFields.command, commandsArray[i]) == 0) {
-			parsingFields.commandTypeIndex = i;
+		if (strcmp(currentCommand, commandsArray[i]) == 0) {
+			newCommandArguments->commandTypeIndex = i;
 		}
 	}
 
-	switch (parsingFields.commandTypeIndex) {
+	switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
-			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-			parsingFields.Amount = strtod(strtok(NULL, " "),NULL);
+			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = (double) strtod(strtok(NULL, " "),NULL);
 			break;
 
 		case closeAccountCmd:
-			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
 			break;
 
 		case printBalancesCmd:
 			break;
 
 		case depositCmd:
-			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-			parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
+			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = (double)strtod(strtok(NULL, " "), NULL);
 			break;
 
 		case withdrawalCmd:
-			parsingFields.AccountNumber = strtol(strtok(NULL, " "), NULL, 0);
-			parsingFields.Amount = strtod(strtok(NULL, " "), NULL);
+			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = (double)strtod(strtok(NULL, " "), NULL);
 			break;
 		}
 
-	return parsingFields;
+	return true;
 
 }
 

@@ -6,15 +6,14 @@
 #include <stdbool.h>
 
 /* Function Declarations: */
-bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
 bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber, double accountBalance);
-bool isAccountInList(allAccounts *accountsListPtr, unsigned long long newAccountNumber);
-bool addNewAccountToList(allAccounts *accountsListPtr, unsigned long long newAccountNumber, double newAccountBalance);
-bool removeAccountFromList(allAccounts *accountsListPtr, unsigned long long accountNumberToClose);
-bool printCurrentBalances(allAccounts *accountsListPtr);
+bool isAccountInList(commandArguments *newCommandArguments);
+bool addNewAccountToList(commandArguments *newCommandArguments);
+bool removeAccountFromList(commandArguments *newCommandArguments);
+bool printCurrentBalances(commandArguments *newCommandArguments);
 bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileName);
-bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex);
-void updateAccountFieldsForDepositing(currentAccountPtr);
-void updateAccountFieldsForWithdrawal(currentAccountPtr);
+bool depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments);
+void makeDepositing(currentAccountPtr);
+void makeWithdrawal(currentAccountPtr);
 
 #endif

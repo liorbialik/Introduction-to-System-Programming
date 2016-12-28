@@ -168,7 +168,7 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 	accountPtr->totalWithdrawalSum = 0;
 	accountPtr->ammountOfDeposits = 0;
 	accountPtr->ammountOfWithdrawals = 0;
-	// another field for the account's mutex
+	accountPtr->accountMutex = CreateMutex(NULL, FALSE, NULL);
 	accountPtr->nextInList = NULL;
 	return true;
 }
@@ -217,19 +217,25 @@ int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 			printf("!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", 
 				amount, 
 				accountNumber);
+
+			WaitForSingleObject(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex, INFINITE);
 			fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
 				"!!! Unable to deposit %.2f to account number %lli. Account doesn't exist. Skipping command. !!!\n", 
 				amount, 
 				accountNumber);
+			ReleaseMutex(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex);
 		}
 		else if (newCommandArguments->commandTypeIndex == 4) {
 			printf("!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", 
 				amount, 
 				accountNumber);
+
+			WaitForSingleObject(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex, INFINITE);
 			fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
 				"!!! Unable to withdraw %.2f from account number %lli. Account doesn't exist. Skipping command. !!!\n", 
 				amount, 
 				accountNumber);
+			ReleaseMutex(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex);
 		}
 		return 0;
 	}
@@ -239,6 +245,7 @@ int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 			currentAccountPtr != NULL;
 			currentAccountPtr = currentAccountPtr->nextInList) {
 
+			//WaitForSingleObject(currentAccountPtr->accountMutex, INFINITE);
 			if (accountNumber == currentAccountPtr->accountNumber) {
 				//check if deposit or withdrawal command and execute correspondingly
 				if (newCommandArguments->commandTypeIndex == 3) {
@@ -246,12 +253,13 @@ int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 					makeDepositing(newCommandArguments, currentAccountPtr);
 					break;
 				}
-				else if (newCommandArguments->commandTypeIndex == 4) {
+				if (newCommandArguments->commandTypeIndex == 4) {
 					//Withdrawal command
 					makeWithdrawal(newCommandArguments, currentAccountPtr);
 					break;
 				}
 			}
+			//ReleaseMutex(currentAccountPtr->accountMutex);
 		}
 	}
 	
@@ -266,10 +274,13 @@ void makeDepositing(commandArguments *newCommandArguments, account *currentAccou
 	printf("Successfully deposited %.2f to account number %lli.\n", 
 		newCommandArguments->amountOfMoney, 
 		newCommandArguments->accountNumber);
+	
+	WaitForSingleObject(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex, INFINITE);
 	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr, 
 		"Successfully deposited %.2f to account number %lli.\n", 
 		newCommandArguments->amountOfMoney, 
 		newCommandArguments->accountNumber);
+	ReleaseMutex(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex);
 }
 
 void makeWithdrawal(commandArguments *newCommandArguments, account *currentAccountPtr) {
@@ -280,8 +291,11 @@ void makeWithdrawal(commandArguments *newCommandArguments, account *currentAccou
 	printf("Successfully withdrew %.2f from account number %lli.\n", 
 		newCommandArguments->amountOfMoney, 
 		newCommandArguments->accountNumber);
+
+	WaitForSingleObject(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex, INFINITE);
 	fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr,
 		"Successfully withdrew %.2f from account number %lli.\n", 
 		newCommandArguments->amountOfMoney, 
 		newCommandArguments->accountNumber);
+	ReleaseMutex(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex);
 }

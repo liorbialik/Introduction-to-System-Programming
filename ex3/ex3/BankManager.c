@@ -210,25 +210,25 @@ bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *
 
 	switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
-			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
-			newCommandArguments->amountOfMoney = (double) strtod(strtok(NULL, " "),NULL);
+			newCommandArguments->accountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = strtod(strtok(NULL, " "),NULL);
 			break;
 
 		case closeAccountCmd:
-			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->accountNumber = strtol(strtok(NULL, " "), NULL, 0);
 			break;
 
 		case printBalancesCmd:
 			break;
 
 		case depositCmd:
-			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
-			newCommandArguments->amountOfMoney = (double)strtod(strtok(NULL, " "), NULL);
+			newCommandArguments->accountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = strtod(strtok(NULL, " "), NULL);
 			break;
 
 		case withdrawalCmd:
-			newCommandArguments->accountNumber = (unsigned long long) strtol(strtok(NULL, " "), NULL, 0);
-			newCommandArguments->amountOfMoney = (double)strtod(strtok(NULL, " "), NULL);
+			newCommandArguments->accountNumber = strtol(strtok(NULL, " "), NULL, 0);
+			newCommandArguments->amountOfMoney = strtod(strtok(NULL, " "), NULL);
 			break;
 		}
 

@@ -60,7 +60,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 		exit(1);
 	}
 
-	// go over 'CommandFile' and read commands line by line until EOF
+	// go over 'CommandFile' and execute commands line by line until EOF
 	executeCommands(CommandFile, &newCommandArguments);
 
 	// writing data accounts into balance report file
@@ -82,6 +82,17 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	char *LineString = NULL;
+	//initialize dynamic array of threadHandlesArray in size of number of commands in commandFile
+	//initialize dynamic array of threadIDsArray in size of number of commands in commandFile
+	// create exitCode variable type DWORD
+
+	// TODO: Need to check whether is neccesarry, if yes, need to add more variables in newCommandArguments struct
+	//// possible thread error strings:		
+	//const char *addNewAccountToListThreadCreationError = "Problem creating 'add New Account To List' thread\n";
+	//const char *removeAccountFromListThreadCreationError = "Problem creating 'remove Account From List' thread\n";
+	//const char *printCurrentBalancesThreadCreationError = "Problem creating 'print Current Balances' thread\n";
+	//const char *depositOrWithdrawalAmountToAccountThreadCreationError = "Problem creating 'deposit Or Withdrawal Amount To Account' thread\n";
+
 
 	do {
 		LineString = readCommandLinebyLine(CommandFile);
@@ -90,10 +101,41 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 		printf("The command is %s\n", LineString);
 
 		parseLineIntoCommandArguments(newCommandArguments, LineString);
+		//realloc array for threads by one more size
+		// 
 
 		switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
-			// check all other threads are closed
+			//// check that all preceding threads finished running 
+			//// Wait for threads to finish
+			//WaitForMultipleObjects(
+			//	strlen(threadHandlesArray),
+			//	threadHandlesArray,
+			//	TRUE,       /* wait until all threads finish */
+			//	INFINITE);
+
+			//Sleep(10);
+
+			//// create thread on relevant command, using 'CreateThreadSimple' function from the recitation: 
+			//threadHandlesArray[i] = CreateThreadSimple(
+			//	(LPTHREAD_START_ROUTINE)addNewAccountToList,               /*  thread function */
+			//	&newCommandArguments,                                       /*  argument to thread function */
+			//	&threadIDsArray[i]);                                        /*  returns the thread identifier */
+			//if (threadHandlesArray[i] == NULL) {
+			//	printf("Problem creating 'add New Account To List' thread");
+			//	newCommandArguments.addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;		
+			//}
+
+			// getting exitCode for thread
+			//if (GetExitCodeThread(threadHandlesArray[i], &exitCode)) {
+			//	printf("Problem getting exit code for thread number %d", i);
+			//}
+			//else {
+			//	printf("Thread number %d returned exit code %d\n", i, exitCode);
+			//}
+
+
+
 			if (!addNewAccountToList(newCommandArguments))
 				printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			break;

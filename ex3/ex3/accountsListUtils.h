@@ -8,11 +8,11 @@
 /* Function Declarations: */
 bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber, double accountBalance);
 bool isAccountInList(commandArguments *newCommandArguments);
-bool addNewAccountToList(commandArguments *newCommandArguments);
-bool removeAccountFromList(commandArguments *newCommandArguments);
-bool printCurrentBalances(commandArguments *newCommandArguments);
+int addNewAccountToList(commandArguments *newCommandArguments);
+int removeAccountFromList(commandArguments *newCommandArguments);
+int printCurrentBalances(commandArguments *newCommandArguments);
 bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileName);
-bool depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments);
+int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments);
 void makeDepositing(currentAccountPtr);
 void makeWithdrawal(currentAccountPtr);
 

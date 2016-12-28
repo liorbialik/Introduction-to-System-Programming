@@ -18,11 +18,11 @@ ex3 - BankManager.c:
 char *readCommandLinebyLine(FILE *CommandFile);
 ParsingCommands ParseLineIntoCommand(char *);
 
-int executeBankManager(int argc, char *argv[]) {
+int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char *RunTimeLogFileName) {
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
-	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTimeLogFileName = NULL, *CommandType = NULL, *LineString = NULL;
+	char *CommandType = NULL, *LineString = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
@@ -30,17 +30,6 @@ int executeBankManager(int argc, char *argv[]) {
 	allAccounts newAccountsList;
 	logFile newRunTimeLogFile;
 	 
-
-	// Start of Program
-	CommandFileName = argv[1];
-	BalanceReportFileName = argv[2];
-	RunTimeLogFileName = argv[3];
-
-	// Verify that the number of command line argument is correct
-	if (argc != 4) {
-		printf("Number of Command line Arguments isn't compatible,  error %ul\n", GetLastError());
-		exit(1);
-	}
 
 	// initialize the account list struct
 	if (!initializeNewAccountsList(&newAccountsList, &newRunTimeLogFile)){
@@ -73,6 +62,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 		switch (parsingFields.commandTypeIndex) {
 			case createAccountCmd:
+				// check all other threads are closed
 				printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 				if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
 					printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
@@ -80,11 +70,13 @@ int executeBankManager(int argc, char *argv[]) {
 				break;
 
 			case closeAccountCmd:
+				// check all other threads are closed
 				printf("account number %lli\n", parsingFields.AccountNumber);
 				removeAccountFromList(&newAccountsList, parsingFields.AccountNumber);
 				break;
 
 			case printBalancesCmd:
+				// check all other threads are closed
 				printf("Printing Account Balances if exists\n");
 				if (!printCurrentBalances(&newAccountsList)) {
 					printf("Account list is empty\n");
@@ -92,11 +84,13 @@ int executeBankManager(int argc, char *argv[]) {
 				break;
 
 			case depositCmd:
+				// add a new thread to the threads list
 				printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 				break;
 
 			case withdrawalCmd:
+				// add a new thread to the threads list
 				printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
 				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
 				break;

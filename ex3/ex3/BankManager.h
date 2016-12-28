@@ -53,7 +53,7 @@ typedef struct ParsingCommands {
 
 
 /* Function Declarations: */
-int executeBankManager(int argc, char *argv[]);
+int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char *RunTimeLogFileName);
 
 
 // enumerations for possible commands:

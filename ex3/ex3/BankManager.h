@@ -9,14 +9,12 @@ function in BankManager.c
 #ifndef BankManager_H
 #define BankManager_H
 
-///* Constants: */
-
-
 /* Libraries: */
 #include <Windows.h>
+#include <stdio.h>
 
+/* Struct Declarations: */
 
-///* Struct Declarations: */
 // struct for a single account
 typedef struct account {
 	unsigned long long accountNumber;
@@ -28,14 +26,13 @@ typedef struct account {
 	unsigned long long ammountOfWithdrawals;
 	// another field for the account's mutex
 	struct account *nextInList;
-}account;
-
+} account;
 
 // struct that will be using the the runtimeLogFile
 typedef struct logFile {
 	FILE *logFilePtr;
 	// another field for the logFile's mutex
-}logFile;
+} logFile;
 
 
 // struct for all accounts

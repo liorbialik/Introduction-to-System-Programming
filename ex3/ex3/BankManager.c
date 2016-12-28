@@ -6,22 +6,13 @@ ex3 - BankManager.c:
 - The program return a BOOL value, which indicated whether the managing operations done successfully, and log file was written.
 */
 
-/* Libraries: */
+/* Definitions: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+
+/* Libraries: */
 #include <stdio.h>
-//#include <Windows.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <io.h>
-//#include <tchar.h>
-//#include <Strsafe.h>
-//#include <conio.h>
-//#include <process.h>
-//#include <sys/stat.h>
 #include "BankManager.h"
 #include "accountsListUtils.h"
-//#include <sys/types.h>
-//#include <direct.h>
 
 /* Function Declarations: */
 char *readCommandLinebyLine(FILE *CommandFile);
@@ -31,7 +22,7 @@ int executeBankManager(int argc, char *argv[]) {
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
-	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTime_LogFileName = NULL, *CommandType = NULL, *LineString = NULL;
+	char *CommandFileName = NULL, *BalanceReportFileName = NULL, *RunTimeLogFileName = NULL, *CommandType = NULL, *LineString = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
@@ -43,7 +34,7 @@ int executeBankManager(int argc, char *argv[]) {
 	// Start of Program
 	CommandFileName = argv[1];
 	BalanceReportFileName = argv[2];
-	RunTime_LogFileName = argv[3];
+	RunTimeLogFileName = argv[3];
 
 	// Verify that the number of command line argument is correct
 	if (argc != 4) {
@@ -54,7 +45,7 @@ int executeBankManager(int argc, char *argv[]) {
 	// initialize the account list struct
 	if (!initializeNewAccountsList(&newAccountsList, &newRunTimeLogFile)){
 		printf("accounts initialization failed!\n");
-		return 1;
+		exit(1);
 	}
 	else
 		printf("accounts initialized successfully\n");
@@ -68,27 +59,25 @@ int executeBankManager(int argc, char *argv[]) {
 	}
 
 	// open RunTime_LogFile by getting RunTimeLogFileName as an argument
-	newAccountsList.runtmieLogFile->logFilePtr = fopen(RunTime_LogFileName, "w");
+	newAccountsList.runtmieLogFile->logFilePtr = fopen(RunTimeLogFileName, "w");
 	if (newAccountsList.runtmieLogFile->logFilePtr == NULL) {
 		printf("failed to open RunTime_LogFile, error %ul\n", GetLastError()); 
 		exit(1);
 	}
 
-
 	// go over 'CommandFile' and read commands line by line until EOF
-
 	do { 
 		LineString = readCommandLinebyLine(CommandFile);
 		printf("The command is %s\n", LineString);
 		parsingFields = ParseLineIntoCommand(LineString);
 
 		switch (parsingFields.commandTypeIndex) {
-		case createAccountCmd:
-			printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
-				printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
-			}
-			break;
+			case createAccountCmd:
+				printf("account number %lli, current balance of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				if (!addNewAccountToList(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount)) {
+					printf("cannot create %lli as a new account to list, error %ul\n", parsingFields.AccountNumber, GetLastError());
+				}
+				break;
 
 			case closeAccountCmd:
 				printf("account number %lli\n", parsingFields.AccountNumber);
@@ -102,15 +91,15 @@ int executeBankManager(int argc, char *argv[]) {
 				}
 				break;
 
-		case depositCmd:
-			printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
-			break;
+			case depositCmd:
+				printf("account number %lli, amount to deposit of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+				break;
 
-		case withdrawalCmd:
-			printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
-			depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
-			break;
+			case withdrawalCmd:
+				printf("account number %lli, amount to withdraw of %.2f\n", parsingFields.AccountNumber, parsingFields.Amount);
+				depositOrWithdrawalAmountToAccount(&newAccountsList, parsingFields.AccountNumber, parsingFields.Amount, parsingFields.commandTypeIndex);
+				break;
 		}
 
 	} while (!feof(CommandFile));
@@ -120,11 +109,12 @@ int executeBankManager(int argc, char *argv[]) {
 		printf("cannot print into balance report file, error %ul\n", GetLastError());
 		exit(1);
 	}
-		
+	
+	fprintf(newAccountsList.runtmieLogFile->logFilePtr, "Program successfully finished running. Exiting.");
+
 	free(LineString);
 	fclose(CommandFile);
 	fclose(newAccountsList.runtmieLogFile->logFilePtr);
-
 
 	return 0;
 

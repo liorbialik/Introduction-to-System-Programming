@@ -226,8 +226,8 @@ void updateAccountFieldsForDepositing(allAccounts *accountsListPtr, account *cur
 	currentAccountPtr->currentBalance += amountForDeposit;
 	currentAccountPtr->ammountOfDeposits += 1;
 	currentAccountPtr->totalDepositeSum += amountForDeposit;
-	printf("Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully deposited %.2f to account number %lli\n", amountForDeposit, accountNumberForDeposit);
+	printf("Successfully deposited %.2f to account number %lli.\n", amountForDeposit, accountNumberForDeposit);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully deposited %.2f to account number %lli.\n", amountForDeposit, accountNumberForDeposit);
 }
 
 void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *currentAccountPtr, unsigned long long accountNumberToWithdrawal, double amountToWithdrawal) {
@@ -235,6 +235,6 @@ void updateAccountFieldsForWithdrawal(allAccounts *accountsListPtr, account *cur
 	currentAccountPtr->currentBalance -= amountToWithdrawal;
 	currentAccountPtr->ammountOfWithdrawals += 1;
 	currentAccountPtr->totalWithdrawalSum += amountToWithdrawal;
-	printf("Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
-	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully withdraw %.2f from account number %lli\n", amountToWithdrawal, accountNumberToWithdrawal);
+	printf("Successfully withdrew %.2f from account number %lli.\n", amountToWithdrawal, accountNumberToWithdrawal);
+	fprintf(accountsListPtr->runtmieLogFile->logFilePtr, "Successfully withdrew %.2f from account number %lli.\n", amountToWithdrawal, accountNumberToWithdrawal);
 }

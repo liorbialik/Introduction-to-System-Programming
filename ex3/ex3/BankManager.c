@@ -57,6 +57,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 	// go over 'CommandFile' and read commands line by line until EOF
 	do { 
 		LineString = readCommandLinebyLine(CommandFile);
+		if (LineString == "eof") break;
 		printf("The command is %s\n", LineString);
 		parsingFields = ParseLineIntoCommand(LineString);
 
@@ -96,6 +97,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 				break;
 		}
 
+		free(LineString);
 	} while (!feof(CommandFile));
 
 	// writing data accounts into balance report file
@@ -106,7 +108,6 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 	
 	fprintf(newAccountsList.runtmieLogFile->logFilePtr, "Program successfully finished running. Exiting.");
 
-	free(LineString);
 	fclose(CommandFile);
 	fclose(newAccountsList.runtmieLogFile->logFilePtr);
 
@@ -120,14 +121,15 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 char *readCommandLinebyLine(FILE *CommandFile) {
 
 	char *LineString = NULL;
-	int buffer = 100;			// '13' for the longest command, '20' for the longest int variable type in c ('10' each)
+	int buffer = 100;								// '13' for the longest command, '20' for the longest int variable type in c ('10' each)
 	LineString = (char *)malloc((buffer) * sizeof(char));
 	if (LineString == NULL) {
 		printf("LineCommandPtr allocation was failed, error %ul\n", GetLastError());
 	}
 
 	if (fgets(LineString, buffer, CommandFile) == NULL) {
-		printf("reading a command from CommandFile was failed, error %ul\n", GetLastError());
+		printf("cannot read a command from CommandFile, end of file. error %ul\n", GetLastError());
+		return "eof";
 	}
 
 	if (!feof(CommandFile)) {

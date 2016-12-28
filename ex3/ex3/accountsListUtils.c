@@ -179,7 +179,7 @@ bool printCurrentBalances(allAccounts *accountsListPtr) {
 	return false;
 }
 
-bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex) {		//TODO: Need to test
+bool depositOrWithdrawalAmountToAccount(allAccounts *accountsListPtr, unsigned long long accountNumber, double amount, int enumCommandTypeIndex) {		
 
 	account *currentAccountPtr = NULL;
 

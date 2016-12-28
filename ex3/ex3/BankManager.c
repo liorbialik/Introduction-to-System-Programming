@@ -159,7 +159,7 @@ bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr) {
 	runtmieLogFilePtr->logFiltMutex = CreateMutex(NULL, FALSE, NULL);
 	if (runtmieLogFilePtr->logFiltMutex == NULL)
 	{
-		printf("CreateMutex error: %d\n", GetLastError());
+		printf("CreateMutex for log file error: %d\n", GetLastError());
 		exit(1);
 	}
 	return true;

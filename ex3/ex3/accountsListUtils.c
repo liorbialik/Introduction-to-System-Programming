@@ -168,8 +168,14 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 	accountPtr->totalWithdrawalSum = 0;
 	accountPtr->ammountOfDeposits = 0;
 	accountPtr->ammountOfWithdrawals = 0;
-	accountPtr->accountMutex = CreateMutex(NULL, FALSE, NULL);
 	accountPtr->nextInList = NULL;
+	accountPtr->accountMutex = CreateMutex(NULL, FALSE, NULL);
+	if (accountPtr->accountMutex == NULL)
+	{
+		printf("CreateMutex for account error: %d\n", GetLastError());
+		exit(1);
+	}
+
 	return true;
 }
 

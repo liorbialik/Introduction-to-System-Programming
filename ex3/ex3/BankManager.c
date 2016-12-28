@@ -29,10 +29,6 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
-	char *CommandType = NULL;
-	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
-	unsigned long long int AccountNumber = 0;
-	long long Amount = 0, CurrentBalance = 0;
 	allAccounts newAccountsList;
 	logFile newRunTimeLogFile;
 	commandArguments newCommandArguments;
@@ -212,6 +208,7 @@ bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *
 	for (i = 0; i < 5; i++) {
 		if (strcmp(currentCommand, commandsArray[i]) == 0) {
 			newCommandArguments->commandTypeIndex = i;
+			break;
 		}
 	}
 

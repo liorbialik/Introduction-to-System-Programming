@@ -22,6 +22,10 @@ bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAc
 bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
 bool initializeCommandArguments(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr);
 bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr);
+HANDLE CreateThreadSimple(
+	LPTHREAD_START_ROUTINE StartAddress, 
+	LPVOID ParameterPtr, 
+	LPDWORD ThreadIdPtr);
 
 //extern HANDLE fileMutex;
 
@@ -82,6 +86,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	char *LineString = NULL;
+	DWORD threadHandle = 0;
 	//initialize dynamic array of threadHandlesArray in size of number of commands in commandFile
 	//initialize dynamic array of threadIDsArray in size of number of commands in commandFile
 	// create exitCode variable type DWORD
@@ -109,7 +114,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 			//// check that all preceding threads finished running 
 			//// Wait for threads to finish
 			//WaitForMultipleObjects(
-			//	strlen(threadHandlesArray),
+			//	using semaphore index,
 			//	threadHandlesArray,
 			//	TRUE,       /* wait until all threads finish */
 			//	INFINITE);
@@ -117,7 +122,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 			//Sleep(10);
 
 			//// create thread on relevant command, using 'CreateThreadSimple' function from the recitation: 
-			//threadHandlesArray[i] = CreateThreadSimple(
+			//threadHandle = CreateThreadSimple(
 			//	(LPTHREAD_START_ROUTINE)addNewAccountToList,               /*  thread function */
 			//	&newCommandArguments,                                       /*  argument to thread function */
 			//	&threadIDsArray[i]);                                        /*  returns the thread identifier */
@@ -324,6 +329,28 @@ bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileNam
 	return true;
 	
 }
+
+HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterPtr, LPDWORD ThreadIdPtr)
+{
+	/*
+	@ Description: This function creates a thread by calling Win32 Api's CreateThread()
+	function, and setting some of the parameters to default value.
+	@ Param StartAddress: a pointer to the function that will be run by the thread
+	@ Param ParameterPtr: a pointer to the parameter that will be supplied to the
+	function run by the thread
+	@ Param ThreadIdPtr: return argument: a pointer to a DWORD variable into which
+	the function will write the created thread's ID.
+	@ Return: The thread handler
+	*/
+	return CreateThread(
+		NULL,            /*  default security attributes */
+		0,               /*  use default stack size */
+		StartAddress,    /*  thread function */
+		ParameterPtr,    /*  argument to thread function */
+		0,               /*  use default creation flags */
+		ThreadIdPtr);    /*  returns the thread identifier */
+}
+
 
 /*
 // initialize a new allAccounts.

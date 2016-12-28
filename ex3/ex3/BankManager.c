@@ -16,6 +16,7 @@ ex3 - BankManager.c:
 
 /* Function Declarations: */
 char *readCommandLinebyLine(FILE *CommandFile);
+bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments);
 bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *LineString);
 bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr, logFile *runtmieLogFilePtr);
 bool initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
@@ -28,7 +29,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
-	char *CommandType = NULL, *LineString = NULL;
+	char *CommandType = NULL;
 	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
 	unsigned long long int AccountNumber = 0;
 	long long Amount = 0, CurrentBalance = 0;
@@ -60,49 +61,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 	}
 
 	// go over 'CommandFile' and read commands line by line until EOF
-	do { 
-		LineString = readCommandLinebyLine(CommandFile);
-		if (LineString == "eof") 
-			break;
-		printf("The command is %s\n", LineString);
-		
-		parseLineIntoCommandArguments(&newCommandArguments, LineString);
-
-		switch (newCommandArguments.commandTypeIndex) {
-			case createAccountCmd:
-				// check all other threads are closed
-				if (!addNewAccountToList(&newCommandArguments)) {
-					printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments.accountNumber, GetLastError());
-				}
-				break;
-	
-			case closeAccountCmd:
-				// check all other threads are closed
-				removeAccountFromList(&newCommandArguments);
-				break;
-				
-			case printBalancesCmd:
-				// check all other threads are closed
-				if (!printCurrentBalances(&newCommandArguments)) {
-					printf("Failed printing balance, error %ul\n", GetLastError());
-				}
-				break;
-				
-			case depositCmd:
-				// add a new thread to the threads list
-				if (!depositOrWithdrawalAmountToAccount(&newCommandArguments));
-					printf("Failed to deposite to %lli , error %ul\n", newCommandArguments.accountNumber, GetLastError());
-				break;
-				////////////////////////////////////////////////////////////////////////////////////////////
-			case withdrawalCmd:
-				// add a new thread to the threads list
-				if (!depositOrWithdrawalAmountToAccount(&newCommandArguments));
-					printf("Failed to withdrawal to %lli , error %ul\n", newCommandArguments.accountNumber, GetLastError());
-				break;
-		}
-
-		free(LineString);
-	} while (!feof(CommandFile));
+	executeCommands(CommandFile, &newCommandArguments);
 
 	// writing data accounts into balance report file
 	if (!printBalanceReport(&newAccountsList, BalanceReportFileName)) {
@@ -119,8 +78,56 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 }
 
-
 /* Function Definitions */
+
+bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
+	char *LineString = NULL;
+
+	do {
+		LineString = readCommandLinebyLine(CommandFile);
+		if (LineString == "eof")
+			break;
+		printf("The command is %s\n", LineString);
+
+		parseLineIntoCommandArguments(newCommandArguments, LineString);
+
+		switch (newCommandArguments->commandTypeIndex) {
+		case createAccountCmd:
+			// check all other threads are closed
+			if (!addNewAccountToList(newCommandArguments))
+				printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
+			break;
+
+		case closeAccountCmd:
+			// check all other threads are closed
+			if (!removeAccountFromList(newCommandArguments))
+				printf("Failed removing account, error %ul\n", GetLastError());
+			break;
+
+		case printBalancesCmd:
+			// check all other threads are closed
+			if (!printCurrentBalances(newCommandArguments)) 
+				printf("Failed printing balance, error %ul\n", GetLastError());
+			break;
+
+		case depositCmd:
+			// add a new thread to the threads list
+			if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
+				printf("Failed to deposite to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
+			break;
+
+		case withdrawalCmd:
+			// add a new thread to the threads list
+			if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
+				printf("Failed to withdrawal to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
+			break;
+		}
+
+		free(LineString);
+	} while (!feof(CommandFile));
+
+	return true;
+}
 
 bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr, logFile *runtmieLogFilePtr) {
 	

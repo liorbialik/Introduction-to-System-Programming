@@ -21,7 +21,7 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bnkmngr_tmp.c">
+    <ClCompile Include="BankManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -8,6 +8,7 @@ ex3 - BankManager.c:
 
 /* Definitions: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+#define NUM_OF_THREADS 4 
 
 /* Libraries: */
 #include <stdio.h>
@@ -82,8 +83,10 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	char *LineString = NULL;
-	DWORD threadHandle = 0, exitCode = 0;
-	LPDWORD threadID = 0;
+	HANDLE *threadHandleArray = NULL;
+	DWORD exitCode = 0;
+	DWORD *threadIDsArray = NULL;
+	int i = 0, j = 0, NumOfThreads = NUM_OF_THREADS;
 	//initialize dynamic array of threadHandlesArray in size of number of commands in commandFile
 	//initialize dynamic array of threadIDsArray in size of number of commands in commandFile
 	// create exitCode variable type DWORD
@@ -95,7 +98,23 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	//const char *printCurrentBalancesThreadCreationError = "Problem creating 'print Current Balances' thread\n";
 	//const char *depositOrWithdrawalAmountToAccountThreadCreationError = "Problem creating 'deposit Or Withdrawal Amount To Account' thread\n";
 
-
+	threadHandleArray = (HANDLE *)malloc((NumOfThreads) * sizeof(HANDLE));
+	if (threadHandleArray == NULL) {
+		printf("threadHandleArray allocation was failed, error %ul\n", GetLastError());
+	}
+	//initialize threadHandleArray
+	for (j = 0; j < NumOfThreads; j++) {
+		threadHandleArray[j] = 0;
+	}
+	threadIDsArray = (DWORD *)malloc((NumOfThreads) * sizeof(DWORD));
+	if (threadIDsArray == NULL) {
+		printf("threadIDsArray allocation was failed, error %ul\n", GetLastError());
+	}
+	//initialize threadIDsArray
+	for (j = 0; j < NumOfThreads; j++) {
+		threadIDsArray[j] = 0;
+	}
+	
 	do {
 		LineString = readCommandLinebyLine(CommandFile);
 		if (LineString == "eof")
@@ -109,9 +128,27 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 		switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
 			// check all other threads are closed
-			if (!addNewAccountToList(newCommandArguments))
+
+			WaitForMultipleObjects(NumOfThreads - 1, threadHandleArray, TRUE, INFINITE);
+
+			threadHandleArray[i] = CreateThreadSimple(
+				(LPTHREAD_START_ROUTINE)addNewAccountToList,              /*  thread function */
+				&newCommandArguments,                                       /*  argument to thread function */
+				&threadIDsArray[i]);                                        /*  returns the thread identifier */
+			if (threadHandleArray[i] == NULL) {
+				printf("Problem creating 'add New Account To List' thread\n");
 				printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
+				//newTestResults.fileExtentionThreadError = getFileExtentionThreadCreationError;
+			}
+
+			WaitForSingleObject(threadHandleArray[i], INFINITE);
+			i++;
 			break;
+
+			//if (!addNewAccountToList(newCommandArguments)) {
+			//printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
+			//break;
+			//}
 
 			case closeAccountCmd:
 				// check all other threads are closed

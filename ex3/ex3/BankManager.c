@@ -267,7 +267,11 @@ bool initializeCommandArguments(commandArguments *newCommandArguments, allAccoun
 	newCommandArguments->accountsListPtr = newAccountsListPtr;
 	newCommandArguments->accountNumber = 0;
 	newCommandArguments->amountOfMoney = 0;
-	newCommandArguments->commandTypeIndex = 0;
+	newCommandArguments->addNewAccountToListThreadCreationError = NULL;
+	newCommandArguments->removeAccountFromListThreadCreationError = NULL;
+	newCommandArguments->printCurrentBalancesThreadCreationError = NULL;
+	newCommandArguments->depositOrWithdrawalAmountToAccountThreadCreationError = NULL;
+
 	return true;
 }
 

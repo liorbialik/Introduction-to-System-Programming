@@ -147,7 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="accountsListUtils.c" />
-    <ClCompile Include="BankManager.c" />
+    <ClCompile Include="bnkmngr_tmp.c" />
     <ClCompile Include="main.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

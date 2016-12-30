@@ -24,14 +24,14 @@ typedef struct account {
 	double totalWithdrawalSum;
 	unsigned long long ammountOfDeposits;
 	unsigned long long ammountOfWithdrawals;
-	// another field for the account's mutex
+	HANDLE accountMutex;
 	struct account *nextInList;
 } account;
 
 // struct that will be using the the runtimeLogFile
 typedef struct logFile {
 	FILE *logFilePtr;
-	// another field for the logFile's mutex
+	HANDLE logFiltMutex;
 } logFile;
 
 

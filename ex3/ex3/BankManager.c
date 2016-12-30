@@ -33,10 +33,6 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 	/* Internal Declarations: */
 	FILE *CommandFile = NULL, *runTimeLogFile = NULL;
-	char *CommandType = NULL;
-	int TotalNumberOfCommands = 0, i = 0, *CommandLengthArray = NULL;
-	unsigned long long int AccountNumber = 0;
-	long long Amount = 0, CurrentBalance = 0;
 	allAccounts newAccountsList;
 	logFile newRunTimeLogFile;
 	commandArguments newCommandArguments;
@@ -77,7 +73,7 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 	fclose(CommandFile);
 	fclose(newAccountsList.runtmieLogFile->logFilePtr);
-
+	CloseHandle(newAccountsList.runtmieLogFile->logFiltMutex);
 	return 0;
 
 }
@@ -112,63 +108,34 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 
 		switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
-			//// check that all preceding threads finished running 
-			//// Wait for threads to finish
-			//WaitForMultipleObjects(
-			//	using semaphore index,
-			//	threadHandlesArray,
-			//	TRUE,       /* wait until all threads finish */
-			//	INFINITE);
-
-			//Sleep(10);
-
-			//// create thread on relevant command, using 'CreateThreadSimple' function from the recitation: 
-			//threadHandle = CreateThreadSimple(
-			//	(LPTHREAD_START_ROUTINE)addNewAccountToList,               /*  thread function */
-			//	&newCommandArguments,                                       /*  argument to thread function */
-			//	&threadID);                                        /*  returns the thread identifier */
-			//if (threadHandle == NULL) {
-			//	printf("Problem creating 'add New Account To List' thread");
-			//	newCommandArguments.addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;		
-			//}
-
-			// getting exitCode for thread
-			//if (GetExitCodeThread(threadHandle, &exitCode)) {
-			//	printf("Problem getting exit code for thread number %d", i);
-			//}
-			//else {
-			//	printf("Thread number %d returned exit code %d\n", i, exitCode);
-			//}
-
-
-
+			// check all other threads are closed
 			if (!addNewAccountToList(newCommandArguments))
 				printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			break;
 
-		case closeAccountCmd:
-			// check all other threads are closed
-			if (!removeAccountFromList(newCommandArguments))
-				printf("Failed removing account, error %ul\n", GetLastError());
-			break;
+			case closeAccountCmd:
+				// check all other threads are closed
+				if (!removeAccountFromList(newCommandArguments))
+					printf("Failed removing account, error %ul\n", GetLastError());
+				break;
 
-		case printBalancesCmd:
-			// check all other threads are closed
-			if (!printCurrentBalances(newCommandArguments)) 
-				printf("Failed printing balance, error %ul\n", GetLastError());
-			break;
+			case printBalancesCmd:
+				// check all other threads are closed
+				if (!printCurrentBalances(newCommandArguments)) 
+					printf("Failed printing balance, error %ul\n", GetLastError());
+				break;
 
-		case depositCmd:
-			// add a new thread to the threads list
-			if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
-				printf("Failed to deposite to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
-			break;
+			case depositCmd:
+				// add a new thread to the threads list
+				if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
+					printf("Failed to deposite to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
+				break;
 
-		case withdrawalCmd:
-			// add a new thread to the threads list
-			if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
-				printf("Failed to withdrawal to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
-			break;
+			case withdrawalCmd:
+				// add a new thread to the threads list
+				if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
+					printf("Failed to withdrawal to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
+				break;
 		}
 
 		free(LineString);
@@ -208,7 +175,12 @@ bool initializeStructs(commandArguments *newCommandArguments, allAccounts *newAc
 
 bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr) {
 	runtmieLogFilePtr->logFilePtr = NULL;
-	// init mutex in struct
+	runtmieLogFilePtr->logFiltMutex = CreateMutex(NULL, FALSE, NULL);
+	if (runtmieLogFilePtr->logFiltMutex == NULL)
+	{
+		printf("CreateMutex for log file error: %d\n", GetLastError());
+		exit(1);
+	}
 	return true;
 }
 
@@ -260,6 +232,7 @@ bool parseLineIntoCommandArguments(commandArguments *newCommandArguments, char *
 	for (i = 0; i < 5; i++) {
 		if (strcmp(currentCommand, commandsArray[i]) == 0) {
 			newCommandArguments->commandTypeIndex = i;
+			break;
 		}
 	}
 

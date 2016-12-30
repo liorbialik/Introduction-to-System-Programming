@@ -53,6 +53,7 @@ typedef struct commandArguments {
 	const char *removeAccountFromListThreadCreationError;
 	const char *printCurrentBalancesThreadCreationError;
 	const char *depositOrWithdrawalAmountToAccountThreadCreationError;
+
 } commandArguments;
 
 /* Function Declarations: */

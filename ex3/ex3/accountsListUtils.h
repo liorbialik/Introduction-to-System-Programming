@@ -10,9 +10,9 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 bool isAccountInList(commandArguments *newCommandArguments);
 int addNewAccountToList(commandArguments *newCommandArguments);
 int removeAccountFromList(commandArguments *newCommandArguments);
-int printCurrentBalances(commandArguments *newCommandArguments);
+bool printCurrentBalances(commandArguments *newCommandArguments);
 bool printBalanceReport(allAccounts *accountsListPtr, char *BalanceReportFileName);
-int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments);
+bool depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments);
 void makeDepositing(currentAccountPtr);
 void makeWithdrawal(currentAccountPtr);
 

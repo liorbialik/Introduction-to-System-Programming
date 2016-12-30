@@ -179,7 +179,7 @@ bool initializeNewAccount(account *accountPtr, unsigned long long accountNumber,
 	return true;
 }
 
-int printCurrentBalances(commandArguments *newCommandArguments) {
+bool printCurrentBalances(commandArguments *newCommandArguments) {
 
 	account *currentAccountPtr = NULL;
 
@@ -207,7 +207,7 @@ int printCurrentBalances(commandArguments *newCommandArguments) {
 	return 1;
 }
 
-int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
+bool depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 
 	account *currentAccountPtr = NULL;
 	unsigned long long accountNumber = newCommandArguments->accountNumber;
@@ -240,7 +240,7 @@ int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 				accountNumber);
 		}
 		ReleaseMutex(newCommandArguments->accountsListPtr->runtmieLogFile->logFiltMutex);
-		return 0;
+		return FALSE;
 	}
 	
 	else {
@@ -266,7 +266,7 @@ int depositOrWithdrawalAmountToAccount(commandArguments *newCommandArguments) {
 		}
 	}
 	
-	return 0;
+	return TRUE;
 }
 
 void makeDepositing(commandArguments *newCommandArguments, account *currentAccountPtr) {

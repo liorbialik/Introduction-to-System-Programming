@@ -8,7 +8,6 @@ ex3 - BankManager.c:
 
 /* Definitions: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
-#define NUM_OF_THREADS 14 
 
 /* Libraries: */
 #include <stdio.h>
@@ -88,26 +87,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	HANDLE *threadHandleArray = NULL;
 	DWORD exitCode = 0;
 	LPDWORD *threadIDsArray = NULL;
-	int i = 0, j = 0, NumOfThreads = NUM_OF_THREADS;
-
-	//TODO: Need to check whether to maintain handles in other way
-	//TODO: move these lines into ext. functions
-	threadHandleArray = (HANDLE *)malloc((NumOfThreads) * sizeof(HANDLE));
-	if (threadHandleArray == NULL) {
-		printf("threadHandleArray allocation was failed, error %ul\n", GetLastError());
-	}
-	//initialize threadHandleArray
-	for (j = 0; j < NumOfThreads; j++) {
-		threadHandleArray[j] = 0;
-	}
-	threadIDsArray = (LPDWORD *)malloc((NumOfThreads) * sizeof(LPDWORD));
-	if (threadIDsArray == NULL) {
-		printf("threadIDsArray allocation was failed, error %ul\n", GetLastError());
-	}
-	//initialize threadIDsArray
-	for (j = 0; j < NumOfThreads; j++) {
-		threadIDsArray[j] = 0;
-	}
+	int i = 0, j = 0, NumOfThreads = 0;
 	
 	do {
 		LineString = readCommandLinebyLine(CommandFile);
@@ -116,8 +96,19 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 		printf("The command is %s\n", LineString);
 		parseLineIntoCommandArguments(newCommandArguments, LineString);
 		//realloc array for threads by one more size
+		threadHandleArray = (HANDLE *)realloc(threadHandleArray, 1 * sizeof(HANDLE));
+		if (threadHandleArray == NULL) {
+			printf("threadHandleArray reallocation was failed, error %ul\n", GetLastError());
+		}
+		threadHandleArray[i] = 0;
+		threadIDsArray = (LPDWORD *)realloc(threadIDsArray, 1 * sizeof(LPDWORD));
+		if (threadIDsArray == NULL) {
+			printf("threadIDsArray reallocation was failed, error %ul\n", GetLastError());
+		}
+		threadIDsArray[i] = 0;
+		NumOfThreads++;
 
-		if (newCommandArguments->commandTypeIndex >= 0 || newCommandArguments->commandTypeIndex <= 2) {
+		if (newCommandArguments->commandTypeIndex >= 0 && newCommandArguments->commandTypeIndex <= 2) {
 			//current command is Account Management Opertaions type
 			executeAcountManagementOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfThreads, i);
 			i++;
@@ -128,17 +119,17 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 			executeBankingOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfThreads, i);
 			i++;
 			//if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
-			//	printf("Failed to deposite to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
-			//break;
+			//	printf("Failed to deposit to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
+			////break;
 		}
 		
 		free(LineString);
 	} while (!feof(CommandFile));
 
 	// Safely close all threads and print their exit code:
-	for (i = 0; i < NUM_OF_THREADS; i++) {
+	for (i = 0; i < NumOfThreads; i++) {
 		if (GetExitCodeThread(threadHandleArray[i], &exitCode)) {
-			printf("Problem getting exit code for thread number %d", i);
+			printf("Problem getting exit code for thread number %d\n", i);
 		}
 		else {
 			printf("Thread number %d returned exit code %d\n", i, exitCode);
@@ -404,6 +395,8 @@ void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *thr
 		newCommandArguments->depositOrWithdrawalAmountToAccountThreadCreationError = depositOrWithdrawalAmountToAccountThreadCreationError;
 	}
 }
+
+
 /*
 // initialize a new allAccounts.
 // open CommandFile 

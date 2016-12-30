@@ -49,6 +49,10 @@ typedef struct commandArguments {
 	unsigned long long accountNumber;
 	double amountOfMoney;
 	int commandTypeIndex;
+	const char *addNewAccountToListThreadCreationError;
+	const char *removeAccountFromListThreadCreationError;
+	const char *printCurrentBalancesThreadCreationError;
+	const char *depositOrWithdrawalAmountToAccountThreadCreationError;
 } commandArguments;
 
 /* Function Declarations: */

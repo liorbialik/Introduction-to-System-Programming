@@ -8,7 +8,7 @@ ex3 - BankManager.c:
 
 /* Definitions: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
-#define NUM_OF_THREADS 4 
+#define NUM_OF_THREADS 6 
 
 /* Libraries: */
 #include <stdio.h>
@@ -85,7 +85,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	char *LineString = NULL;
 	HANDLE *threadHandleArray = NULL;
 	DWORD exitCode = 0;
-	DWORD *threadIDsArray = NULL;
+	LPDWORD *threadIDsArray = NULL;
 	int i = 0, j = 0, NumOfThreads = NUM_OF_THREADS;
 	//initialize dynamic array of threadHandlesArray in size of number of commands in commandFile
 	//initialize dynamic array of threadIDsArray in size of number of commands in commandFile
@@ -106,7 +106,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	for (j = 0; j < NumOfThreads; j++) {
 		threadHandleArray[j] = 0;
 	}
-	threadIDsArray = (DWORD *)malloc((NumOfThreads) * sizeof(DWORD));
+	threadIDsArray = (LPDWORD *)malloc((NumOfThreads) * sizeof(LPDWORD));
 	if (threadIDsArray == NULL) {
 		printf("threadIDsArray allocation was failed, error %ul\n", GetLastError());
 	}
@@ -128,17 +128,16 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 		switch (newCommandArguments->commandTypeIndex) {
 		case createAccountCmd:
 			// check all other threads are closed
-
 			WaitForMultipleObjects(NumOfThreads - 1, threadHandleArray, TRUE, INFINITE);
 
 			threadHandleArray[i] = CreateThreadSimple(
 				(LPTHREAD_START_ROUTINE)addNewAccountToList,              /*  thread function */
-				&newCommandArguments,                                       /*  argument to thread function */
-				&threadIDsArray[i]);                                        /*  returns the thread identifier */
+				newCommandArguments,                                       /*  argument to thread function */
+				threadIDsArray[i]);                                        /*  returns the thread identifier */
 			if (threadHandleArray[i] == NULL) {
 				printf("Problem creating 'add New Account To List' thread\n");
 				printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
-				//newTestResults.fileExtentionThreadError = getFileExtentionThreadCreationError;
+				//newTestResults.addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;
 			}
 
 			WaitForSingleObject(threadHandleArray[i], INFINITE);
@@ -152,15 +151,47 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 
 			case closeAccountCmd:
 				// check all other threads are closed
-				if (!removeAccountFromList(newCommandArguments))
-					printf("Failed removing account, error %ul\n", GetLastError());
+				WaitForMultipleObjects(NumOfThreads - 1, threadHandleArray, TRUE, INFINITE);
+
+				threadHandleArray[i] = CreateThreadSimple(
+					(LPTHREAD_START_ROUTINE)removeAccountFromList,              /*  thread function */
+					newCommandArguments,                                       /*  argument to thread function */
+					threadIDsArray[i]);                                        /*  returns the thread identifier */
+				if (threadHandleArray[i] == NULL) {
+					printf("Problem creating 'remove Account From List' thread\n");
+					printf("failed to remove account number %lli from list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
+					//newTestResults.removeAccountFromListThreadCreationError = removeAccountFromListThreadCreationError;
+				}
+
+				WaitForSingleObject(threadHandleArray[i], INFINITE);
+				i++;
 				break;
+
+				//if (!removeAccountFromList(newCommandArguments))
+				//	printf("Failed removing account, error %ul\n", GetLastError());
+				//break;
 
 			case printBalancesCmd:
 				// check all other threads are closed
-				if (!printCurrentBalances(newCommandArguments)) 
+				WaitForMultipleObjects(NumOfThreads - 1, threadHandleArray, TRUE, INFINITE);
+
+				threadHandleArray[i] = CreateThreadSimple(
+					(LPTHREAD_START_ROUTINE)printCurrentBalances,              /*  thread function */
+					newCommandArguments,                                       /*  argument to thread function */
+					threadIDsArray[i]);                                        /*  returns the thread identifier */
+				if (threadHandleArray[i] == NULL) {
+					printf("Problem creating 'print Current Balances' thread\n");
 					printf("Failed printing balance, error %ul\n", GetLastError());
+					//newTestResults.printCurrentBalancesThreadCreationError = printCurrentBalancesThreadCreationError;
+				}
+
+				WaitForSingleObject(threadHandleArray[i], INFINITE);
+				i++;
 				break;
+
+				//if (!printCurrentBalances(newCommandArguments)) 
+				//	printf("Failed printing balance, error %ul\n", GetLastError());
+				//break;
 
 			case depositCmd:
 				// add a new thread to the threads list

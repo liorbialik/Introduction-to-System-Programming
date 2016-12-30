@@ -86,7 +86,8 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	char *LineString = NULL;
-	DWORD threadHandle = 0;
+	DWORD threadHandle = 0, exitCode = 0;
+	LPDWORD threadID = 0;
 	//initialize dynamic array of threadHandlesArray in size of number of commands in commandFile
 	//initialize dynamic array of threadIDsArray in size of number of commands in commandFile
 	// create exitCode variable type DWORD
@@ -125,14 +126,14 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 			//threadHandle = CreateThreadSimple(
 			//	(LPTHREAD_START_ROUTINE)addNewAccountToList,               /*  thread function */
 			//	&newCommandArguments,                                       /*  argument to thread function */
-			//	&threadIDsArray[i]);                                        /*  returns the thread identifier */
-			//if (threadHandlesArray[i] == NULL) {
+			//	&threadID);                                        /*  returns the thread identifier */
+			//if (threadHandle == NULL) {
 			//	printf("Problem creating 'add New Account To List' thread");
 			//	newCommandArguments.addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;		
 			//}
 
 			// getting exitCode for thread
-			//if (GetExitCodeThread(threadHandlesArray[i], &exitCode)) {
+			//if (GetExitCodeThread(threadHandle, &exitCode)) {
 			//	printf("Problem getting exit code for thread number %d", i);
 			//}
 			//else {

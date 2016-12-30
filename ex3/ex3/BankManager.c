@@ -24,6 +24,7 @@ bool initializeCommandArguments(commandArguments *newCommandArguments, allAccoun
 bool initializeRuntmieLogFile(logFile *runtmieLogFilePtr);
 void executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfThreads, int i);
 void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfThreads, int i);
+void addThreadHandleToThreadHandleArray(HANDLE threadHandle, HANDLE *threadHandleArray, LPDWORD threadID, LPDWORD *threadIDsArray, int NumOfThreads);
 HANDLE CreateThreadSimple(
 	LPTHREAD_START_ROUTINE StartAddress, 
 	LPVOID ParameterPtr, 
@@ -87,7 +88,7 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 	HANDLE *threadHandleArray = NULL;
 	DWORD exitCode = 0;
 	LPDWORD *threadIDsArray = NULL;
-	int i = 0, j = 0, NumOfThreads = 0;
+	int i = 0, j = 0, NumOfHandles = 0;
 	
 	do {
 		LineString = readCommandLinebyLine(CommandFile);
@@ -95,40 +96,28 @@ bool executeCommands(FILE *CommandFile, commandArguments *newCommandArguments){
 			break;
 		printf("The command is %s\n", LineString);
 		parseLineIntoCommandArguments(newCommandArguments, LineString);
-		//realloc array for threads by one more size
-		threadHandleArray = (HANDLE *)realloc(threadHandleArray, 1 * sizeof(HANDLE));
-		if (threadHandleArray == NULL) {
-			printf("threadHandleArray reallocation was failed, error %ul\n", GetLastError());
-		}
-		threadHandleArray[i] = 0;
-		threadIDsArray = (LPDWORD *)realloc(threadIDsArray, 1 * sizeof(LPDWORD));
-		if (threadIDsArray == NULL) {
-			printf("threadIDsArray reallocation was failed, error %ul\n", GetLastError());
-		}
-		threadIDsArray[i] = 0;
-		NumOfThreads++;
+
 
 		if (newCommandArguments->commandTypeIndex >= 0 && newCommandArguments->commandTypeIndex <= 2) {
 			//current command is Account Management Opertaions type
-			executeAcountManagementOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfThreads, i);
-			i++;
+			executeAcountManagementOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfHandles, i);
+			NumOfHandles = 0;
 		}
 
 		else {
 			//current command is Banking Opertaions type
-			executeBankingOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfThreads, i);
-			i++;
-			//if (!depositOrWithdrawalAmountToAccount(newCommandArguments))
-			//	printf("Failed to deposit to %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
-			////break;
+			executeBankingOperations(newCommandArguments, threadHandleArray, threadIDsArray, NumOfHandles, i);
+			NumOfHandles++;
 		}
 		
 		free(LineString);
 	} while (!feof(CommandFile));
 
+	WaitForMultipleObjects(NumOfHandles, threadHandleArray, TRUE, INFINITE);
+
 	// Safely close all threads and print their exit code:
-	for (i = 0; i < NumOfThreads; i++) {
-		if (GetExitCodeThread(threadHandleArray[i], &exitCode)) {
+	for (i = 0; i < NumOfHandles; i++) {
+		if (!GetExitCodeThread(threadHandleArray[i], &exitCode)) {
 			printf("Problem getting exit code for thread number %d\n", i);
 		}
 		else {
@@ -329,23 +318,33 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterP
 		ThreadIdPtr);    /*  returns the thread identifier */
 }
 
-void executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfThreads, int i) {
+void executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfHandles, int i) {
 	
+	HANDLE ThreadHandle = 0;
+	LPDWORD threadID = 0;
 	// possible thread error strings:		
 	const char *addNewAccountToListThreadCreationError = "Problem creating 'add New Account To List' thread\n";
 	const char *removeAccountFromListThreadCreationError = "Problem creating 'remove Account From List' thread\n";
 	const char *printCurrentBalancesThreadCreationError = "Problem creating 'print Current Balances' thread\n";
 
 	// check all other threads are closed
-	WaitForMultipleObjects(NumOfThreads - 1, threadHandleArray, TRUE, INFINITE);
+	WaitForMultipleObjects(NumOfHandles, threadHandleArray, TRUE, INFINITE);
+
+	// clean threadHandleArray & threadIDsArray
+	threadHandleArray = (HANDLE*)realloc(threadHandleArray, 0 * sizeof(HANDLE));
+	threadHandleArray = NULL;
+	free(threadHandleArray);
+	threadIDsArray = (LPDWORD*)realloc(threadIDsArray, 0 * sizeof(LPDWORD));
+	threadIDsArray = NULL;
+	free(threadIDsArray);
 
 	switch (newCommandArguments->commandTypeIndex) {
 	case createAccountCmd:
-		threadHandleArray[i] = CreateThreadSimple(
+		ThreadHandle = CreateThreadSimple(
 			(LPTHREAD_START_ROUTINE)addNewAccountToList,              /*  thread function */
 			newCommandArguments,                                       /*  argument to thread function */
-			threadIDsArray[i]);                                        /*  returns the thread identifier */
-		if (threadHandleArray[i] == NULL) {
+			threadID);                                        /*  returns the thread identifier */
+		if (ThreadHandle == NULL) {
 			printf("Problem creating 'add New Account To List' thread\n");
 			printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			newCommandArguments->addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;
@@ -353,11 +352,11 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 		break;
 	
 	case closeAccountCmd:
-		threadHandleArray[i] = CreateThreadSimple(
+		ThreadHandle = CreateThreadSimple(
 			(LPTHREAD_START_ROUTINE)removeAccountFromList,              /*  thread function */
 			newCommandArguments,                                       /*  argument to thread function */
-			threadIDsArray[i]);                                        /*  returns the thread identifier */
-		if (threadHandleArray[i] == NULL) {
+			threadID);                                        /*  returns the thread identifier */
+		if (ThreadHandle == NULL) {
 			printf("Problem creating 'remove Account From List' thread\n");
 			printf("failed to remove account number %lli from list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			newCommandArguments->removeAccountFromListThreadCreationError = removeAccountFromListThreadCreationError;
@@ -365,11 +364,11 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 		break;
 
 	case printBalancesCmd:
-		threadHandleArray[i] = CreateThreadSimple(
+		ThreadHandle = CreateThreadSimple(
 			(LPTHREAD_START_ROUTINE)printCurrentBalances,              /*  thread function */
 			newCommandArguments,                                       /*  argument to thread function */
-			threadIDsArray[i]);                                        /*  returns the thread identifier */
-		if (threadHandleArray[i] == NULL) {
+			threadID);                                        /*  returns the thread identifier */
+		if (ThreadHandle == NULL) {
 			printf("Problem creating 'print Current Balances' thread\n");
 			printf("Failed printing balance, error %ul\n", GetLastError());
 			newCommandArguments->printCurrentBalancesThreadCreationError = printCurrentBalancesThreadCreationError;
@@ -377,25 +376,46 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 	}
 
 	// wait until the thread finishes
-	WaitForSingleObject(threadHandleArray[i], INFINITE);
+	WaitForSingleObject(ThreadHandle, INFINITE);
 }
 
-void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfThreads, int i) {
+void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, LPDWORD *threadIDsArray, int NumOfHandles, int i) {
 
+	HANDLE threadHandle = 0;
+	LPDWORD threadID = 0;
 	const char *depositOrWithdrawalAmountToAccountThreadCreationError = "Problem creating 'deposit Or Withdrawal Amount To Account' thread\n";
 
-	// add a new thread to the threads list
-	threadHandleArray[i] = CreateThreadSimple(
+	// add a new thread to the threads list 
+	threadHandle = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)depositOrWithdrawalAmountToAccount,              /*  thread function */
 		newCommandArguments,                                       /*  argument to thread function */
-		threadIDsArray[i]);                                        /*  returns the thread identifier */
-	if (threadHandleArray[i] == NULL) {
+		threadID);                                        /*  returns the thread identifier */
+	if (threadHandle == NULL) {
 		printf("Problem creating 'deposit Or Withdrawal Amount To Account' thread\n");
 		printf("Failed to deposite or withdrawal to account number %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
 		newCommandArguments->depositOrWithdrawalAmountToAccountThreadCreationError = depositOrWithdrawalAmountToAccountThreadCreationError;
 	}
+	//add threadHandle to ThreadHandleArray & update NumOfThreads by 1
+	addThreadHandleToThreadHandleArray(threadHandle, threadHandleArray, threadID, threadIDsArray, NumOfHandles);
+	NumOfHandles++;
+
 }
 
+void addThreadHandleToThreadHandleArray(HANDLE threadHandle, HANDLE *threadHandleArray, LPDWORD threadID, LPDWORD *threadIDsArray, int NumOfThreads) {
+
+	//realloc threadHandleArray by one more size
+	threadHandleArray = (HANDLE *)realloc(threadHandleArray, 1 * sizeof(HANDLE));
+	if (threadHandleArray == NULL) {
+		printf("threadHandleArray reallocation was failed, error %ul\n", GetLastError());
+	}
+	threadHandleArray[NumOfThreads] = threadHandle;
+
+	threadIDsArray = (LPDWORD *)realloc(threadIDsArray, 1 * sizeof(LPDWORD));
+	if (threadIDsArray == NULL) {
+		printf("threadIDsArray reallocation was failed, error %ul\n", GetLastError());
+	}
+	threadIDsArray[NumOfThreads] = threadID;
+}
 
 /*
 // initialize a new allAccounts.

@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="accountsListUtils.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BankManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OperationExecuter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="accountsListUtils.h">
+    <ClInclude Include="BankManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BankManager.h">
+    <ClInclude Include="OperationExecuter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -8,10 +8,16 @@ function in BankManager.c
 
 #ifndef BankManager_H
 #define BankManager_H
+// manifulating #include <stdbool.h>
+#define FALSE 0
+#define TRUE 1
 
 /* Libraries: */
 #include <Windows.h>
 #include <stdio.h>
+
+// Global variables
+HANDLE *threadHandleArray;
 
 /* Struct Declarations: */
 

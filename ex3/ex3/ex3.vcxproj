@@ -142,13 +142,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="accountsListUtils.h" />
     <ClInclude Include="BankManager.h" />
+    <ClInclude Include="OperationExecuter.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="accountsListUtils.c" />
     <ClCompile Include="BankManager.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="OperationExecuter.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

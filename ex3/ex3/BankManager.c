@@ -23,9 +23,9 @@ int initializeStructs(commandArguments *newCommandArguments, allAccounts *newAcc
 int initializeNewAccountsList(allAccounts *accountsListPtr, logFile *runtmieLogFilePtr);
 int initializeCommandArguments(commandArguments *newCommandArguments, allAccounts *newAccountsListPtr);
 int initializeRuntmieLogFile(logFile *runtmieLogFilePtr);
-void executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, int NumOfHandles);
-void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, int NumOfHandles);
-void addThreadHandleToThreadHandleArray(HANDLE ThreadHandle, HANDLE *threadHandleArray, int NumOfThreads);
+int executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *LocalThreadHandleArray, int NumOfHandles);
+HANDLE *executeBankingOperations(commandArguments *newCommandArguments, HANDLE *LocalThreadHandleArray, int NumOfHandles);
+HANDLE *addThreadHandleToThreadHandleArray(HANDLE *ThreadHandle, HANDLE *LocalThreadHandleArray, int NumOfThreads);
 HANDLE CreateThreadSimple(
 	LPTHREAD_START_ROUTINE StartAddress,
 	LPVOID ParameterPtr,
@@ -85,6 +85,8 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 	char *LineString = NULL;
+	// Global variables
+	HANDLE *GlobalThreadHandleArray = NULL;
 	DWORD waitCode = 0, exitCode = 0;
 	int i = 0, j = 0, NumOfHandles = 0;
 
@@ -98,13 +100,15 @@ int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 
 		if (newCommandArguments->commandTypeIndex >= 0 && newCommandArguments->commandTypeIndex <= 2) {
 			//current command is Account Management Opertaions type
-			executeAcountManagementOperations(newCommandArguments, threadHandleArray, NumOfHandles);
+			if (executeAcountManagementOperations(newCommandArguments, GlobalThreadHandleArray, NumOfHandles)) {
+				printf("Couldn't execute Acount Management Operation, error %ul\n", GetLastError());
+			}
 			NumOfHandles = 0;
 		}
 
 		else {
 			//current command is Banking Opertaions type
-			executeBankingOperations(newCommandArguments, threadHandleArray, NumOfHandles);
+			GlobalThreadHandleArray = executeBankingOperations(newCommandArguments, GlobalThreadHandleArray, NumOfHandles);
 			NumOfHandles++;
 		}
 
@@ -113,25 +117,25 @@ int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 
 	// check all other threads are closed if there any existing threads
 	if (NumOfHandles != 0) {
-		waitCode = WaitForMultipleObjects(NumOfHandles, threadHandleArray, TRUE, INFINITE);
+		waitCode = WaitForMultipleObjects(NumOfHandles, GlobalThreadHandleArray, TRUE, INFINITE);
 		// Safely close all threads and print their exit code:
 		for (i = 0; i < NumOfHandles; i++) {
-			if (!GetExitCodeThread(threadHandleArray[i], &exitCode)) {
+			if (!GetExitCodeThread(GlobalThreadHandleArray[i], &exitCode)) {
 				printf("Problem getting exit code for thread number %d\n", i);
-				threadHandleArray[i] = 0;
+				GlobalThreadHandleArray[i] = 0;
 			}
 			else {
 				printf("Thread number %d returned exit code %d\n", i, exitCode);
-				if (!CloseHandle(threadHandleArray[i])) {
+				if (!CloseHandle(GlobalThreadHandleArray[i])) {
 					printf("closing handle failed, error %ul\n", GetLastError());
 				}
-				threadHandleArray[i] = 0;
+				GlobalThreadHandleArray[i] = 0;
 			}
 		}
 	}
 
 	// free dynamic allocations
-	free(threadHandleArray);
+	free(GlobalThreadHandleArray);
 
 	return 0;
 }
@@ -321,7 +325,7 @@ HANDLE CreateThreadSimple(LPTHREAD_START_ROUTINE StartAddress, LPVOID ParameterP
 		ThreadIdPtr);    /*  returns the thread identifier */
 }
 
-void executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, int NumOfHandles) {
+int executeAcountManagementOperations(commandArguments *newCommandArguments, HANDLE *LocalThreadHandleArray, int NumOfHandles) {
 
 	HANDLE ThreadHandle = 0;
 	LPDWORD threadID = 0;
@@ -334,27 +338,27 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 
 	// check all other threads are closed if there any existing threads
 	if (NumOfHandles != 0) {
-		waitCode = WaitForMultipleObjects(NumOfHandles, threadHandleArray, TRUE, INFINITE);
+		waitCode = WaitForMultipleObjects(NumOfHandles, LocalThreadHandleArray, TRUE, INFINITE);
 		// Safely close all threads and print their exit code:
 		for (i = 0; i < NumOfHandles; i++) {
-			if (!GetExitCodeThread(threadHandleArray[i], &exitCode)) {
+			if (!GetExitCodeThread(LocalThreadHandleArray[i], &exitCode)) {
 				printf("Problem getting exit code for thread number %d\n", i);
-				threadHandleArray[i] = 0;
+				LocalThreadHandleArray[i] = 0;
 			}
 			else {
 				printf("Thread number %d returned exit code %d\n", i, exitCode);
-				if (!CloseHandle(threadHandleArray[i])) {
+				if (!CloseHandle(LocalThreadHandleArray[i])) {
 					printf("closing handle failed, error %ul\n", GetLastError());
 				}
-				threadHandleArray[i] = 0;
+				LocalThreadHandleArray[i] = 0;
 			}
 		}
 	}
 
 	//threadHandleArray = (HANDLE*)realloc(threadHandleArray, 0 * sizeof(HANDLE));
 	//threadHandleArray = NULL;
-	free(threadHandleArray);
-	threadHandleArray = NULL;
+	free(LocalThreadHandleArray);
+	LocalThreadHandleArray = NULL;
 
 
 	switch (newCommandArguments->commandTypeIndex) {
@@ -367,6 +371,7 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 			printf("Problem creating 'add New Account To List' thread\n");
 			printf("cannot create %lli as a new account to list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			newCommandArguments->addNewAccountToListThreadCreationError = addNewAccountToListThreadCreationError;
+			return 1;
 		}
 		break;
 
@@ -379,6 +384,8 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 			printf("Problem creating 'remove Account From List' thread\n");
 			printf("failed to remove account number %lli from list, error %ul\n", newCommandArguments->accountNumber, GetLastError());
 			newCommandArguments->removeAccountFromListThreadCreationError = removeAccountFromListThreadCreationError;
+			return 1;
+
 		}
 		break;
 
@@ -391,6 +398,8 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 			printf("Problem creating 'print Current Balances' thread\n");
 			printf("Failed printing balance, error %ul\n", GetLastError());
 			newCommandArguments->printCurrentBalancesThreadCreationError = printCurrentBalancesThreadCreationError;
+			return 1;
+
 		}
 	}
 
@@ -402,9 +411,11 @@ void executeAcountManagementOperations(commandArguments *newCommandArguments, HA
 		printf("closing handle failed, error %ul\n", GetLastError());
 	}
 
+	return 0;
+
 }
 
-void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *threadHandleArray, int NumOfHandles) {
+HANDLE *executeBankingOperations(commandArguments *newCommandArguments, HANDLE *LocalThreadHandleArray, int NumOfHandles) {
 
 	HANDLE ThreadHandle = 0;
 	LPDWORD threadID = 0;
@@ -422,14 +433,14 @@ void executeBankingOperations(commandArguments *newCommandArguments, HANDLE *thr
 		newCommandArguments->depositOrWithdrawalAmountToAccountThreadCreationError = depositOrWithdrawalAmountToAccountThreadCreationError;
 	}
 	//add threadHandle to ThreadHandleArray
-	addThreadHandleToThreadHandleArray(ThreadHandle, threadHandleArray, NumOfHandles);
+	return LocalThreadHandleArray = addThreadHandleToThreadHandleArray(ThreadHandle, LocalThreadHandleArray, NumOfHandles);
 
 	// wait until the thread finishes
-	//WaitForSingleObject(ThreadHandle, INFINITE);		//TODO: Need to remove line and resolve
+	//WaitForSingleObject(ThreadHandle, INFINITE);		//TODO: Need to remove line and resolve 
 
 }
 
-void addThreadHandleToThreadHandleArray(HANDLE ThreadHandle, HANDLE *threadHandleArray, int NumOfThreads) {
+HANDLE *addThreadHandleToThreadHandleArray(HANDLE *ThreadHandle, HANDLE *LocalThreadHandleArray, int NumOfThreads) {
 
 	int i = 0;
 
@@ -441,11 +452,12 @@ void addThreadHandleToThreadHandleArray(HANDLE ThreadHandle, HANDLE *threadHandl
 	}
 	// copying threadHandleArray's handles into tempHandleArray
 	for (i = 0; i<NumOfThreads; i++) {
-		tempHandleArray[i] = threadHandleArray[i];
+		tempHandleArray[i] = LocalThreadHandleArray[i];
 	}
 	// add current ThreadHandle into tempHandleArray's reallocated cell
 	tempHandleArray[NumOfThreads] = ThreadHandle;
 
-	threadHandleArray = tempHandleArray;
+	return tempHandleArray;
+
 
 }

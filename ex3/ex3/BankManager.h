@@ -16,8 +16,6 @@ function in BankManager.c
 #include <Windows.h>
 #include <stdio.h>
 
-// Global variables
-HANDLE *threadHandleArray;
 
 /* Struct Declarations: */
 

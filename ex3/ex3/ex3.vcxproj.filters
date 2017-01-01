@@ -21,7 +21,7 @@
     <ClCompile Include="BankManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OperationExecuter.c">
+    <ClCompile Include="AccountsListUtilites.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="BankManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OperationExecuter.h">
+    <ClInclude Include="AccountsListUtilites.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

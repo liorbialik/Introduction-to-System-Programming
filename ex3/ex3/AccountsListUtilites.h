@@ -1,5 +1,5 @@
-#ifndef ACCOUNT_LIST_UTILS
-#define ACCOUNT_LIST_UTILS
+#ifndef ACCOUNTS_LIST_UTILITIES
+#define ACCOUNTS_LIST_UTILITIES
 
 /* Libraries: */
 #include "BankManager.h"

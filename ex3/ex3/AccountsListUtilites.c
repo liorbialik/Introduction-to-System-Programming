@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 
 #include <stdio.h>
-#include "OperationExecuter.h"
+#include "AccountsListUtilites.h"
 #include "BankManager.h"
 
 int addNewAccountToList(commandArguments *newCommandArguments) {
@@ -91,10 +91,10 @@ int removeAccountFromList(commandArguments *newCommandArguments) {
 		accountNumberToClose);
 	// check whether the account number already exists
 	if (isAccountInList(newCommandArguments)) {
-		printf("!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n",
+		printf("!!! Account number %llu doesn't exist. Can't close account. Skipping command. !!!\n",
 			accountNumberToClose);
 		fprintf(newCommandArguments->accountsListPtr->runtmieLogFile->logFilePtr,
-			"!!! Account number %llu doesn't exist. Can’t close account. Skipping command. !!!\n",
+			"!!! Account number %llu doesn't exist. Can't close account. Skipping command. !!!\n",
 			accountNumberToClose);
 		return 1;
 	}

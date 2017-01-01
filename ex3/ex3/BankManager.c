@@ -3,17 +3,16 @@ ex3 - BankManager.c:
 - The program recieves the following arguments from the main module: argc, argv
 - This program executes all bookkeeping and technical bank operations for existing bank accounts.
 - The program uses synchronization mechanisms and avoids Deadlocks in order to executes different threads that run simultaneously even on the same account.
-- The program return a BOOL value, which indicated whether the managing operations done successfully, and log file was written.
+- The program return an int value, which indicated whether the managing operations done successfully, and log file was written.
 */
 
 /* Definitions: */
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
-#define MAX_THREAD_HANDLE_ARRAY 64
 
 /* Libraries: */
 #include <stdio.h>
 #include "BankManager.h"
-#include "OperationExecuter.h"
+#include "AccountsListUtilites.h"
 
 /* Function Declarations: */
 char *readCommandLinebyLine(FILE *CommandFile);
@@ -85,7 +84,6 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 
 int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 	char *LineString = NULL;
-	// Global variables
 	HANDLE *GlobalThreadHandleArray = NULL;
 	DWORD waitCode = 0, exitCode = 0;
 	int i = 0, j = 0, NumOfHandles = 0;
@@ -99,7 +97,7 @@ int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 
 
 		if (newCommandArguments->commandTypeIndex >= 0 && newCommandArguments->commandTypeIndex <= 2) {
-			//current command is Account Management Opertaions type
+			//current command is Account Management Operations type
 			if (executeAcountManagementOperations(newCommandArguments, GlobalThreadHandleArray, NumOfHandles)) {
 				printf("Couldn't execute Acount Management Operation, error %ul\n", GetLastError());
 			}
@@ -107,7 +105,7 @@ int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 		}
 
 		else {
-			//current command is Banking Opertaions type
+			//current command is Banking Operations type
 			GlobalThreadHandleArray = executeBankingOperations(newCommandArguments, GlobalThreadHandleArray, NumOfHandles);
 			NumOfHandles++;
 		}
@@ -133,9 +131,6 @@ int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 			}
 		}
 	}
-
-	// free dynamic allocations
-	free(GlobalThreadHandleArray);
 
 	return 0;
 }
@@ -355,12 +350,9 @@ int executeAcountManagementOperations(commandArguments *newCommandArguments, HAN
 		}
 	}
 
-	//threadHandleArray = (HANDLE*)realloc(threadHandleArray, 0 * sizeof(HANDLE));
-	//threadHandleArray = NULL;
-	free(LocalThreadHandleArray);
 	LocalThreadHandleArray = NULL;
 
-
+	// Creating threads for Acount Management Operations
 	switch (newCommandArguments->commandTypeIndex) {
 	case createAccountCmd:
 		ThreadHandle = CreateThreadSimple(
@@ -421,8 +413,7 @@ HANDLE *executeBankingOperations(commandArguments *newCommandArguments, HANDLE *
 	LPDWORD threadID = 0;
 	const char *depositOrWithdrawalAmountToAccountThreadCreationError = "Problem creating 'deposit Or Withdrawal Amount To Account' thread\n";
 
-	Sleep(10);
-	// add a new thread to the threads list 
+	// Creating thread for Banking Operations 
 	ThreadHandle = CreateThreadSimple(
 		(LPTHREAD_START_ROUTINE)depositOrWithdrawalAmountToAccount,              /*  thread function */
 		newCommandArguments,												     /*  argument to thread function */
@@ -432,11 +423,10 @@ HANDLE *executeBankingOperations(commandArguments *newCommandArguments, HANDLE *
 		printf("Failed to deposite or withdrawal to account number %lli , error %ul\n", newCommandArguments->accountNumber, GetLastError());
 		newCommandArguments->depositOrWithdrawalAmountToAccountThreadCreationError = depositOrWithdrawalAmountToAccountThreadCreationError;
 	}
+
+	Sleep(10);
 	//add threadHandle to ThreadHandleArray
 	return LocalThreadHandleArray = addThreadHandleToThreadHandleArray(ThreadHandle, LocalThreadHandleArray, NumOfHandles);
-
-	// wait until the thread finishes
-	//WaitForSingleObject(ThreadHandle, INFINITE);		//TODO: Need to remove line and resolve 
 
 }
 
@@ -444,7 +434,7 @@ HANDLE *addThreadHandleToThreadHandleArray(HANDLE *ThreadHandle, HANDLE *LocalTh
 
 	int i = 0;
 
-	//realloc threadHandleArray by one more size
+	//reallocate a temporary array by one more size than NumOfThreads
 	HANDLE *tempHandleArray = NULL;
 	tempHandleArray = (HANDLE *)malloc((NumOfThreads + 1) * sizeof(HANDLE));
 	if (tempHandleArray == NULL) {
@@ -458,6 +448,5 @@ HANDLE *addThreadHandleToThreadHandleArray(HANDLE *ThreadHandle, HANDLE *LocalTh
 	tempHandleArray[NumOfThreads] = ThreadHandle;
 
 	return tempHandleArray;
-
 
 }

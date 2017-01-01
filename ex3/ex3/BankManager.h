@@ -1,6 +1,6 @@
 #pragma once
 /*
-ex3 - Header.h:
+ex3 - BankManager.h:
 - The header file for BankManager.c which contains the execution for all commands in Command file.
 - This file contains the definitions, used structs and the decleration which used to call the main
 function in BankManager.c
@@ -8,9 +8,6 @@ function in BankManager.c
 
 #ifndef BankManager_H
 #define BankManager_H
-// manifulating #include <stdbool.h>
-#define FALSE 0
-#define TRUE 1
 
 /* Libraries: */
 #include <Windows.h>

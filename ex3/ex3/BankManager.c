@@ -81,7 +81,6 @@ int executeBankManager(char *CommandFileName, char *BalanceReportFileName, char 
 }
 
 /* Function Definitions */
-
 int executeCommands(FILE *CommandFile, commandArguments *newCommandArguments) {
 	char *LineString = NULL;
 	HANDLE *GlobalThreadHandleArray = NULL;

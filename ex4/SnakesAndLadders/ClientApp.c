@@ -5,5 +5,6 @@
 // The file also updates its own game board according to dice results of each drop.
 
 int MainClient() {
+
 	return 0;
 }

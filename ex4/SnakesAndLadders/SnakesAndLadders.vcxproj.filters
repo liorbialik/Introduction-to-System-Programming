@@ -24,12 +24,18 @@
     <ClCompile Include="ClientApp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SocketCommonUtils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClientApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ServerApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketCommonUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

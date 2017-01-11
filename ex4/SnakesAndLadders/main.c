@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 #include <conio.h>
+#include "ServerApp.h"
+#include "ClientApp.h"
 
 //#include "ServerApp.h"
 //#include "ClientApp.h"
@@ -15,9 +17,8 @@
 
 int main(int argc, char *argv[]) {
 
-	char *ApplicationMode = NULL;
+	char *ApplicationMode = argv[1];
 
-	ApplicationMode = argv[1];
 
 	if (ApplicationMode == "server") {
 		// Run Server application
@@ -26,12 +27,12 @@ int main(int argc, char *argv[]) {
 
 	else if (ApplicationMode == "client") {
 		// Run Client application
-		return MainClient(argc, argv);
+		//return MainClient(argc, argv);
 	}
 
 	else {
 		// Mode application in command line is incorrect
-		printf("Mode application in command line is incorrect\nValid modes are 'server' \ 'client' only");
+		printf("Mode application in command line is incorrect\nValid modes are server / client only\n");
 		return 1;
 	}
 

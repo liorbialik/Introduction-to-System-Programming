@@ -21,7 +21,7 @@ function in SnakesAndLadders.exe
 
 
 /* Function Declarations: */
-int MainServer(char *argv[], int argc);
+int MainServer(int argc, char *argv[]);
 
 #endif#pragma once
 #pragma once

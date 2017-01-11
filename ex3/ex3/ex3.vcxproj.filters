@@ -7,7 +7,7 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -15,21 +15,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Documents\Visual Studio 2010\Projects\ex3\ex3\main.c">
+    <ClCompile Include="..\..\..\..\..\Source\Repos\TAU-ITSP2016\ex3\ex3\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Documents\Visual Studio 2010\Projects\ex3\ex3\BankManager.c">
+    <ClCompile Include="..\..\..\..\..\Source\Repos\TAU-ITSP2016\ex3\ex3\BankManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Documents\Visual Studio 2010\Projects\ex3\ex3\AccountsListUtilites.c">
+    <ClCompile Include="..\..\..\..\..\Source\Repos\TAU-ITSP2016\ex3\ex3\AccountsListUtilites.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Documents\Visual Studio 2010\Projects\ex3\ex3\AccountsListUtilites.h">
+    <ClInclude Include="..\..\..\..\..\Source\Repos\TAU-ITSP2016\ex3\ex3\BankManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Documents\Visual Studio 2010\Projects\ex3\ex3\BankManager.h">
+    <ClInclude Include="..\..\..\..\..\Source\Repos\TAU-ITSP2016\ex3\ex3\AccountsListUtilites.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,12 +9,20 @@
 
 int MainClient(char *argv[]) {
 
-	char *userName = NULL, *logFileName = NULL;
-	int clientPort;
+	char *userName = NULL, *logFileName = NULL, *pieceChar = NULL;
+	int serverPort;
 
 	logFileName = argv[2];
-	clientPort = atoi(argv[3]);
+	serverPort = atoi(argv[3]);
 	userName = argv[4];
+
+	// 1. connect to server:
+	//		- success: print to log file: "Connected to server on port <serverPort>" and continue run
+	//		- failure: print to log file: "Failed connecting to server on port <server port>" and exit
+	// 2. send server the userName
+	// 3. check for return msg:
+	//		- success: print to log file: "“<userName> your game piece is <pieceChar>”" and continue run
+	//		- failure: print to log file: "Connection to server refused. Exiting." and exit
 
 	return 0;
 }

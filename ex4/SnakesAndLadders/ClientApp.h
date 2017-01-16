@@ -9,7 +9,7 @@ function in SnakesAndLadders.exe
 #define ClientApp_H
 
 /* Constants: */
-
+#define MAX_MESSAGE_SIZE 80
 
 
 /* Libraries: */

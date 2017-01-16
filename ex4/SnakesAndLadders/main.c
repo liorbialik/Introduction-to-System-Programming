@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	else if (STRINGS_ARE_EQUAL(ApplicationMode, "client")) {
 		// Run Client application
 		printf("Running in client mode\n");
-		return MainClient(argv);
+		return MainClient(argc, argv);
 	}
 
 	else {

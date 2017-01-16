@@ -17,13 +17,13 @@ int main(int argc, char *argv[]) {
 
 	char *ApplicationMode = argv[1];
 
-	if (ApplicationMode == "server") {
+	if (strcmp(ApplicationMode, "server") == 0) {
 		// Run Server application
 		printf("Running in server mode\n");
 		return MainServer(argc, argv);
 	}
 
-	else if (ApplicationMode == "client") {
+	else if (strcmp(ApplicationMode, "client") == 0) {
 		// Run Client application
 		printf("Running in client mode\n");
 		return MainClient(argv);

@@ -20,7 +20,7 @@ function in SnakesAndLadders.exe
 
 
 /* Function Declarations: */
-//int MainClient(int argc, char *argv[]);
+int MainClient(char *argv[]);
 
 #endif#pragma once
 #pragma once#pragma once

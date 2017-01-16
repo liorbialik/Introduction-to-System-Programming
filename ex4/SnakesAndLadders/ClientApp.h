@@ -10,7 +10,7 @@ function in SnakesAndLadders.exe
 
 /* Constants: */
 #define MAX_MESSAGE_SIZE 80
-
+#define NUMBER_OF_THREADS 3
 
 /* Libraries: */
 #include <Windows.h>
@@ -20,7 +20,7 @@ function in SnakesAndLadders.exe
 
 
 /* Function Declarations: */
-int MainClient(char *argv[]);
+int MainClient(int argc, char *argv[]);
 
 #endif#pragma once
 #pragma once#pragma once

@@ -7,13 +7,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
+#include "ClientApp.h"
+
+HANDLE EngineDoneWithUserMessageSemaphore, IncomingMessageFromServerSemaphore, UserEnteredTextSemaphore;
 
 int MainClient(int argc, char *argv[]) {
 
 	char *userName = NULL, *logFileName = NULL, *pieceChar = NULL;
 	int serverPort;
-	HANDLE *userInterfaceThread = NULL, *engineThread = NULL, *clientCommunicationThread = NULL;
-
+	HANDLE threadHandles[NUMBER_OF_THREADS] = { 0 }; /* An array of thread handles */
 
 	// Verify that the number of command line argument is correct
 	if (argc != 5) {

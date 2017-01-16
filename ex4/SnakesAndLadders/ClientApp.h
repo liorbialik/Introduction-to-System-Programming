@@ -10,7 +10,7 @@ function in SnakesAndLadders.exe
 
 /* Constants: */
 #define MAX_MESSAGE_SIZE 80
-#define NUMBER_OF_THREADS 3
+#define NUMBER_OF_THREADS 2
 
 /* Libraries: */
 #include <Windows.h>

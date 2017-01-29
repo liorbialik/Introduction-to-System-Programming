@@ -8,42 +8,34 @@
 #define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 
 #include <stdio.h>
+#include <string.h>
 #include <conio.h>
+#include "SocketCommonUtils.h"
 #include "ServerApp.h"
 #include "ClientApp.h"
-#define SERVER '1'
-#define CLIENT '2'
-
-//#include "ServerApp.h"
-//#include "ClientApp.h"
 
 /*oOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoOoO*/
 
 int main(int argc, char *argv[]) {
 
-	char *ApplicationMode = NULL, mode[1];
-	int c = 0;
-	ApplicationMode = argv[1];
+	char *ApplicationMode = argv[1];
 
-	printf("please enter running mode: 1 for server, 2 for client\n");
-	scanf("%c", mode);
-	printf("%c\n", mode);
-	if (mode == SERVER) {
+	if (STRINGS_ARE_EQUAL(ApplicationMode, "server")) {
 		// Run Server application
+		printf("Running in server mode\n");
 		return MainServer(argc, argv);
-		return 0;
 	}
 
-	if (mode == CLIENT) {
+	else if (STRINGS_ARE_EQUAL(ApplicationMode, "client")) {
 		// Run Client application
+		printf("Running in client mode\n");
 		return MainClient(argc, argv);
 	}
 
 	else {
 		// Mode application in command line is incorrect
-		printf("Application mode in command line is incorrect\nValid modes are server / client only\n");
+		printf("Mode application in command line is incorrect\nValid modes are server / client only\n");
 		return 1;
 	}
-
 
 }

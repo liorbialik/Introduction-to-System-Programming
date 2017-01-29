@@ -15,7 +15,7 @@ function in SnakesAndLadders.exe
 
 /* Libraries: */
 #include <Windows.h>
-
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
 
 /* Struct Declarations: */
 

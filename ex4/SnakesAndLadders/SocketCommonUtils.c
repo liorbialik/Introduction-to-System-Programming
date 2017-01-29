@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+
 #include "SocketCommonUtils.h"
 
 #include <stdio.h>

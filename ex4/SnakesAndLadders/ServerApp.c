@@ -16,6 +16,8 @@
 #include <winsock2.h>
 #include "ServerApp.h"
 #include "SocketCommonUtils.h"
+#define _CRT_SECURE_NO_DEPRECATE // avoid getting errors for '_s functions'
+#define _CRT_SECURE_NO_WARNINGS
 //#include "SocketSendRecvTools.h"
 
 /* Declerations */
